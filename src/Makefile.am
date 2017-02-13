@@ -1,2 +1,2 @@
-bin_PROGRAMS = hello
-hello_SOURCES = main.cpp
+bin_PROGRAMS = animate
+animate_SOURCES = main.cpp
