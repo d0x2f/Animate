@@ -1,6 +1,8 @@
 bin_PROGRAMS = animate
 
-animate_SOURCES = main.cpp
+animatedir = .
+animate_SOURCES = gui.cc main.cc
+animate_HEADERS = gui.hh
 animate_CPPFLAGS = @GTK_CFLAGS@
 animate_LDADD = @GTK_LIBS@
 
