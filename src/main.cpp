@@ -1,7 +1,23 @@
-#include <iostream>
+#include <gtk/gtk.h>
 
-int main()
+static void activate(GtkApplication *app, gpointer user_data)
 {
-    std::cout << "Hello World!" << std::endl;
-    return 0;
+    GtkWidget *window;
+
+    window = gtk_application_window_new(app);
+    gtk_window_set_title(GTK_WINDOW(window), "Animate");
+    gtk_window_set_default_size(GTK_WINDOW(window), 720, 1280);
+    gtk_widget_show_all(window);
+}
+
+int main(int argc, char **argv)
+{
+    GtkApplication *app;
+    int status;
+    
+    app = gtk_application_new("dog.dyl.animate", G_APPLICATION_FLAGS_NONE);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), NULL);
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    return status;
 }
