@@ -1,2 +1,2 @@
-# animate
-Interesting minimalist aniomations
+# Animate
+Interesting minimalist animations
