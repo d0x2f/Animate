@@ -43,6 +43,9 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     return true;
 }
 
+/**
+ * Compute a tick
+ */
 void Cat::on_tick()
 {
     std::lock_guard<std::mutex> guard(this->colour_mutex);
