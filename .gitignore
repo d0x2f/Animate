@@ -10,5 +10,6 @@ config.sub
 config.guess
 ltmain.sh
 c_cpp_properties.json
+config.log
 autom4te.cache/
 build/
