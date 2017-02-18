@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "Gui.hh"
-#include "animations/Cat.hh"
+#include "Animations/Cat.hh"
 
 using namespace Animate;
 
@@ -18,7 +18,7 @@ Gui::Gui()
     set_title("Animate");
 
     //Create a gl area and add it to the window
-    this->gl_area = std::unique_ptr<GLArea>(new GLArea());
+    this->gl_area = std::unique_ptr<GL::Area>(new GL::Area());
     add(*(this->gl_area.get()));
 
     //Create animation and connect it up

@@ -11,7 +11,7 @@ using namespace Animate;
  * Constructor.
  * Seed the RNG.
  */
-Cat::Cat(GLArea *gl_area) : gl_area(gl_area)
+Cat::Cat(GL::Area *gl_area) : Animation(gl_area)
 {
     this->tick_rate = 5;
 

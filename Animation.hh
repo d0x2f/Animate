@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 
+#include "GL/Area.hh"
+
 namespace Animate {
 
     struct Colour {
@@ -15,7 +17,7 @@ namespace Animate {
 
     class Animation {
         public:
-            Animation();
+            Animation(GL::Area *gl_area);
             ~Animation();
 
             virtual bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context) {}
@@ -28,6 +30,7 @@ namespace Animate {
 
         protected:
             int tick_rate = 60;
+            GL::Area *gl_area;
 
         private:
             std::unique_ptr<std::thread> tick_thread;

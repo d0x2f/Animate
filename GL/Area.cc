@@ -1,14 +1,14 @@
 #include <iostream>
 #include <GL/glew.h>
 
-#include "GLArea.hh"
+#include "Area.hh"
 
-using namespace Animate;
+using namespace Animate::GL;
 
 /**
  * Constructor
  */
-GLArea::GLArea()
+Area::Area()
 {
     //Enable depth buffer
     set_has_depth_buffer(true);
@@ -17,7 +17,7 @@ GLArea::GLArea()
 /**
  * Destructor
  */
-GLArea::~GLArea()
+Area::~Area()
 {
 }
 
@@ -25,7 +25,7 @@ GLArea::~GLArea()
  * @override
  * Initialises glew and prints OpenGL version information.
  */
-void GLArea::on_realize()
+void Area::on_realize()
 {
     Gtk::GLArea::on_realize();
 

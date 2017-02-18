@@ -2,11 +2,11 @@
 
 #include <gtkmm.h>
 
-namespace Animate {
-    class GLArea : public Gtk::GLArea {
+namespace Animate::GL {
+    class Area : public Gtk::GLArea {
         public:
-            GLArea();
-            ~GLArea();
+            Area();
+            ~Area();
         
         protected:
             //Slots
