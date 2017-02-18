@@ -1,4 +1,6 @@
 AC_INIT([animate], [1.0], [me@dyl.dog])
+AC_CONFIG_AUX_DIR(build)
+
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror foreign])
 
 AC_PROG_CXX
@@ -16,7 +18,6 @@ AC_CHECK_LIB([pthread], [pthread_create],,AC_MSG_ERROR([pthread library required
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
  Makefile
- src/Makefile
- src/animations/Makefile
+ animations/Makefile
 ])
 AC_OUTPUT

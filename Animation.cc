@@ -55,13 +55,23 @@ bool Animation::check_running()
 }
 
 /**
+ * Return the tick rate for this animation.
+ *
+ * @return int
+ */
+int Animation::get_tick_rate()
+{
+    return this->tick_rate;
+}
+
+/**
  * Run a loop that calls the animations on_tick method.
  * Quit when check_running() returns false.
  */
 void Animation::tick_loop(Animation *animation)
 {
     while (animation->check_running()) {
-        sleep(1); 
         animation->on_tick();
+        usleep(1000. / animation->get_tick_rate()); 
     }
 }
