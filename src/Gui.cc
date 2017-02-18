@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <iostream>
+#include <memory>
 
 #include "Gui.hh"
 #include "animations/Cat.hh"
@@ -17,11 +18,11 @@ Gui::Gui()
     set_title("Animate");
 
     //Create a gl area and add it to the window
-    gl_area = new GLArea();
-    add(*gl_area);
+    this->gl_area = std::unique_ptr<GLArea>(new GLArea());
+    add(*(this->gl_area.get()));
 
     //Create animation and connect it up
-    Cat *animation = new Cat();
+    Cat *animation = new Cat(this->gl_area.get());
     set_animation(animation);
 
     //Show the childrem
@@ -43,4 +44,12 @@ Gui::~Gui()
  */
 void Gui::set_animation(Animation *animation)
 {
+    //Triggerd an existing animations destructor
+    this->current_animation.reset(animation);
+
+    //Connect the render signal
+    this->gl_area->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_render));
+
+    //Start the animation
+    animation->run();
 }

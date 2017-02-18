@@ -13,7 +13,8 @@ namespace Animate {
             virtual ~Gui();
 
         protected:
-            GLArea *gl_area;
+            std::unique_ptr<GLArea> gl_area;
+            std::unique_ptr<Animation> current_animation;
 
             void set_animation(Animation *animation);
     };

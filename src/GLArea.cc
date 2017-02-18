@@ -10,6 +10,8 @@ using namespace Animate;
  */
 GLArea::GLArea()
 {
+    //Enable depth buffer
+    set_has_depth_buffer(true);
 }
 
 /**
@@ -38,7 +40,4 @@ void GLArea::on_realize()
     const GLubyte* version = glGetString(GL_VERSION);
     std::cout << "Renderer: " << renderer << std::endl;
     std::cout << "OpenGL version supported " << version << std::endl;
-
-    //Enable depth buffer
-    set_has_depth_buffer(TRUE);
 }

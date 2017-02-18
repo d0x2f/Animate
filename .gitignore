@@ -9,4 +9,5 @@ compile
 config.sub
 config.guess
 ltmain.sh
+c_cpp_properties.json
 autom4te.cache/
