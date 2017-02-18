@@ -13,6 +13,8 @@ using namespace Animate;
  */
 Cat::Cat(GLArea *gl_area) : gl_area(gl_area)
 {
+    this->tick_rate = 5;
+
     srand(time(NULL));
 }
 

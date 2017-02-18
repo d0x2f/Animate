@@ -6,6 +6,13 @@
 
 namespace Animate {
 
+    struct Colour {
+        
+        float r,g,b,a;
+
+        Colour(float r=0., float g=0., float b=0., float a=1.) : r(r), g(g), b(b), a(a) {}
+    };
+
     class Animation {
         public:
             Animation();
