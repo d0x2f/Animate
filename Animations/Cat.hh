@@ -15,7 +15,7 @@ namespace Animate {
             bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context);
             void on_tick();
             void on_realise();
-        
+
         protected:
             std::mutex colour_mutex;
             GL::Colour colour;

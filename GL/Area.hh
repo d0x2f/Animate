@@ -11,7 +11,7 @@ namespace Animate {
             public:
                 Area(Context *context);
                 ~Area();
-            
+
             protected:
                 //Slots
                 void on_realize();

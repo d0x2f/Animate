@@ -31,4 +31,4 @@ SUBDIRS =   Animations \
 AM_CXXFLAGS = -g3 -O0
 ACLOCAL_AMFLAGS = -I m4
 
-CLEANFILES = *~ 
+CLEANFILES = *~

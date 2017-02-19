@@ -62,7 +62,7 @@ void Quad::initialise_buffers()
     glBindVertexArray(this->vao_id);
 
     glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
-    
+
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
@@ -72,7 +72,7 @@ void Quad::initialise_buffers()
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*10, (const void*)(sizeof(GLfloat)*3));   //Normal
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*10, (const void*)(sizeof(GLfloat)*6));   //Colour
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*10, (const void*)0);                     //Texture
-    
+
     glDisableVertexAttribArray(3);
     glDisableVertexAttribArray(2);
     glDisableVertexAttribArray(1);
@@ -87,7 +87,7 @@ void Quad::initialise_buffers()
     glGenBuffers(1, &this->ibo_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ibo_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLubyte)*6, indices, GL_STATIC_DRAW);
-    
+
     //Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -105,7 +105,7 @@ void Quad::draw()
 
     //Draw
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, NULL);
-    
+
     //Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

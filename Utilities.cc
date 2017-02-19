@@ -26,6 +26,6 @@ std::vector<GLbyte> Utilities::read_file(std::string filename) {
         std::istream_iterator<GLbyte>(file),
         std::istream_iterator<GLbyte>()
     );
-    
+
     return bytes;
 }

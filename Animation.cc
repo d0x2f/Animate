@@ -72,6 +72,6 @@ void Animation::tick_loop(Animation *animation)
 {
     while (animation->check_running()) {
         animation->on_tick();
-        usleep(1000000. / animation->get_tick_rate()); 
+        usleep(1000000. / animation->get_tick_rate());
     }
 }

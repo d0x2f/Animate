@@ -116,10 +116,10 @@ void Shader::create_uniform_buffer()
 
     //Use binding point 0
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->uniform_buffer_id);
-    
+
     //Set matrices block to use binding point 0
     glUniformBlockBinding(this->get_id(), this->matrices_block_index, 0);
-    
+
     //Unbind
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
@@ -140,7 +140,7 @@ void Shader::set_matrices(Matrix44 model_view, Matrix44 projection)
     //Storage
     GLint indices[2];
     GLint offset[2];
-    
+
     //Get indices and offsets
     glGetActiveUniformBlockiv(this->get_id(), this->matrices_block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices);
     glGetActiveUniformsiv(this->get_id(), 2, (GLuint *)indices, GL_UNIFORM_OFFSET, offset);

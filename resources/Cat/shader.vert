@@ -18,6 +18,6 @@ void main() {
     vertex = _vertex;
     colour = _colour;
     tex_coords = _tex_coords;
-    
+
     gl_Position = modelviewprojection * vec4(vertex, 1.0);
 }

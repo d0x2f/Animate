@@ -13,7 +13,7 @@ namespace Animate::GL {
         public:
             Shader(Context *context, std::string fragment_code_id, std::string vertex_code_id);
             ~Shader();
-            
+
             void initialise();
 
             void set_matrices(Matrix44 model_view, Matrix44 projection);
@@ -29,7 +29,7 @@ namespace Animate::GL {
                     matrices_block_index = 0;
 
             GLuint program_id = 0;
-            
+
             void compile_shaders();
             void create_uniform_buffer();
 

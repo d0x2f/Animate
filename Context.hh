@@ -13,7 +13,7 @@ namespace Animate {
 
             ResourceManager *get_resource_manager();
             GL::Area *get_gl_area();
-        
+
         private:
             std::unique_ptr<ResourceManager> resource_manager;
             std::unique_ptr<GL::Area> gl_area;

@@ -96,7 +96,7 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     some_quad.get()->draw();
 
     glFlush();
-    
+
     GLenum error = glGetError();
     if(error != GL_NO_ERROR)
         std::cerr << "init OPENGL ERROR: " << gluErrorString(error) << "(" << error << ")" << std::endl;

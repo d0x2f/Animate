@@ -98,7 +98,7 @@ namespace Animate::GL {
          **/
         GLfloat *get_raw_data() {
             GLfloat *data = (GLfloat *)malloc(sizeof(GLfloat)*4);
-            
+
             data[0] = x;
             data[1] = y;
             data[2] = z;
