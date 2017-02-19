@@ -7,7 +7,7 @@ using namespace Animate;
 /**
  * Constructor
  */
-Animation::Animation(GL::Area *gl_area) : gl_area(gl_area)
+Animation::Animation(Context *context) : context(context)
 {
 }
 

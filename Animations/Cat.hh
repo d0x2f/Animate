@@ -2,20 +2,26 @@
 
 #include "../Animation.hh"
 #include "../GL/Area.hh"
+#include "../GL/Quad.hh"
+#include "../GL/Definitions.hh"
 
 namespace Animate {
 
     class Cat : public Animation
     {
         public:
-            Cat(GL::Area *gl_area);
+            Cat(Context *context);
 
             bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context);
             void on_tick();
+            void on_realise();
         
         protected:
             std::mutex colour_mutex;
-            Colour colour;
+            GL::Colour colour;
+
+        private:
+            std::unique_ptr<GL::Quad> some_quad;
     };
 
 }

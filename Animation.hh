@@ -5,23 +5,18 @@
 #include <mutex>
 
 #include "GL/Area.hh"
+#include "Context.hh"
 
 namespace Animate {
 
-    struct Colour {
-        
-        float r,g,b,a;
-
-        Colour(float r=0., float g=0., float b=0., float a=1.) : r(r), g(g), b(b), a(a) {}
-    };
-
     class Animation {
         public:
-            Animation(GL::Area *gl_area);
+            Animation(Context *context);
             ~Animation();
 
             virtual bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context) {}
             virtual void on_tick() {}
+            virtual void on_realise() {}
 
             void run();
 
@@ -29,8 +24,10 @@ namespace Animate {
             int get_tick_rate();
 
         protected:
+            Context *context;
             int tick_rate = 60;
-            GL::Area *gl_area;
+
+            virtual void initialise() {}
 
         private:
             std::unique_ptr<std::thread> tick_thread;

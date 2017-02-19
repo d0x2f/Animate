@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "Gui.hh"
 #include "Animations/Cat.hh"
@@ -17,12 +18,19 @@ Gui::Gui()
     set_default_size(720, 1280);
     set_title("Animate");
 
+    //Create context object
+    this->context = std::unique_ptr<Context>( new Context() );
+
     //Create a gl area and add it to the window
-    this->gl_area = std::unique_ptr<GL::Area>(new GL::Area());
-    add(*(this->gl_area.get()));
+    new GL::Area(this->context.get());
+
+    add(*(this->context.get()->get_gl_area()));
+
+    //Load Resources
+    this->context->get_resource_manager()->load_from_directory("./resources");
 
     //Create animation and connect it up
-    Cat *animation = new Cat(this->gl_area.get());
+    Cat *animation = new Cat(this->context.get());
     set_animation(animation);
 
     //Show the childrem
@@ -48,8 +56,8 @@ void Gui::set_animation(Animation *animation)
     this->current_animation.reset(animation);
 
     //Connect the render signal
-    this->gl_area->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_render));
+    this->context.get()->get_gl_area()->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_render));
 
-    //Start the animation
-    animation->run();
+    //Connect the realise signal
+    this->context.get()->get_gl_area()->signal_realize().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_realise));
 }

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.cc": "cpp",
+        "*.hh": "cpp",
+        "*.vert": "glsl",
+        "*.frag": "glsl"
+    }
+}

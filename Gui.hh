@@ -3,6 +3,7 @@
 #include <gtkmm.h>
 
 #include "Animation.hh"
+#include "Context.hh"
 #include "GL/Area.hh"
 
 namespace Animate {
@@ -12,8 +13,8 @@ namespace Animate {
             Gui();
             virtual ~Gui();
 
-        protected:
-            std::unique_ptr<GL::Area> gl_area;
+        private:
+            std::unique_ptr<Context> context;
             std::unique_ptr<Animation> current_animation;
 
             void set_animation(Animation *animation);

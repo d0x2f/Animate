@@ -2,14 +2,17 @@
 #include <GL/glew.h>
 
 #include "Area.hh"
+#include "../Context.hh"
 
 using namespace Animate::GL;
 
 /**
  * Constructor
  */
-Area::Area()
+Area::Area(Context *context) : context(context)
 {
+    this->context->set_gl_area(this);
+
     //Enable depth buffer
     set_has_depth_buffer(true);
 }
@@ -40,4 +43,6 @@ void Area::on_realize()
     const GLubyte* version = glGetString(GL_VERSION);
     std::cout << "Renderer: " << renderer << std::endl;
     std::cout << "OpenGL version supported " << version << std::endl;
+
+    glFrontFace(GL_CW);
 }
