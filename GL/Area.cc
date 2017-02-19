@@ -44,5 +44,8 @@ void Area::on_realize()
     std::cout << "Renderer: " << renderer << std::endl;
     std::cout << "OpenGL version supported " << version << std::endl;
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);
 }

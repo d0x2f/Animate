@@ -82,6 +82,11 @@ void Shader::compile_shaders()
     glAttachShader(this->program_id, frag_id);
     glAttachShader(this->program_id, vert_id);
 
+    glBindAttribLocation(this->program_id, 0, "_vertex");
+    glBindAttribLocation(this->program_id, 1, "_normal");
+    glBindAttribLocation(this->program_id, 2, "_colour");
+    glBindAttribLocation(this->program_id, 3, "_tex_coords");
+
     glLinkProgram(this->program_id);
 
     //Print program debug info
@@ -108,11 +113,11 @@ void Shader::create_uniform_buffer()
     //Bind
     glBindBuffer(GL_UNIFORM_BUFFER, this->uniform_buffer_id);
 
+    //Fill will null
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(GLfloat)*48, NULL, GL_DYNAMIC_DRAW);
+
     //Get the matrices block index
     this->matrices_block_index = glGetUniformBlockIndex(this->get_id(), "matrices");
-
-    //Fill will null
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(GLfloat)*32, NULL, GL_DYNAMIC_DRAW);
 
     //Use binding point 0
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->uniform_buffer_id);
@@ -132,46 +137,40 @@ void Shader::create_uniform_buffer()
  * @param model_view The modelview matrix.
  * @param projection The projection matrix.
  */
-void Shader::set_matrices(Matrix44 model_view, Matrix44 projection)
+void Shader::set_matrices(Matrix44 model, Matrix44 view, Matrix44 projection)
 {
     //Bind
     glBindBuffer(GL_UNIFORM_BUFFER, this->uniform_buffer_id);
 
     //Storage
-    GLint indices[2];
-    GLint offset[2];
+    GLint indices[3];
+    GLint offset[3];
 
     //Get indices and offsets
     glGetActiveUniformBlockiv(this->get_id(), this->matrices_block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices);
-    glGetActiveUniformsiv(this->get_id(), 2, (GLuint *)indices, GL_UNIFORM_OFFSET, offset);
+    glGetActiveUniformsiv(this->get_id(), 3, (GLuint *)indices, GL_UNIFORM_OFFSET, offset);
 
     //Print
-    //std::cout << "Uniform indices: " << indices[0] << ", " << indices[1] << std::endl;
-    //std::cout << "Uniform offsets: " << offset[0] << ", " << offset[1] << std::endl;
-
-    /*
-    GL::Matrix44 p = (model_view * projection);
-
-    std::cout << p.r1.x << " " << p.r1.y << " " << p.r1.z << " " << p.r1.w << std::endl;
-    std::cout << p.r2.x << " " << p.r2.y << " " << p.r2.z << " " << p.r2.w << std::endl;
-    std::cout << p.r3.x << " " << p.r3.y << " " << p.r3.z << " " << p.r3.w << std::endl;
-    std::cout << p.r4.x << " " << p.r4.y << " " << p.r4.z << " " << p.r4.w << std::endl;
-    */
+    //std::cout << "Uniform indices: " << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
+    //std::cout << "Uniform offsets: " << offset[0] << ", " << offset[1] << ", " << offset[2] << std::endl;
 
     //Get raw c array
-    GLfloat *model_view_raw = model_view.get_raw_data();
-    GLfloat *model_view_projection_raw = (model_view * projection).get_raw_data();
+    GLfloat *model_raw = model.transpose().get_raw_data();
+    GLfloat *view_raw = view.transpose().get_raw_data();
+    GLfloat *projection_raw = projection.transpose().get_raw_data();
 
     //Upload
-    glBufferSubData(GL_UNIFORM_BUFFER, offset[0], sizeof(GLfloat)*16, model_view_raw);
-    glBufferSubData(GL_UNIFORM_BUFFER, offset[1], sizeof(GLfloat)*16, model_view_projection_raw);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset[0], sizeof(GLfloat)*16, model_raw);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset[1], sizeof(GLfloat)*16, projection_raw);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset[2], sizeof(GLfloat)*16, view_raw);
 
     //Unbind
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     //Free memory
-    std::free(model_view_raw);
-    std::free(model_view_projection_raw);
+    std::free(model_raw);
+    std::free(view_raw);
+    std::free(projection_raw);
 }
 
 /**

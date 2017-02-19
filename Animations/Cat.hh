@@ -3,6 +3,7 @@
 #include "../Animation.hh"
 #include "../GL/Area.hh"
 #include "../GL/Quad.hh"
+#include "../GL/Shader.hh"
 #include "../GL/Definitions.hh"
 
 namespace Animate {
@@ -19,6 +20,7 @@ namespace Animate {
         protected:
             std::mutex colour_mutex;
             GL::Colour colour;
+            std::unique_ptr<GL::Shader> shader;
 
         private:
             std::unique_ptr<GL::Quad> some_quad;

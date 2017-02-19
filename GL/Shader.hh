@@ -16,7 +16,7 @@ namespace Animate::GL {
 
             void initialise();
 
-            void set_matrices(Matrix44 model_view, Matrix44 projection);
+            void set_matrices(Matrix44 model, Matrix44 view, Matrix44 projection);
 
             void use();
             GLuint get_id();

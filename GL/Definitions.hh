@@ -177,10 +177,10 @@ namespace Animate::GL {
         {
             Matrix44 b = that.transpose();
             return Matrix44 (
-                Vector4( r1.dot(b.r1), r1.dot(b.r2), r1.dot(b.r3), r1.dot(b.r4)),
-                Vector4( r2.dot(b.r1), r2.dot(b.r2), r2.dot(b.r3), r2.dot(b.r4)),
-                Vector4( r3.dot(b.r1), r3.dot(b.r2), r3.dot(b.r3), r3.dot(b.r4)),
-                Vector4( r4.dot(b.r1), r4.dot(b.r2), r4.dot(b.r3), r4.dot(b.r4))
+                Vector4(r1.dot(b.r1), r1.dot(b.r2), r1.dot(b.r3), r1.dot(b.r4)),
+                Vector4(r2.dot(b.r1), r2.dot(b.r2), r2.dot(b.r3), r2.dot(b.r4)),
+                Vector4(r3.dot(b.r1), r3.dot(b.r2), r3.dot(b.r3), r3.dot(b.r4)),
+                Vector4(r4.dot(b.r1), r4.dot(b.r2), r4.dot(b.r3), r4.dot(b.r4))
             );
         }
     };
