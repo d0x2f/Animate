@@ -117,71 +117,20 @@ namespace Animate::GL {
                     z * that.z +
                     w * that.w;
         }
+
+        /**
+        * Vector subtraction
+        **/
+        Vector4 operator-(Vector4 b)
+        {
+            return Vector4 (
+                x - b.x,
+                y - b.y,
+                z - b.z,
+                w - b.w
+            );
+        }
     };
     //Aliases
     typedef Vector4 Colour;
-
-
-    /**
-     * 4x4 matrix.
-     */
-    struct Matrix44 {
-        Vector4 r1;
-        Vector4 r2;
-        Vector4 r3;
-        Vector4 r4;
-
-        Matrix44(Vector4 r1, Vector4 r2, Vector4 r3, Vector4 r4) : r1(r1), r2(r2), r3(r3), r4(r4) {}
-
-        /**
-         * Return a raw c array.
-         **/
-        GLfloat *get_raw_data() {
-            GLfloat *data = (GLfloat *)malloc(sizeof(GLfloat)*16);
-
-            GLfloat *r1_data = r1.get_raw_data();
-            GLfloat *r2_data = r2.get_raw_data();
-            GLfloat *r3_data = r3.get_raw_data();
-            GLfloat *r4_data = r4.get_raw_data();
-
-            std::memcpy(&data[0],  r1_data, sizeof(GLfloat)*4);
-            std::memcpy(&data[4],  r2_data, sizeof(GLfloat)*4);
-            std::memcpy(&data[8],  r3_data, sizeof(GLfloat)*4);
-            std::memcpy(&data[12], r4_data, sizeof(GLfloat)*4);
-
-            std::free(r1_data);
-            std::free(r2_data);
-            std::free(r3_data);
-            std::free(r4_data);
-
-            return data;
-        }
-
-        /**
-         * Matrix transposition.
-         **/
-        Matrix44 transpose()
-        {
-            return Matrix44(
-                Vector4(r1.x, r2.x, r3.x, r4.x),
-                Vector4(r1.y, r2.y, r3.y, r4.y),
-                Vector4(r1.z, r2.z, r3.z, r4.z),
-                Vector4(r1.w, r2.w, r3.w, r4.w)
-            );
-        }
-
-        /**
-         * Matrix multiplication.
-         **/
-        Matrix44 operator*(Matrix44 that)
-        {
-            Matrix44 b = that.transpose();
-            return Matrix44 (
-                Vector4(r1.dot(b.r1), r1.dot(b.r2), r1.dot(b.r3), r1.dot(b.r4)),
-                Vector4(r2.dot(b.r1), r2.dot(b.r2), r2.dot(b.r3), r2.dot(b.r4)),
-                Vector4(r3.dot(b.r1), r3.dot(b.r2), r3.dot(b.r3), r3.dot(b.r4)),
-                Vector4(r4.dot(b.r1), r4.dot(b.r2), r4.dot(b.r3), r4.dot(b.r4))
-            );
-        }
-    };
 }

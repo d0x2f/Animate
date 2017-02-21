@@ -6,6 +6,7 @@
 
 #include "../Context.hh"
 #include "Definitions.hh"
+#include "Matrix.hh"
 
 namespace Animate::GL
 {
@@ -17,7 +18,7 @@ namespace Animate::GL
 
             void initialise();
 
-            void set_matrices(Matrix44 model, Matrix44 view, Matrix44 projection);
+            void set_matrices(Matrix model, Matrix view, Matrix projection);
 
             void use();
             GLuint get_id();

@@ -4,6 +4,7 @@ animatedir = .
 animate_SOURCES =   GL/Area.cc \
                     GL/Quad.cc \
                     GL/Shader.cc \
+                    GL/Matrix.cc \
                     Animations/Cat.cc \
                     Gui.cc \
                     Context.cc \
@@ -14,6 +15,7 @@ animate_SOURCES =   GL/Area.cc \
 animate_HEADERS =   GL/Area.hh \
                     GL/Quad.hh \
                     GL/Shader.hh \
+                    GL/Matrix.hh \
                     GL/Definitions.hh \
                     Animations/Cat.hh \
                     Gui.hh \

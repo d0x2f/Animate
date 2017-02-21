@@ -37,5 +37,4 @@ namespace Animate
 
             static void tick_loop(Animation *animation);
     };
-
 }

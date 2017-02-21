@@ -137,7 +137,7 @@ void Shader::create_uniform_buffer()
  * @param model_view The modelview matrix.
  * @param projection The projection matrix.
  */
-void Shader::set_matrices(Matrix44 model, Matrix44 view, Matrix44 projection)
+void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
 {
     //Bind
     glBindBuffer(GL_UNIFORM_BUFFER, this->uniform_buffer_id);
@@ -149,10 +149,6 @@ void Shader::set_matrices(Matrix44 model, Matrix44 view, Matrix44 projection)
     //Get indices and offsets
     glGetActiveUniformBlockiv(this->get_id(), this->matrices_block_index, GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES, indices);
     glGetActiveUniformsiv(this->get_id(), 3, (GLuint *)indices, GL_UNIFORM_OFFSET, offset);
-
-    //Print
-    //std::cout << "Uniform indices: " << indices[0] << ", " << indices[1] << ", " << indices[2] << std::endl;
-    //std::cout << "Uniform offsets: " << offset[0] << ", " << offset[1] << ", " << offset[2] << std::endl;
 
     //Get raw c array
     GLfloat *model_raw = model.transpose().get_raw_data();
