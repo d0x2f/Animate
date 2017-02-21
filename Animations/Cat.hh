@@ -6,8 +6,8 @@
 #include "../GL/Shader.hh"
 #include "../GL/Definitions.hh"
 
-namespace Animate {
-
+namespace Animate
+{
     class Cat : public Animation
     {
         public:
@@ -25,5 +25,4 @@ namespace Animate {
         private:
             std::unique_ptr<GL::Quad> some_quad;
     };
-
 }

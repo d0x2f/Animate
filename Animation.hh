@@ -7,9 +7,10 @@
 #include "GL/Area.hh"
 #include "Context.hh"
 
-namespace Animate {
-
-    class Animation {
+namespace Animate
+{
+    class Animation
+    {
         public:
             Animation(Context *context);
             ~Animation();

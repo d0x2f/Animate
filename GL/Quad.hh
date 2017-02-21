@@ -4,8 +4,8 @@
 
 #include "Definitions.hh"
 
-namespace Animate::GL {
-
+namespace Animate::GL
+{
     class Quad
     {
         public:
@@ -30,7 +30,5 @@ namespace Animate::GL {
                     shader_id = 0;
 
             void initialise_buffers();
-
     };
-
 }

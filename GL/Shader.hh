@@ -7,9 +7,10 @@
 #include "../Context.hh"
 #include "Definitions.hh"
 
-namespace Animate::GL {
-
-    class Shader {
+namespace Animate::GL
+{
+    class Shader
+    {
         public:
             Shader(Context *context, std::string fragment_code_id, std::string vertex_code_id);
             ~Shader();
@@ -37,5 +38,4 @@ namespace Animate::GL {
             void printShaderInfoLog(GLuint obj);
             void printProgramInfoLog(GLuint obj);
     };
-
 }

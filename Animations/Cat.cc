@@ -24,6 +24,9 @@ Cat::Cat(Context *context) : Animation(context)
     some_quad = std::unique_ptr<GL::Quad>(new GL::Quad(GL::Point(), GL::Size(20., 20.), GL::Colour(1.)));
 }
 
+/**
+ * Perform initialisations.
+ */
 void Cat::on_realise()
 {
     //Initialise quad

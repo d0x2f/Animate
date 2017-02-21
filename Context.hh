@@ -5,9 +5,10 @@
 #include "ResourceManager.hh"
 #include "GL/Area.hh"
 
-namespace Animate {
-
-    class Context {
+namespace Animate
+{
+    class Context
+    {
         public:
             void set_gl_area(GL::Area *gl_area);
 
@@ -18,5 +19,4 @@ namespace Animate {
             std::unique_ptr<ResourceManager> resource_manager;
             std::unique_ptr<GL::Area> gl_area;
     };
-
 }

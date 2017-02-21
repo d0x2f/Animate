@@ -5,9 +5,10 @@
 #include <vector>
 #include <GL/glew.h>
 
-namespace Animate {
-
-    class ResourceManager {
+namespace Animate
+{
+    class ResourceManager
+    {
         public:
             ResourceManager();
             ~ResourceManager();
@@ -19,5 +20,4 @@ namespace Animate {
         private:
             std::map< std::string, std::vector<GLbyte> > data_store;
     };
-
 }

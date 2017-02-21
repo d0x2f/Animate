@@ -6,9 +6,10 @@
 #include "Context.hh"
 #include "GL/Area.hh"
 
-namespace Animate {
-
-    class Gui : public Gtk::Window {
+namespace Animate
+{
+    class Gui : public Gtk::Window
+    {
         public:
             Gui();
             virtual ~Gui();
@@ -19,5 +20,4 @@ namespace Animate {
 
             void set_animation(Animation *animation);
     };
-
 }

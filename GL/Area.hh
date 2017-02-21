@@ -2,12 +2,14 @@
 
 #include <gtkmm.h>
 
-namespace Animate {
-
+namespace Animate
+{
     class Context;
 
-    namespace GL {
-        class Area : public Gtk::GLArea {
+    namespace GL
+    {
+        class Area : public Gtk::GLArea
+        {
             public:
                 Area(Context *context);
                 ~Area();
