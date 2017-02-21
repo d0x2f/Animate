@@ -130,8 +130,6 @@ Matrix Matrix::look_at(Vector3 eye, Vector3 center, Vector3 up)
 {
     GL::Vector3 f = (center - eye).normalise();
 
-    std::cout << f.x << ' ' << f.y << ' ' << f.z << ' ' << std::endl;
-
     GL::Vector3 s = f.cross(up);
 
     GL::Vector3 u = s.normalise().cross(f);
