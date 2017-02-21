@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Shader.hh"
+#include "../Utilities.hh"
 
 using namespace Animate::GL;
 
@@ -60,11 +61,8 @@ void Shader::compile_shaders()
     vert_id = glCreateShader(GL_VERTEX_SHADER);
 
     //Load shader code
-    std::string frag_string = this->context->get_resource_manager()->get_resource_as_string(fragment_code_id);
-    std::string vert_string = this->context->get_resource_manager()->get_resource_as_string(vertex_code_id);
-
-    const char *f = frag_string.c_str();
-    const char *v = vert_string.c_str();
+    const char *f = (const char *)Utilities::get_resource_as_bytes(fragment_code_id);
+    const char *v = (const char *)Utilities::get_resource_as_bytes(vertex_code_id);
 
     glShaderSource(frag_id, 1, &f, NULL);
     glShaderSource(vert_id, 1, &v, NULL);

@@ -34,7 +34,7 @@ void Cat::on_realise()
     some_quad.get()->initialise();
 
     //Set shaders
-    this->shader = std::unique_ptr<GL::Shader>(new GL::Shader(this->context, "/Cat/shader.frag", "/Cat/shader.vert"));
+    this->shader = std::unique_ptr<GL::Shader>(new GL::Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 
     //Set matrices

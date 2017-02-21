@@ -1,31 +1,11 @@
-#include <fstream>
-#include <iterator>
-
 #include "Utilities.hh"
+#include "../resources.h"
 
 using namespace Animate;
 
-/**
- * Read the given file into a raw byte vector.
- *
- * @param filename The filename of the file to read.
- *
- * @return A byte array.
- */
-std::vector<GLbyte> Utilities::read_file(std::string filename) {
-    std::ifstream file(filename.c_str(), std::ios::binary);
-    file.unsetf(std::ios::skipws);
-
-    file.seekg(0, std::ios::end);
-    std::vector<GLbyte> bytes;
-    bytes.reserve(file.tellg());
-    file.seekg(0, std::ios::beg);
-
-    bytes.insert(
-        bytes.begin(),
-        std::istream_iterator<GLbyte>(file),
-        std::istream_iterator<GLbyte>()
-    );
-
-    return bytes;
+gconstpointer Utilities::get_resource_as_bytes(std::string key)
+{
+    Glib::RefPtr< const Glib::Bytes > bytes = Gio::Resource::lookup_data_global(key);
+    gsize size = bytes->get_size();
+    return bytes->get_data(size);
 }

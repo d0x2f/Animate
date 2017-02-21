@@ -15835,78 +15835,6 @@ fi
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether C compiler accepts -lstdc++fs" >&5
-$as_echo_n "checking whether C compiler accepts -lstdc++fs... " >&6; }
-if ${ax_cv_check_cflags___lstdcppfs+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-  ax_check_save_flags=$CFLAGS
-  CFLAGS="$CFLAGS  -lstdc++fs"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ax_cv_check_cflags___lstdcppfs=yes
-else
-  ax_cv_check_cflags___lstdcppfs=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  CFLAGS=$ax_check_save_flags
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_check_cflags___lstdcppfs" >&5
-$as_echo "$ax_cv_check_cflags___lstdcppfs" >&6; }
-if test "x$ax_cv_check_cflags___lstdcppfs" = xyes; then :
-  # action-if-success
-
-if ${CXX+:} false; then :
-
-  case " $CXX " in #(
-  *" -lstdc++fs "*) :
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXX already contains -lstdc++fs"; } >&5
-  (: CXX already contains -lstdc++fs) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } ;; #(
-  *) :
-
-     as_fn_append CXX " -lstdc++fs"
-     { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXX=\"\$CXX\""; } >&5
-  (: CXX="$CXX") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-     ;;
-esac
-
-else
-
-  CXX=-lstdc++fs
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: : CXX=\"\$CXX\""; } >&5
-  (: CXX="$CXX") 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }
-
-fi
-
-
-else
-  # action-if-fail
-    as_fn_error $? "stdc++fs support required." "$LINENO" 5
-
-fi
-
-
-
 
 
 
@@ -19120,3 +19048,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+

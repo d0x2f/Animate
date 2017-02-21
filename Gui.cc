@@ -26,9 +26,6 @@ Gui::Gui()
 
     add(*(this->context.get()->get_gl_area()));
 
-    //Load Resources
-    this->context->get_resource_manager()->load_from_directory("./resources");
-
     //Create animation and connect it up
     Cat *animation = new Cat(this->context.get());
     set_animation(animation);

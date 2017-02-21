@@ -4,5 +4,10 @@
         "*.hh": "cpp",
         "*.vert": "glsl",
         "*.frag": "glsl"
+    },
+    "files.exclude": {
+        "**/*.in": true,
+        "**/*.Po": true,
+        "**/Makefile": true
     }
 }

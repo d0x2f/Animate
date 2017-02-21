@@ -1,14 +1,13 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <GL/glew.h>
+#include <giomm/resource.h>
 
 namespace Animate
 {
     class Utilities
     {
         public:
-            static std::vector<GLbyte> read_file(std::string filename);
+            static gconstpointer get_resource_as_bytes(std::string key);
     };
 }

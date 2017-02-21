@@ -8,7 +8,7 @@ animate_SOURCES =   GL/Area.cc \
                     Animations/Cat/Cat.cc \
                     Gui.cc \
                     Context.cc \
-                    ResourceManager.cc \
+                    resources.c \
                     Animation.cc \
                     Utilities.cc \
                     main.cc
@@ -20,7 +20,7 @@ animate_HEADERS =   GL/Area.hh \
                     Animations/Cat/Cat.hh \
                     Gui.hh \
                     Context.hh \
-                    ResourceManager.hh \
+                    resources.h \
                     Animation.hh \
                     Utilities.hh
 

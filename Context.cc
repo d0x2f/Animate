@@ -14,19 +14,6 @@ void Context::set_gl_area(GL::Area *gl_area)
 }
 
 /**
- * Retrieves a resource manager object.
- * If none is available a new one is created.
- */
-ResourceManager *Context::get_resource_manager()
-{
-    if (!this->resource_manager) {
-        this->resource_manager = std::unique_ptr<ResourceManager>( new ResourceManager() );
-    }
-
-    return this->resource_manager.get();
-}
-
-/**
  * Retrieves the tracked GL Area object.
  */
 GL::Area *Context::get_gl_area()

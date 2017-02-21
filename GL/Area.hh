@@ -15,11 +15,10 @@ namespace Animate
                 ~Area();
 
             protected:
+                Context *context;
+
                 //Slots
                 void on_realize();
-
-            private:
-                Context *context;
         };
     }
 }

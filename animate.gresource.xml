@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/Animate">
+        <file>data/Cat/shader.frag</file>
+        <file>data/Cat/shader.vert</file>
+        <file preprocess="to-pixdata" >data/Cat/lily.jpg</file>
+    </gresource>
+</gresources>
