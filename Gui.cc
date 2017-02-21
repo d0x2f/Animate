@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Gui.hh"
-#include "Animations/Cat.hh"
+#include "Animations/Cat/Cat.hh"
 
 using namespace Animate;
 
