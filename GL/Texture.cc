@@ -13,8 +13,6 @@ Texture::~Texture()
 
 void Texture::load_from_resource(std::string resource_id)
 {
-    std::cout << "Loading texture: " << resource_id << std::endl;
-
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_resource(resource_id);
 
     if (!pixbuf) {
@@ -24,33 +22,32 @@ void Texture::load_from_resource(std::string resource_id)
     glGenTextures(1, &this->texture_id);
     glBindTexture(GL_TEXTURE_2D, this->texture_id);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
-    glTexImage2D(
+    glTexStorage2D(
+        GL_TEXTURE_2D,
+        10,
+        GL_RGBA8,
+        pixbuf->get_width(),
+        pixbuf->get_height()
+    );
+    glTexSubImage2D(
         GL_TEXTURE_2D,
         0,
-        GL_RGB,
+        0,
+        0,
         pixbuf->get_width(),
         pixbuf->get_height(),
-        0,
         GL_RGB,
         GL_UNSIGNED_BYTE,
         pixbuf->get_pixels()
     );
+    glGenerateMipmap(GL_TEXTURE_2D);
 
-    /*gluBuild2DMipmaps(
-        GL_TEXTURE_2D,
-        GL_RGB,
-        image.get_width(),
-        image.get_height(),
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        pixbuf->get_pixels()
-    );*/
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    std::cout << "Loaded texture: " << resource_id << " (" << this->texture_id << ")" << std::endl;
 }
 
 void Texture::use()

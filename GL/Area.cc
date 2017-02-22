@@ -19,7 +19,10 @@ Area::Area(Context *context) : context(context)
     new Textures(this->context);
 
     //Enable depth buffer
-    set_has_depth_buffer(true);
+    this->set_has_depth_buffer(true);
+
+    //Set OpenGL version
+    this->set_required_version(4, 2);
 }
 
 /**
@@ -47,7 +50,7 @@ void Area::on_realize()
     const GLubyte* renderer = glGetString(GL_RENDERER);
     const GLubyte* version = glGetString(GL_VERSION);
     std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported " << version << std::endl;
+    std::cout << "OpenGL version supported: " << version << std::endl;
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);

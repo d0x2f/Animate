@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 autoreconf --install
 glib-compile-resources --target=resources.h --generate-header animate.gresource.xml
