@@ -5,6 +5,8 @@ animate_SOURCES =   GL/Area.cc \
                     GL/Quad.cc \
                     GL/Shader.cc \
                     GL/Matrix.cc \
+                    GL/Textures.cc \
+                    GL/Texture.cc \
                     Animations/Cat/Cat.cc \
                     Gui.cc \
                     Context.cc \
@@ -17,6 +19,8 @@ animate_HEADERS =   GL/Area.hh \
                     GL/Shader.hh \
                     GL/Matrix.hh \
                     GL/Definitions.hh \
+                    GL/Textures.hh \
+                    GL/Texture.hh \
                     Animations/Cat/Cat.hh \
                     Gui.hh \
                     Context.hh \

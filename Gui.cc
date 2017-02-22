@@ -15,7 +15,7 @@ using namespace Animate;
  */
 Gui::Gui()
 {
-    set_default_size(720, 1280);
+    set_default_size(1024, 1024);
     set_title("Animate");
 
     //Create context object

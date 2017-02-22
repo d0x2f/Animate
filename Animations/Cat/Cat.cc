@@ -52,7 +52,7 @@ void Cat::on_realise()
     );
 
     //Ortho
-    GL::Matrix projection_matrix = GL::Matrix::orthographic(0, 6, 0, 10, 0, 1);
+    GL::Matrix projection_matrix = GL::Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
     this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
@@ -83,6 +83,8 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     glClear(GL_COLOR_BUFFER_BIT);
 
     this->shader.get()->use();
+
+    this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg")->use();
 
     some_quad.get()->draw();
 

@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 
 #include "Area.hh"
+#include "Textures.hh"
 #include "../Context.hh"
 
 using namespace Animate::GL;
@@ -11,7 +12,11 @@ using namespace Animate::GL;
  */
 Area::Area(Context *context) : context(context)
 {
+    //Add ourself to context
     this->context->set_gl_area(this);
+
+    //Create a texture manager
+    new Textures(this->context);
 
     //Enable depth buffer
     set_has_depth_buffer(true);
@@ -48,4 +53,6 @@ void Area::on_realize()
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
