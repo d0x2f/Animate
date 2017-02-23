@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Animation.hh"
+#include "Utilities.hh"
 
 using namespace Animate;
 
@@ -70,8 +71,13 @@ int Animation::get_tick_rate()
  */
 void Animation::tick_loop(Animation *animation)
 {
+    GLuint64 last_tick_time = Utilities::get_micro_time();
     while (animation->check_running()) {
-        animation->on_tick();
+        //Supply a time difference since the last tick
+        GLuint64 tick_time = Utilities::get_micro_time();
+        animation->on_tick(tick_time - last_tick_time);
+        last_tick_time = tick_time;
+
         usleep(1000000. / animation->get_tick_rate());
     }
 }

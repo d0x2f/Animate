@@ -14,15 +14,16 @@ namespace Animate
             Cat(Context *context);
 
             bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context);
-            void on_tick();
+            void on_tick(GLuint64 time_delta);
             void on_realise();
 
         protected:
-            std::mutex colour_mutex;
+            std::mutex tick_mutex;
             GL::Colour colour;
             std::unique_ptr<GL::Shader> shader;
 
         private:
             std::unique_ptr<GL::Quad> some_quad;
+            GL::Vector3 some_quad_direction;
     };
 }

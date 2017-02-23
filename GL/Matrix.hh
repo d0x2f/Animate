@@ -18,7 +18,13 @@ namespace Animate::GL
             Matrix(Vector4 r1, Vector4 r2, Vector4 r3, Vector4 r4);
 
             GLfloat *get_raw_data();
+
             Matrix transpose();
+            Matrix translate(Vector3 delta);
+
+            Matrix scale(Vector2 factor);
+            Matrix scale(Vector3 factor);
+
             Matrix operator*(Matrix b);
             Matrix operator-(Matrix b);
 

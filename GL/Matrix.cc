@@ -50,6 +50,57 @@ Matrix Matrix::transpose()
 }
 
 /**
+ * Apply a translation transform.
+ *
+ * @param delta The movement vector
+ *
+ * @return A new matrix with the transform applied.
+ */
+Matrix Matrix::translate(Vector3 delta)
+{
+    return Matrix(
+        Vector4(1.,0.,0., delta.x),
+        Vector4(0.,1.,0., delta.y),
+        Vector4(0.,0.,1., delta.z),
+        Vector4(0.,0.,0., 1.)
+    ) * (*this);
+}
+
+/**
+ * Apply a scaling transform.
+ *
+ * @param factor A vector representing the x, y and z scaling factors.
+ *
+ * @return A new matrix with the transform applied.
+ */
+Matrix Matrix::scale(Vector2 factor)
+{
+    return Matrix(
+        Vector4(factor.x),
+        Vector4(0., factor.y),
+        Vector4(0.,0., 1.),
+        Vector4(0.,0.,0., 1.)
+    ) * (*this);
+}
+
+/**
+ * Apply a scaling transform.
+ *
+ * @param factor A vector representing the x, y and z scaling factors.
+ *
+ * @return A new matrix with the transform applied.
+ */
+Matrix Matrix::scale(Vector3 factor)
+{
+    return Matrix(
+        Vector4(factor.x),
+        Vector4(0., factor.y),
+        Vector4(0.,0., factor.z),
+        Vector4(0.,0.,0., 1.)
+    ) * (*this);
+}
+
+/**
 * Matrix multiplication.
 **/
 Matrix Matrix::operator*(Matrix b)

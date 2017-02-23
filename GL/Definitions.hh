@@ -40,6 +40,23 @@ namespace Animate::GL {
             );
         }
 
+        bool is_out_of_bounds(Vector2 bottom_left, Vector2 top_right)
+        {
+            if (this->x < bottom_left.x)
+                return true;
+
+            if (this->x > top_right.x)
+                return true;
+
+            if (this->y < bottom_left.y)
+                return true;
+
+            if (this->y > top_right.y)
+                return true;
+
+            return false;
+        }
+
         /**
          * Cross product.
          */
@@ -57,7 +74,11 @@ namespace Animate::GL {
          */
         Vector3 operator+(Vector3 that)
         {
-            return Vector3(x + that.x, y + that.y, x+ that.z);
+            return Vector3(
+                x + that.x,
+                y + that.y,
+                z + that.z
+            );
         }
 
         /**
@@ -73,7 +94,29 @@ namespace Animate::GL {
         }
 
         /**
-         * Negative assignment.
+         * Negation.
+         */
+        Vector3 operator*(GLfloat factor)
+        {
+            return Vector3(
+                x * factor,
+                y * factor,
+                z * factor
+            );
+        }
+
+        /**
+         * Addition assignment.
+         */
+        void operator+=(Vector3 that)
+        {
+            x += that.x;
+            y += that.y;
+            z += that.z;
+        }
+
+        /**
+         * Subtraction assignment.
          */
         void operator-=(Vector3 that)
         {
@@ -91,7 +134,7 @@ namespace Animate::GL {
     struct Vector4 {
         GLfloat x,y,z,w;
 
-        Vector4(GLfloat x=0., GLfloat y=0., GLfloat z=0., GLfloat w=1.) : x(x), y(y), z(z), w(w) {}
+        Vector4(GLfloat x=0., GLfloat y=0., GLfloat z=0., GLfloat w=0.) : x(x), y(y), z(z), w(w) {}
 
         /**
          * Return a raw c array.

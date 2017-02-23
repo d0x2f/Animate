@@ -9,5 +9,6 @@ namespace Animate
     {
         public:
             static gconstpointer get_resource_as_bytes(std::string key);
+            static GLuint64 get_micro_time();
     };
 }

@@ -19,6 +19,7 @@ namespace Animate::GL
             void initialise();
 
             void set_matrices(Matrix model, Matrix view, Matrix projection);
+            void set_model_matrix(Matrix model);
 
             void use();
             GLuint get_id();

@@ -24,7 +24,7 @@ void Texture::load_from_resource(std::string resource_id)
 
     glTexStorage2D(
         GL_TEXTURE_2D,
-        10,
+        5,
         GL_RGBA8,
         pixbuf->get_width(),
         pixbuf->get_height()

@@ -16,7 +16,7 @@ namespace Animate
             ~Animation();
 
             virtual bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context) {}
-            virtual void on_tick() {}
+            virtual void on_tick(GLuint64 time_delta) {}
             virtual void on_realise() {}
 
             void run();
