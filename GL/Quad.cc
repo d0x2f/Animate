@@ -8,8 +8,8 @@ using namespace Animate::GL;
 /**
  * Constructor
  */
-Quad::Quad(Point position, Size size, Colour colour)
-    : position(position), size(size), colour(colour)
+Quad::Quad(Point position, Scale size)
+    : Movable(position), Scalable(size)
 {}
 
 /**
@@ -24,34 +24,6 @@ Quad::~Quad()
     }
 }
 
-void Quad::set_shader(Shader *shader)
-{
-    this->shader = shader;
-}
-
-void Quad::set_texture(Texture *texture)
-{
-    this->texture = texture;
-}
-
-/**
- * Initialise the quad.
- */
-void Quad::initialise(Shader *shader, Texture *texture)
-{
-    //Return if already initialised
-    if (this->initialised) {
-        return;
-    }
-
-    this->set_shader(shader);
-    this->set_texture(texture);
-
-    this->initialise_buffers();
-
-    //Set initialised
-    this->initialised = true;
-}
 /**
  * Initialise the quads ibo and vbo
  */
@@ -90,7 +62,7 @@ void Quad::initialise_buffers()
 void Quad::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    model_matrix = Matrix::identity().scale(this->size).translate(this->position);// * model_matrix;
+    model_matrix = Matrix::identity().scale(this->scale).translate(this->position);// * model_matrix;
 
     //Upload the matrix to the shader
     this->shader->set_model_matrix(model_matrix);
@@ -130,19 +102,4 @@ void Quad::draw(Matrix model_matrix)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
     glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-Point Quad::get_position()
-{
-    return this->position;
-}
-
-void Quad::set_position(Point position)
-{
-    this->position = position;
-}
-
-void Quad::move(Vector3 delta)
-{
-    this->position += delta;
 }

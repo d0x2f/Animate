@@ -127,6 +127,7 @@ namespace Animate::GL {
     };
     //Aliases
     typedef Vector3 Point;
+    typedef Vector3 Scale;
 
     /**
      * 4d vector.

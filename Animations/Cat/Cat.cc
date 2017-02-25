@@ -22,7 +22,7 @@ Cat::Cat(Context *context) : Animation(context)
 
     srand(time(NULL));
 
-    some_quad = std::unique_ptr<GL::Quad>(new GL::Quad(GL::Point(), GL::Size(5., 5.), GL::Colour(1., 0., 0., 1.)));
+    some_quad = std::unique_ptr<GL::Quad>(new GL::Quad(GL::Point(), GL::Scale(5., 5., 1.)));
 }
 
 /**
