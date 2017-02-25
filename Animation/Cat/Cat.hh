@@ -10,7 +10,7 @@
 using namespace Animate::Object;
 using namespace Animate::Geometry;
 
-namespace Animate::Animation
+namespace Animate::Animation::Cat
 {
     class Cat : public Animation
     {

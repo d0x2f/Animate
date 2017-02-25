@@ -28,7 +28,7 @@ Gui::Gui()
     add(*(this->context.get()->get_gl_area()));
 
     //Create animation and connect it up
-    Cat *animation = new Cat(this->context.get());
+    Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
     set_animation(animation);
 
     //Show the childrem

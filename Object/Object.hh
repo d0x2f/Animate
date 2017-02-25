@@ -21,6 +21,8 @@ namespace Animate::Object
             void add_component(Drawable *component);
             void draw(Matrix model_matrix);
 
+            virtual void on_tick(GLuint64 time_delta) = 0;
+
         protected:
             std::vector< std::unique_ptr<Drawable> > components;
 
