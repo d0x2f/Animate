@@ -21,11 +21,21 @@ void Drawable::initialise(Shader *shader, Texture *texture)
     this->initialised = true;
 }
 
+/**
+ * Set the shader.
+ *
+ * @param shader A new shader to use when drawing.
+ */
 void Drawable::set_shader(Shader *shader)
 {
     this->shader = shader;
 }
 
+/**
+ * Set the texture.
+ *
+ * @param shader A new texture to use when drawing.
+ */
 void Drawable::set_texture(Texture *texture)
 {
     this->texture = texture;
