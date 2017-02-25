@@ -1,10 +1,14 @@
 #pragma once
 
 #include "../Animation.hh"
-#include "../GL/Area.hh"
-#include "../GL/Quad.hh"
-#include "../GL/Shader.hh"
-#include "../Geometry/Definitions.hh"
+#include "../../GL/Area.hh"
+#include "../../GL/Quad.hh"
+#include "../../GL/Shader.hh"
+#include "../../Geometry/Definitions.hh"
+#include "../../Object/Object.hh"
+
+using namespace Animate::Object;
+using namespace Animate::Geometry;
 
 namespace Animate::Animation
 {
@@ -23,7 +27,7 @@ namespace Animate::Animation
             std::unique_ptr<GL::Shader> shader;
 
         private:
-            std::unique_ptr<GL::Quad> some_quad;
-            Vector3 some_quad_direction;
+            std::unique_ptr<Object::Object> cat;
+            Vector3 cat_direction;
     };
 }

@@ -5,26 +5,25 @@
 #include <iostream>
 
 #include "Cat.hh"
-#include "../Utilities.hh"
-#include "../Geometry/Definitions.hh"
-#include "../Geometry/Matrix.hh"
-#include "../GL/Shader.hh"
+#include "../../Utilities.hh"
+#include "../../Geometry/Definitions.hh"
+#include "../../Geometry/Matrix.hh"
+#include "../../GL/Shader.hh"
 
 using namespace Animate::Animation;
 using namespace Animate::Geometry;
 using namespace Animate::GL;
+using namespace Animate::Object;
 
 /**
  * Constructor.
  * Seed the RNG.
  */
-Cat::Cat(Context *context) : Animation(context)
+Cat::Cat(Context *context) : Animation::Animation(context)
 {
     this->tick_rate = 60;
 
     srand(time(NULL));
-
-    some_quad = std::unique_ptr<Quad>(new Quad(Point(), Scale(5., 5., 1.)));
 }
 
 /**
@@ -36,14 +35,18 @@ void Cat::on_realise()
     this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 
-    //Initialise quad
-    some_quad.get()->initialise(
+    //Initialise cat pic
+    Quad *some_quad = new Quad(Point(), Scale(1., 1., 1.));
+    some_quad->initialise(
         this->shader.get(),
         this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg")
     );
+    this->cat = std::unique_ptr<Object::Object>(new Object::Object(Point(), Scale(1., 1., 1.)));
+    this->cat->add_component(some_quad);
+    this->cat->initialise();
 
     GLfloat max = static_cast <GLfloat> (RAND_MAX);
-    this->some_quad_direction = Vector3(
+    this->cat_direction = Vector3(
         ( static_cast <GLfloat> (rand()) / max ) - 0.5,
         ( static_cast <GLfloat> (rand()) / max ) - 0.5
     ).normalise();
@@ -87,7 +90,7 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
             this->colour.w
         );
 
-        some_quad.get()->draw(model_matrix);
+        this->cat->draw(model_matrix);
     }
 
     glFlush();
@@ -112,23 +115,23 @@ void Cat::on_tick(GLuint64 time_delta)
 
     //Move at 1 unit per second in the direction of the current vector
     GLfloat move_factor = static_cast <GLfloat> (time_delta) / 100000.;
-    Point pos = this->some_quad->get_position() + (this->some_quad_direction * move_factor);
-    Point diff = (this->some_quad_direction * move_factor);
+    Point pos = this->cat->get_position() + (this->cat_direction * move_factor);
+    Point diff = (this->cat_direction * move_factor);
 
     //If this would be out of bounds, then reflect
     Point bottom_left = pos;
-    Point top_right = pos + Vector3(5.,5.);
+    Point top_right = pos + Vector3(1., 1.);
     if (
         bottom_left.is_out_of_bounds(Vector2(), Vector2(10, 10)) ||
         top_right.is_out_of_bounds(Vector2(), Vector2(10, 10))
     ) {
         if (bottom_left.x < 0 || top_right.x > 10)
-            this->some_quad_direction.x *= -1;
+            this->cat_direction.x *= -1;
 
         if (bottom_left.y < 0 || top_right.y > 10)
-            this->some_quad_direction.y *= -1;
+            this->cat_direction.y *= -1;
 
-        pos = this->some_quad->get_position() + (this->some_quad_direction * move_factor);
+        pos = this->cat->get_position() + (this->cat_direction * move_factor);
 
         //Change bg colour
         GLfloat max = static_cast <GLfloat> (RAND_MAX);
@@ -140,7 +143,7 @@ void Cat::on_tick(GLuint64 time_delta)
     }
 
     //Set new position
-    this->some_quad->set_position(pos);
+    this->cat->set_position(pos);
 
     //Now that the geometry has changed, trigger a render
     /*GL::Area *gl_area = this->context->get_gl_area();

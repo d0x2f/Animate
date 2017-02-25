@@ -11,5 +11,9 @@
         "**/Makefile": true,
         "**/autom4te.cache": true,
         "**/m4": true
-    }
+    },
+    "clang.cxxflags": [
+        "-Wno-c++1z-extensions",
+        "-Wno-pragma-once-outside-header"
+    ]
 }
