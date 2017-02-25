@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Definitions.hh"
+#include "../../Geometry/Definitions.hh"
 
-namespace Animate::GL
+using namespace Animate::Geometry;
+
+namespace Animate::Object::Property
 {
     class Scalable
     {

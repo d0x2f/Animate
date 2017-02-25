@@ -2,12 +2,15 @@
 
 #include <GL/glew.h>
 
-#include "Definitions.hh"
-#include "Matrix.hh"
+#include "../Geometry/Definitions.hh"
+#include "../Geometry/Matrix.hh"
 #include "Shader.hh"
 #include "Drawable.hh"
-#include "Movable.hh"
-#include "Scalable.hh"
+#include "../Object/Property/Movable.hh"
+#include "../Object/Property/Scalable.hh"
+
+using namespace Animate::Geometry;
+using namespace Animate::Object::Property;
 
 namespace Animate::GL
 {

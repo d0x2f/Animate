@@ -1,6 +1,7 @@
 #include "Movable.hh"
 
-using namespace Animate::GL;
+using namespace Animate::Object::Property;
+using namespace Animate::Geometry;
 
 /**
  * Constructor

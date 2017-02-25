@@ -7,7 +7,7 @@
 #include "GL/Area.hh"
 #include "Context.hh"
 
-namespace Animate
+namespace Animate::Animation
 {
     class Animation
     {
@@ -27,8 +27,6 @@ namespace Animate
         protected:
             Context *context;
             int tick_rate = 60;
-
-            virtual void initialise() = 0;
 
         private:
             std::unique_ptr<std::thread> tick_thread;

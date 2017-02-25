@@ -4,6 +4,7 @@
 #include "Quad.hh"
 
 using namespace Animate::GL;
+using namespace Animate::Geometry;
 
 /**
  * Constructor

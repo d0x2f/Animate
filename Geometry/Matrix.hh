@@ -2,7 +2,7 @@
 
 #include "Definitions.hh"
 
-namespace Animate::GL
+namespace Animate::Geometry
 {
     /**
      * 4x4 matrix.
@@ -21,7 +21,6 @@ namespace Animate::GL
 
             Matrix transpose();
             Matrix translate(Vector3 delta);
-
             Matrix scale(Vector2 factor);
             Matrix scale(Vector3 factor);
 

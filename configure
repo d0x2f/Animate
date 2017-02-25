@@ -16495,7 +16495,7 @@ fi
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile Animations/Makefile GL/Makefile"
+ac_config_files="$ac_config_files Makefile Animation/Makefile Animation/Cat/Makefile GL/Makefile Geometry/Makefile Object/Makefile Object/Property/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -17611,8 +17611,12 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "Animations/Makefile") CONFIG_FILES="$CONFIG_FILES Animations/Makefile" ;;
+    "Animation/Makefile") CONFIG_FILES="$CONFIG_FILES Animation/Makefile" ;;
+    "Animation/Cat/Makefile") CONFIG_FILES="$CONFIG_FILES Animation/Cat/Makefile" ;;
     "GL/Makefile") CONFIG_FILES="$CONFIG_FILES GL/Makefile" ;;
+    "Geometry/Makefile") CONFIG_FILES="$CONFIG_FILES Geometry/Makefile" ;;
+    "Object/Makefile") CONFIG_FILES="$CONFIG_FILES Object/Makefile" ;;
+    "Object/Property/Makefile") CONFIG_FILES="$CONFIG_FILES Object/Property/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

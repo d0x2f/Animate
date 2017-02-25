@@ -3,7 +3,7 @@
 #include "Animation.hh"
 #include "Utilities.hh"
 
-using namespace Animate;
+using namespace Animate::Animation;
 
 /**
  * Constructor

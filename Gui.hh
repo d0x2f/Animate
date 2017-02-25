@@ -2,9 +2,11 @@
 
 #include <gtkmm.h>
 
-#include "Animation.hh"
+#include "Animation/Animation.hh"
 #include "Context.hh"
 #include "GL/Area.hh"
+
+using namespace Animate::Animation;
 
 namespace Animate
 {
@@ -16,8 +18,8 @@ namespace Animate
 
         private:
             std::unique_ptr<Context> context;
-            std::unique_ptr<Animation> current_animation;
+            std::unique_ptr<Animation::Animation> current_animation;
 
-            void set_animation(Animation *animation);
+            void set_animation(Animation::Animation *animation);
     };
 }

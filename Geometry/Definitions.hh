@@ -5,7 +5,7 @@
 #include <cstring>
 #include <math.h>
 
-namespace Animate::GL {
+namespace Animate::Geometry {
 
     /**
      * 2d vector.

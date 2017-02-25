@@ -4,7 +4,7 @@
 #include "Matrix.hh"
 #include "Definitions.hh"
 
-using namespace Animate::GL;
+using namespace Animate::Geometry;
 
 /**
  * Constructor.
@@ -179,24 +179,24 @@ Matrix Matrix::identity()
  */
 Matrix Matrix::look_at(Vector3 eye, Vector3 center, Vector3 up)
 {
-    GL::Vector3 f = (center - eye).normalise();
+    Vector3 f = (center - eye).normalise();
 
-    GL::Vector3 s = f.cross(up);
+    Vector3 s = f.cross(up);
 
-    GL::Vector3 u = s.normalise().cross(f);
+    Vector3 u = s.normalise().cross(f);
 
-    GL::Matrix view_matrix(
-        GL::Vector4( s.x,  s.y,  s.z, 0.),
-        GL::Vector4( u.x,  u.y,  u.z, 0.),
-        GL::Vector4(-f.x, -f.y, -f.z, 0.),
-        GL::Vector4(   0.,  0.,   0., 1.)
+    Matrix view_matrix(
+        Vector4( s.x,  s.y,  s.z, 0.),
+        Vector4( u.x,  u.y,  u.z, 0.),
+        Vector4(-f.x, -f.y, -f.z, 0.),
+        Vector4(   0.,  0.,   0., 1.)
     );
 
-    view_matrix = GL::Matrix(
-        GL::Vector4( 1., 0., 0., -eye.x),
-        GL::Vector4( 0., 1., 0., -eye.y),
-        GL::Vector4( 0., 0., 1., -eye.z),
-        GL::Vector4( 0., 0., 0., 1.)
+    view_matrix = Matrix(
+        Vector4( 1., 0., 0., -eye.x),
+        Vector4( 0., 1., 0., -eye.y),
+        Vector4( 0., 0., 1., -eye.z),
+        Vector4( 0., 0., 0., 1.)
     ) * view_matrix;
 
     return view_matrix;
@@ -216,11 +216,11 @@ Matrix Matrix::look_at(Vector3 eye, Vector3 center, Vector3 up)
  */
 Matrix Matrix::frustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
 {
-    return GL::Matrix(
-        GL::Vector4(2*near / (right - left), 0., (right+left)/(right-left), 0.),
-        GL::Vector4(0., 2*near / (top - bottom), (top+bottom)/(top-bottom), 0.),
-        GL::Vector4(0., 0., -((far+near)/(far-near)), -((2*far*near)/(far-near))),
-        GL::Vector4(0., 0., -1, 0.)
+    return Matrix(
+        Vector4(2*near / (right - left), 0., (right+left)/(right-left), 0.),
+        Vector4(0., 2*near / (top - bottom), (top+bottom)/(top-bottom), 0.),
+        Vector4(0., 0., -((far+near)/(far-near)), -((2*far*near)/(far-near))),
+        Vector4(0., 0., -1, 0.)
     );
 }
 
@@ -238,10 +238,10 @@ Matrix Matrix::frustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top,
  */
 Matrix Matrix::orthographic(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
 {
-    return GL::Matrix(
-        GL::Vector4(2 / (right - left), 0., 0., -(right+left)/(right-left)),
-        GL::Vector4(0., 2 / (top - bottom), 0., -(top+bottom)/(top-bottom)),
-        GL::Vector4(0., 0., -2/(far-near), -((far+near)/(far-near))),
-        GL::Vector4(0., 0., 0, 1.)
+    return Matrix(
+        Vector4(2 / (right - left), 0., 0., -(right+left)/(right-left)),
+        Vector4(0., 2 / (top - bottom), 0., -(top+bottom)/(top-bottom)),
+        Vector4(0., 0., -2/(far-near), -((far+near)/(far-near))),
+        Vector4(0., 0., 0, 1.)
     );
 }

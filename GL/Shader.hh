@@ -5,8 +5,10 @@
 #include <map>
 
 #include "../Context.hh"
-#include "Definitions.hh"
-#include "Matrix.hh"
+#include "../Geometry/Definitions.hh"
+#include "../Geometry/Matrix.hh"
+
+using namespace Animate::Geometry;
 
 namespace Animate::GL
 {

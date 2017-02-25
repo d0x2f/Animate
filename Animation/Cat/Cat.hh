@@ -4,9 +4,9 @@
 #include "../GL/Area.hh"
 #include "../GL/Quad.hh"
 #include "../GL/Shader.hh"
-#include "../GL/Definitions.hh"
+#include "../Geometry/Definitions.hh"
 
-namespace Animate
+namespace Animate::Animation
 {
     class Cat : public Animation
     {
@@ -19,11 +19,11 @@ namespace Animate
 
         protected:
             std::mutex tick_mutex;
-            GL::Colour colour;
+            Colour colour;
             std::unique_ptr<GL::Shader> shader;
 
         private:
             std::unique_ptr<GL::Quad> some_quad;
-            GL::Vector3 some_quad_direction;
+            Vector3 some_quad_direction;
     };
 }

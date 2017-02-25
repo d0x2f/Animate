@@ -2,7 +2,9 @@
 
 #include "Shader.hh"
 #include "Texture.hh"
-#include "Matrix.hh"
+#include "../Geometry/Matrix.hh"
+
+using namespace Animate::Geometry;
 
 namespace Animate::GL
 {

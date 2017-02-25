@@ -6,11 +6,13 @@
 
 #include "Cat.hh"
 #include "../Utilities.hh"
-#include "../GL/Definitions.hh"
-#include "../GL/Matrix.hh"
+#include "../Geometry/Definitions.hh"
+#include "../Geometry/Matrix.hh"
 #include "../GL/Shader.hh"
 
-using namespace Animate;
+using namespace Animate::Animation;
+using namespace Animate::Geometry;
+using namespace Animate::GL;
 
 /**
  * Constructor.
@@ -22,7 +24,7 @@ Cat::Cat(Context *context) : Animation(context)
 
     srand(time(NULL));
 
-    some_quad = std::unique_ptr<GL::Quad>(new GL::Quad(GL::Point(), GL::Scale(5., 5., 1.)));
+    some_quad = std::unique_ptr<Quad>(new Quad(Point(), Scale(5., 5., 1.)));
 }
 
 /**
@@ -31,7 +33,7 @@ Cat::Cat(Context *context) : Animation(context)
 void Cat::on_realise()
 {
     //Set shaders
-    this->shader = std::unique_ptr<GL::Shader>(new GL::Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
+    this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 
     //Initialise quad
@@ -41,7 +43,7 @@ void Cat::on_realise()
     );
 
     GLfloat max = static_cast <GLfloat> (RAND_MAX);
-    this->some_quad_direction = GL::Vector3(
+    this->some_quad_direction = Vector3(
         ( static_cast <GLfloat> (rand()) / max ) - 0.5,
         ( static_cast <GLfloat> (rand()) / max ) - 0.5
     ).normalise();
@@ -60,16 +62,16 @@ void Cat::on_realise()
 bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
 {
     //Reset matrices
-    GL::Matrix model_matrix = GL::Matrix::identity();
+    Matrix model_matrix = Matrix::identity();
 
     //Look at
-    GL::Matrix view_matrix = GL::Matrix::look_at(
-        GL::Vector3(0., 0., 1.), // Eye
-        GL::Vector3()            // Center (looking at)
+    Matrix view_matrix = Matrix::look_at(
+        Vector3(0., 0., 1.), // Eye
+        Vector3()            // Center (looking at)
     );
 
     //Ortho
-    GL::Matrix projection_matrix = GL::Matrix::orthographic(0, 10, 0, 10, 0, 1);
+    Matrix projection_matrix = Matrix::orthographic(0, 10, 0, 10, 0, 1);
 
     this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
@@ -110,15 +112,15 @@ void Cat::on_tick(GLuint64 time_delta)
 
     //Move at 1 unit per second in the direction of the current vector
     GLfloat move_factor = static_cast <GLfloat> (time_delta) / 100000.;
-    GL::Point pos = this->some_quad->get_position() + (this->some_quad_direction * move_factor);
-    GL::Point diff = (this->some_quad_direction * move_factor);
+    Point pos = this->some_quad->get_position() + (this->some_quad_direction * move_factor);
+    Point diff = (this->some_quad_direction * move_factor);
 
     //If this would be out of bounds, then reflect
-    GL::Point bottom_left = pos;
-    GL::Point top_right = pos + GL::Vector3(5.,5.);
+    Point bottom_left = pos;
+    Point top_right = pos + Vector3(5.,5.);
     if (
-        bottom_left.is_out_of_bounds(GL::Vector2(), GL::Vector2(10, 10)) ||
-        top_right.is_out_of_bounds(GL::Vector2(), GL::Vector2(10, 10))
+        bottom_left.is_out_of_bounds(Vector2(), Vector2(10, 10)) ||
+        top_right.is_out_of_bounds(Vector2(), Vector2(10, 10))
     ) {
         if (bottom_left.x < 0 || top_right.x > 10)
             this->some_quad_direction.x *= -1;
@@ -134,7 +136,7 @@ void Cat::on_tick(GLuint64 time_delta)
         GLfloat b = static_cast <GLfloat> (rand()) / max;
         GLfloat g = static_cast <GLfloat> (rand()) / max;
 
-        this->colour = GL::Colour(r,g,b);
+        this->colour = Colour(r,g,b);
     }
 
     //Set new position

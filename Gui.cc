@@ -4,9 +4,10 @@
 #include <vector>
 
 #include "Gui.hh"
-#include "Animations/Cat/Cat.hh"
+#include "Animation/Cat/Cat.hh"
 
 using namespace Animate;
+using namespace Animate::Animation;
 
 /**
  * Sets the window size and title.
@@ -47,14 +48,14 @@ Gui::~Gui()
  *
  * @param animation        The animation to play.
  */
-void Gui::set_animation(Animation *animation)
+void Gui::set_animation(Animation::Animation *animation)
 {
     //Triggerd an existing animations destructor
     this->current_animation.reset(animation);
 
     //Connect the render signal
-    this->context.get()->get_gl_area()->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_render));
+    this->context.get()->get_gl_area()->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::Animation::on_render));
 
     //Connect the realise signal
-    this->context.get()->get_gl_area()->signal_realize().connect(sigc::mem_fun(this->current_animation.get(), &Animation::on_realise));
+    this->context.get()->get_gl_area()->signal_realize().connect(sigc::mem_fun(this->current_animation.get(), &Animation::Animation::on_realise));
 }

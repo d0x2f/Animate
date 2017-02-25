@@ -33,7 +33,11 @@ AC_CHECK_LIB([pthread], [pthread_create],,AC_MSG_ERROR([pthread library required
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
  Makefile
- Animations/Makefile
+ Animation/Makefile
+ Animation/Cat/Makefile
  GL/Makefile
+ Geometry/Makefile
+ Object/Makefile
+ Object/Property/Makefile
 ])
 AC_OUTPUT
