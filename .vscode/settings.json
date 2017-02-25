@@ -8,6 +8,8 @@
     "files.exclude": {
         "**/*.in": true,
         "**/*.Po": true,
-        "**/Makefile": true
+        "**/Makefile": true,
+        "**/autom4te.cache": true,
+        "**/m4": true
     }
 }
