@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Shader.hh"
-#include "Texture.hh"
+#include "../../GL/Shader.hh"
+#include "../../GL/Texture.hh"
 #include "../Geometry/Matrix.hh"
 
 using namespace Animate::Geometry;
+using namespace Animate::GL;
 
-namespace Animate::GL
+namespace Animate::Object::Property
 {
     class Drawable
     {

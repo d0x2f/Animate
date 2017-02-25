@@ -6,7 +6,7 @@ animate_SOURCES =   GL/Area.cc \
                     GL/Shader.cc \
                     GL/Textures.cc \
                     GL/Texture.cc \
-                    GL/Drawable.cc \
+                    Object/Property/Drawable.cc \
                     Object/Property/Movable.cc \
                     Object/Property/Scalable.cc \
                     Object/Property/Coloured.cc \
@@ -23,7 +23,7 @@ animate_HEADERS =   GL/Area.hh \
                     GL/Shader.hh \
                     GL/Textures.hh \
                     GL/Texture.hh \
-                    GL/Drawable.hh \
+                    Object/Property/Drawable.hh \
                     Object/Property/Movable.hh \
                     Object/Property/Scalable.hh \
                     Object/Property/Coloured.hh \

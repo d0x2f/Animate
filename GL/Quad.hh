@@ -5,7 +5,7 @@
 #include "../Geometry/Definitions.hh"
 #include "../Geometry/Matrix.hh"
 #include "Shader.hh"
-#include "Drawable.hh"
+#include "../Object/Property/Drawable.hh"
 #include "../Object/Property/Movable.hh"
 #include "../Object/Property/Scalable.hh"
 
