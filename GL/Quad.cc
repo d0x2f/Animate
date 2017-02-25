@@ -62,7 +62,7 @@ void Quad::initialise_buffers()
 void Quad::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    model_matrix = Matrix::identity().scale(this->scale).translate(this->position);// * model_matrix;
+    model_matrix = model_matrix.scale(this->scale).translate(this->position);
 
     //Upload the matrix to the shader
     this->shader->set_model_matrix(model_matrix);
