@@ -22,12 +22,10 @@ namespace Animate::Animation
             void on_realise();
 
         protected:
-            std::mutex tick_mutex;
             Colour colour;
             std::unique_ptr<GL::Shader> shader;
 
         private:
-            std::unique_ptr<Object::Object> cat;
             Vector3 cat_direction;
     };
 }

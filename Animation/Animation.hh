@@ -3,9 +3,10 @@
 #include <gtkmm.h>
 #include <thread>
 #include <mutex>
+#include <string>
 
-#include "GL/Area.hh"
-#include "Context.hh"
+#include "../Context.hh"
+#include "../Object/Object.hh"
 
 namespace Animate::Animation
 {
@@ -26,7 +27,12 @@ namespace Animate::Animation
 
         protected:
             Context *context;
+            std::mutex tick_mutex;
             int tick_rate = 60;
+            std::map< std::string, std::unique_ptr<Object::Object> > objects;
+
+            void add_object(std::string name, Object::Object *object);
+            Object::Object *get_object(std::string name);
 
         private:
             std::unique_ptr<std::thread> tick_thread;

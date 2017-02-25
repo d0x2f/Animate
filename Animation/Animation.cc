@@ -4,6 +4,7 @@
 #include "Utilities.hh"
 
 using namespace Animate::Animation;
+using namespace Animate::Object;
 
 /**
  * Constructor
@@ -80,4 +81,33 @@ void Animation::tick_loop(Animation *animation)
 
         usleep(1000000. / animation->get_tick_rate());
     }
+}
+
+
+/**
+ * Fetch an object from the list.
+ *
+ * @param name      The name of the object.
+ *
+ * @return the object.
+ */
+Object *Animation::get_object(std::string name)
+{
+    std::map< std::string, std::unique_ptr<Object::Object> >::iterator it;
+    it = this->objects.find(name);
+    if (it == this->objects.end()) {
+        g_assert_not_reached();
+    }
+    return it->second.get();
+}
+
+/**
+ * Add an object to the list.
+ *
+ * @param name      The name of the object.
+ * @param object    The object to add.
+ */
+void Animation::add_object(std::string name, Object::Object *object)
+{
+    this->objects.insert( std::pair<std::string, std::unique_ptr<Object::Object> >(name, object));
 }

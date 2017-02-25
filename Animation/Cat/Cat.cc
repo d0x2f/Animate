@@ -36,14 +36,15 @@ void Cat::on_realise()
     this->shader.get()->initialise();
 
     //Initialise cat pic
-    Quad *some_quad = new Quad(Point(), Scale(1., 1., 1.));
-    some_quad->initialise(
+    Quad *quad = new Quad(Point(), Scale(1., 1., 1.));
+    quad->initialise(
         this->shader.get(),
         this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg")
     );
-    this->cat = std::unique_ptr<Object::Object>(new Object::Object(Point(), Scale(1., 1., 1.)));
-    this->cat->add_component(some_quad);
-    this->cat->initialise();
+    Object::Object *cat = new Object::Object(Point(), Scale(1., 1., 1.));
+    cat->add_component(quad);
+    cat->initialise();
+    this->add_object("cat", cat);
 
     GLfloat max = static_cast <GLfloat> (RAND_MAX);
     this->cat_direction = Vector3(
@@ -90,7 +91,14 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
             this->colour.w
         );
 
-        this->cat->draw(model_matrix);
+        //Draw every object
+        for (
+            std::map< std::string, std::unique_ptr<Object::Object> >::iterator it = this->objects.begin();
+            it != this->objects.end();
+            ++it
+        ) {
+            it->second->draw(model_matrix);
+        }
     }
 
     glFlush();
@@ -113,9 +121,11 @@ void Cat::on_tick(GLuint64 time_delta)
 {
     std::lock_guard<std::mutex> guard(this->tick_mutex);
 
+    Object::Object *cat = this->get_object("cat");
+
     //Move at 1 unit per second in the direction of the current vector
     GLfloat move_factor = static_cast <GLfloat> (time_delta) / 100000.;
-    Point pos = this->cat->get_position() + (this->cat_direction * move_factor);
+    Point pos = cat->get_position() + (this->cat_direction * move_factor);
     Point diff = (this->cat_direction * move_factor);
 
     //If this would be out of bounds, then reflect
@@ -131,7 +141,7 @@ void Cat::on_tick(GLuint64 time_delta)
         if (bottom_left.y < 0 || top_right.y > 10)
             this->cat_direction.y *= -1;
 
-        pos = this->cat->get_position() + (this->cat_direction * move_factor);
+        pos = cat->get_position() + (this->cat_direction * move_factor);
 
         //Change bg colour
         GLfloat max = static_cast <GLfloat> (RAND_MAX);
@@ -143,7 +153,7 @@ void Cat::on_tick(GLuint64 time_delta)
     }
 
     //Set new position
-    this->cat->set_position(pos);
+    cat->set_position(pos);
 
     //Now that the geometry has changed, trigger a render
     /*GL::Area *gl_area = this->context->get_gl_area();
