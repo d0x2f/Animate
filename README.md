@@ -14,3 +14,4 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 * https://en.wikipedia.org/wiki/Affine_transformation#Affine_transformation_in_plane_geometry
 * https://github.com/GNOME/gtkmm/blob/master/demos/gtk-demo/example_glarea.cc
 * https://www.khronos.org/registry/OpenGL-Refpages/gl4/
+* https://developer.gnome.org/gtkmm/stable/
