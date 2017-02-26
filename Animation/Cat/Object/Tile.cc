@@ -29,22 +29,21 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
 
     //Calculate position
     this->board_position = Point(position % grid_size, position / grid_size);
-    this->position.x = this->scale.x * this->board_position.x;
-    this->position.y = this->scale.y * this->board_position.y;
+    this->position = this->board_position;
 
     GLfloat grid_size_float = static_cast <GLfloat> (grid_size);
 
     //Calculate texture position
     Position texture_position = Position(
-        this->board_position.x / grid_size_float,
-        (1.0 - (1.0/grid_size))-this->board_position.y / grid_size_float
+        this->position.x / grid_size_float,
+        (1.0 - (1.0/grid_size))-this->position.y / grid_size_float
     );
     Position texture_size = Position(
         1./grid_size_float,
         1./grid_size_float
     );
 
-    Quad *quad = new Quad(Point(), Scale(10./grid_size_float, 10./grid_size_float, 1.));
+    Quad *quad = new Quad(Point(), Scale(1., 1., 1.));
     quad->set_texture_position(texture_position, texture_size);
     quad->initialise(shader, texture);
     this->add_component(quad);
@@ -60,15 +59,20 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
  */
 void Tile::on_tick(GLuint64 time_delta)
 {
-    GLfloat tile_size = 10./static_cast <GLfloat> (this->grid_size);
-    Point position_difference = (this->board_position * tile_size) - this->position;
+    //Only tick if this tile is moving
+    if (!this->moving) {
+        return;
+    }
+
+    Point position_difference = this->board_position - this->position;
 
     if (position_difference.dot(position_difference) > 0.0001) {
-        GLfloat move_factor = static_cast <GLfloat> (time_delta)/1000000.;
-        Point movement_vector = ((this->board_position * tile_size) - this->position).normalise() * move_factor;
+        GLfloat move_factor = static_cast <GLfloat> (time_delta)/500000.;
+        Point movement_vector = (this->board_position - this->position).normalise() * move_factor;
         this->move(movement_vector);
     } else {
-        this->set_position(this->board_position * tile_size);
+        this->set_position(this->board_position);
+        this->moving = false;
     }
 }
 
@@ -85,4 +89,6 @@ void Tile::set_board_position(Position board_position)
         board_position.y,
         0.
     );
+
+    this->moving = true;
 }

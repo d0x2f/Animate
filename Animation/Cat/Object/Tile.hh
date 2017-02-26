@@ -18,5 +18,6 @@ namespace Animate::Animation::Cat::Object
         protected:
             Point board_position;
             GLuint grid_size;
+            bool moving = false;
     };
 }

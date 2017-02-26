@@ -39,19 +39,19 @@ void Cat::on_realise()
 
     //Initialise cat tile
     Tile *tile;
-    for (int i = 0; i < 99; i++) {
+    for (int i = 0; i < 24; i++) {
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
             this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
             i, //Tile position
-            10  //Grid size
+            5  //Grid size
         );
 
         this->add_object("tile"+std::to_string(i), tile);
     }
 
-    ((Tile *)this->get_object("tile89"))->set_board_position(Position(9,9));
+    ((Tile *)this->get_object("tile23"))->set_board_position(Position(4,4));
 
     //Start tick thread
     this->run();
@@ -76,7 +76,7 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     );
 
     //Ortho
-    Matrix projection_matrix = Matrix::orthographic(0, 10, 0, 10, 0, 1);
+    Matrix projection_matrix = Matrix::orthographic(0, 5, 0, 5, 0, 1);
 
     this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
 

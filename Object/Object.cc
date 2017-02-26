@@ -42,7 +42,7 @@ void Object::initialise_buffers()
 void Object::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    model_matrix = model_matrix.scale(this->scale).translate(this->position);
+    model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
     for (
         std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
