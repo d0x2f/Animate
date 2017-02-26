@@ -67,6 +67,8 @@ void Tile::on_tick(GLuint64 time_delta)
         GLfloat move_factor = static_cast <GLfloat> (time_delta)/1000000.;
         Point movement_vector = ((this->board_position * tile_size) - this->position).normalise() * move_factor;
         this->move(movement_vector);
+    } else {
+        this->set_position(this->board_position * tile_size);
     }
 }
 

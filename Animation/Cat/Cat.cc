@@ -51,7 +51,7 @@ void Cat::on_realise()
         this->add_object("tile"+std::to_string(i), tile);
     }
 
-    ((Tile *)this->get_object("tile98"))->set_board_position(Position(9,9));
+    ((Tile *)this->get_object("tile89"))->set_board_position(Position(9,9));
 
     //Start tick thread
     this->run();
