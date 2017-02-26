@@ -32,17 +32,19 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
     this->position.x = this->scale.x * this->board_position.x;
     this->position.y = this->scale.y * this->board_position.y;
 
+    GLfloat grid_size_float = static_cast <GLfloat> (grid_size);
+
     //Calculate texture position
     Position texture_position = Position(
-        static_cast <GLfloat> (position % grid_size) / static_cast <GLfloat> (grid_size),
-        (1.0 - (1.0/grid_size))-static_cast <GLfloat> (position / grid_size) / static_cast <GLfloat> (grid_size)
+        this->board_position.x / grid_size_float,
+        (1.0 - (1.0/grid_size))-this->board_position.y / grid_size_float
     );
     Position texture_size = Position(
-        1./static_cast <GLfloat> (grid_size),
-        1./static_cast <GLfloat> (grid_size)
+        1./grid_size_float,
+        1./grid_size_float
     );
 
-    Quad *quad = new Quad(Point(), Scale(10./static_cast <GLfloat> (grid_size), 10./static_cast <GLfloat> (grid_size), 1.));
+    Quad *quad = new Quad(Point(), Scale(10./grid_size_float, 10./grid_size_float, 1.));
     quad->set_texture_position(texture_position, texture_size);
     quad->initialise(shader, texture);
     this->add_component(quad);
