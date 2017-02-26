@@ -8,12 +8,6 @@ using namespace Animate::Geometry;
 Tile::Tile(Point position, Scale size)
     : Object(position, size)
 {
-    //Create a random initial vector
-    GLfloat max = static_cast <GLfloat> (RAND_MAX);
-    this->direction = Vector3(
-        ( static_cast <GLfloat> (rand()) / max ) - 0.5,
-        ( static_cast <GLfloat> (rand()) / max ) - 0.5
-    ).normalise();
 }
 
 /**
@@ -23,8 +17,10 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
 {
     //Return if already initialised
     if (this->initialised) {
-        return;
+        g_assert_not_reached();
     }
+
+    this->grid_size = grid_size;
 
     //Make sure our given position is valid
     if (position > pow(grid_size, 2)-1) {
@@ -32,8 +28,9 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
     }
 
     //Calculate position
-    this->position.x = this->scale.x * (position % grid_size);
-    this->position.y = this->scale.y * (position / grid_size);
+    this->board_position = Point(position % grid_size, position / grid_size);
+    this->position.x = this->scale.x * this->board_position.x;
+    this->position.y = this->scale.y * this->board_position.y;
 
     //Calculate texture position
     Position texture_position = Position(
@@ -54,43 +51,34 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
 }
 
 /**
- * Move in the direction vector.
+ * Move toward the setposition
  * Reflect off the walls of the screen.
  *
  * @param time_delta The time in microseconds since the last tick.
  */
 void Tile::on_tick(GLuint64 time_delta)
 {
-    return;
-    //Move at 10 units per second in the direction of the current vector
-    GLfloat move_factor = static_cast <GLfloat> (time_delta) / 100000.;
-    Point pos = this->get_position() + (this->direction * move_factor);
-    Point diff = (this->direction * move_factor);
+    GLfloat tile_size = 10./static_cast <GLfloat> (this->grid_size);
+    Point position_difference = (this->board_position * tile_size) - this->position;
 
-    //If this would be out of bounds, then reflect
-    Point bottom_left = pos;
-    Point top_right = pos + this->get_scale();
-    if (
-        bottom_left.is_out_of_bounds(Vector2(), Vector2(10, 10)) ||
-        top_right.is_out_of_bounds(Vector2(), Vector2(10, 10))
-    ) {
-        if (bottom_left.x < 0 || top_right.x > 10)
-            this->direction.x *= -1;
-
-        if (bottom_left.y < 0 || top_right.y > 10)
-            this->direction.y *= -1;
-
-        pos = this->get_position() + (this->direction * move_factor);
-
-        if (this->on_reflect)
-            this->on_reflect();
+    if (position_difference.dot(position_difference) > 0.0001) {
+        GLfloat move_factor = static_cast <GLfloat> (time_delta)/1000000.;
+        Point movement_vector = ((this->board_position * tile_size) - this->position).normalise() * move_factor;
+        this->move(movement_vector);
     }
-
-    //Set new position
-    this->set_position(pos);
 }
 
-void Tile::set_reflect_callback(std::function<void (void)> on_reflect)
+void Tile::set_board_position(Position board_position)
 {
-    this->on_reflect = on_reflect;
+    //Check that the tile isn't trying to move more than one space
+    Position difference = this->board_position.xy() - board_position;
+    if ( sqrt(difference.dot(difference)) > 1 ) {
+        g_assert_not_reached();
+    }
+
+    this->board_position = Point(
+        board_position.x,
+        board_position.y,
+        0.
+    );
 }

@@ -13,10 +13,10 @@ namespace Animate::Animation::Cat::Object
 
             void initialise(Shader *shader, Texture *texture, GLuint position, GLuint grid_size);
             void on_tick(GLuint64 time_delta) override;
-            void set_reflect_callback(std::function<void (void)> on_reflect);
+            void set_board_position(Position board_position);
 
         protected:
-            Vector3 direction;
-            std::function<void (void)> on_reflect;
+            Point board_position;
+            GLuint grid_size;
     };
 }

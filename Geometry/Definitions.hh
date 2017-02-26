@@ -16,6 +16,33 @@ namespace Animate::Geometry {
         Vector2(GLfloat x=0., GLfloat y=0.) : x(x), y(y) {}
 
         /**
+         * Normalise.
+         */
+        Vector2 normalise()
+        {
+            GLfloat u = sqrt( pow(x, 2) + pow(y, 2) );
+
+            //Avoid division by zero
+            if ( u == 0) {
+                u = 1;
+            }
+
+            return Vector2(
+                x/u,
+                y/u
+            );
+        }
+
+        /**
+         * Dot product.
+         */
+        GLfloat dot(Vector2 that)
+        {
+            return  x * that.x +
+                    y * that.y;
+        }
+
+        /**
          * Addition.
          */
         Vector2 operator+(Vector2 that)
@@ -23,6 +50,28 @@ namespace Animate::Geometry {
             return Vector2(
                 x + that.x,
                 y + that.y
+            );
+        }
+
+        /**
+         * Subtraction.
+         */
+        Vector2 operator-(Vector2 that)
+        {
+            return Vector2(
+                x - that.x,
+                y - that.y
+            );
+        }
+
+        /**
+         * Negation.
+         */
+        Vector2 operator*(GLfloat factor)
+        {
+            return Vector2(
+                x * factor,
+                y * factor
             );
         }
     };
@@ -38,12 +87,23 @@ namespace Animate::Geometry {
 
         Vector3(GLfloat x=0., GLfloat y=0., GLfloat z=0.) : x(x), y(y), z(z) {}
 
+        Vector2 xy()
+        {
+            return Vector2(x, y);
+        }
+
         /**
          * Normalise.
          */
         Vector3 normalise()
         {
             GLfloat u = sqrt( pow(x, 2) + pow(y, 2) + pow(z, 2) );
+
+            //Avoid division by zero
+            if ( u == 0) {
+                u = 1;
+            }
+
             return Vector3(
                 x/u,
                 y/u,
@@ -66,6 +126,16 @@ namespace Animate::Geometry {
                 return true;
 
             return false;
+        }
+
+        /**
+         * Dot product.
+         */
+        GLfloat dot(Vector3 that)
+        {
+            return  x * that.x +
+                    y * that.y +
+                    z * that.z;
         }
 
         /**
