@@ -11,7 +11,7 @@ namespace Animate::Animation::Cat::Object
         public:
             Tile(Point position, Scale size);
 
-            void initialise(Shader *shader, Texture *texture);
+            void initialise(Shader *shader, Texture *texture, GLuint position, GLuint grid_size);
             void on_tick(GLuint64 time_delta) override;
             void set_reflect_callback(std::function<void (void)> on_reflect);
 

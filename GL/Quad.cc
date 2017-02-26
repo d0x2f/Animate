@@ -25,20 +25,29 @@ Quad::~Quad()
     }
 }
 
+void Quad::set_texture_position(Position texture_position, Position texture_size)
+{
+    this->texture_position = texture_position;
+    this->texture_size = texture_size;
+}
+
 /**
  * Initialise the quads ibo and vbo
  */
 void Quad::initialise_buffers()
 {
+    Vector2 t = this->texture_position;
+    Vector2 u = this->texture_position + this->texture_size;
+
     //Vertex & colour Data:
     const GLfloat vertices[] = {
     //  Point           Texture         Normal          Colour
-        0., 0., 0.,     0., 1.,         0., 0., 1.,     1., 1., 1., 1.,
-        0., 1., 0.,     0., 0.,         0., 0., 1.,     1., 1., 1., 1.,
-        1., 1., 0.,     1., 0.,         0., 0., 1.,     1., 1., 1., 1.,
-        0., 0., 0.,     0., 1.,         0., 0., 1.,     1., 1., 1., 1.,
-        1., 1., 0.,     1., 0.,         0., 0., 1.,     1., 1., 1., 1.,
-        1., 0., 0.,     1., 1.,         0., 0., 1.,     1., 1., 1., 1.
+        0., 0., 0.,     t.x, u.y,         0., 0., 1.,     1., 1., 1., 1.,
+        0., 1., 0.,     t.x, t.y,         0., 0., 1.,     1., 1., 1., 1.,
+        1., 1., 0.,     u.x, t.y,         0., 0., 1.,     1., 1., 1., 1.,
+        0., 0., 0.,     t.x, u.y,         0., 0., 1.,     1., 1., 1., 1.,
+        1., 1., 0.,     u.x, t.y,         0., 0., 1.,     1., 1., 1., 1.,
+        1., 0., 0.,     u.x, u.y,         0., 0., 1.,     1., 1., 1., 1.
     };
 
     //Generate vertex array

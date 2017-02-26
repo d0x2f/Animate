@@ -14,6 +14,17 @@ namespace Animate::Geometry {
         GLfloat x,y;
 
         Vector2(GLfloat x=0., GLfloat y=0.) : x(x), y(y) {}
+
+        /**
+         * Addition.
+         */
+        Vector2 operator+(Vector2 that)
+        {
+            return Vector2(
+                x + that.x,
+                y + that.y
+            );
+        }
     };
     //Aliases
     typedef Vector2 Position;

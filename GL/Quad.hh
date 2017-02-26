@@ -20,12 +20,16 @@ namespace Animate::GL
             Quad(Point position, Scale size);
             ~Quad();
 
-            void draw(Matrix model_matrix);
+            void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
+
+            void draw(Matrix model_matrix) override;
 
         protected:
             GLuint  vao_id = 0,
                     buffer_id = 0;
+            Position texture_position;
+            Position texture_size = Position(1., 1.);
 
-            void initialise_buffers();
+            void initialise_buffers() override;
     };
 }

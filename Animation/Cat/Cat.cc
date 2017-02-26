@@ -39,22 +39,14 @@ void Cat::on_realise()
 
     //Initialise cat tile
     Tile *tile;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 99; i++) {
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
-            this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg")
+            this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
+            i, //Tile position
+            10  //Grid size
         );
-
-        tile->set_reflect_callback([&]() {
-            //Change bg colour
-            GLfloat max = static_cast <GLfloat> (RAND_MAX);
-            GLfloat r = static_cast <GLfloat> (rand()) / max;
-            GLfloat b = static_cast <GLfloat> (rand()) / max;
-            GLfloat g = static_cast <GLfloat> (rand()) / max;
-
-            this->colour = Colour(r,g,b);
-        });
 
         this->add_object("tile"+std::to_string(i), tile);
     }
@@ -92,10 +84,10 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
         glClearColor(
-            this->colour.x,
-            this->colour.y,
-            this->colour.z,
-            this->colour.w
+            0.7,
+            0.7,
+            0.7,
+            1.0
         );
 
         //Draw every object
