@@ -7,6 +7,12 @@ I'm making this collection of OpenGL animations as a way to grow and showcase my
 
 Writting computer graphics binds two of my favourite subjects, programming and mathematics. In particlar modern C++ and differential geometry.
 
+## Requirememts
+
+* GLEW, GLU, GL
+* GTK3, GTKMM3
+* [libtaquinsolve](https://github.com/d0x2f/libtaquinsolve)
+
 ## Resources
 
 * https://en.wikipedia.org/wiki/3D_projection
