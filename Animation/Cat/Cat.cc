@@ -5,7 +5,6 @@
 #include <iostream>
 
 #include "Cat.hh"
-#include "Object/Tile.hh"
 #include "../../Utilities.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
@@ -37,21 +36,46 @@ void Cat::on_realise()
     this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 
-    //Initialise cat tile
+    //Set puzzle values
+    this->grid_size = 4;
+
+    //TODO: Auto-generate puzzles
+    int initial_position[16] = {
+        13, //0
+        12, //1
+        2,  //2
+        9,  //3
+        1,  //4
+        10, //5
+        7,  //6
+        5,  //7
+        0,  //8
+        14, //9
+        8,  //10
+        4,  //11
+        3,  //12
+        6,  //13
+        11, //14
+        15  //15
+    };
+    this->move_sequence = taquin_solve("8 4 2 12 11 7 13 6 10 3 5 14 1 0 9 15", this->grid_size);
+    this->zero_position = 13;
+
+    //Initialise cat tiles
     Tile *tile;
-    for (int i = 0; i < 24; i++) {
+    for (int i = 1; i < 16; i++) {
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
             this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
             i, //Tile position
-            5  //Grid size
+            this->grid_size  //Grid size
         );
+        tile->set_board_position(Position(initial_position[i]%this->grid_size, initial_position[i]/this->grid_size));
 
         this->add_object("tile"+std::to_string(i), tile);
+        this->tile_position_map.insert(std::pair<int, Tile *> (initial_position[i], tile));
     }
-
-    ((Tile *)this->get_object("tile23"))->set_board_position(Position(4,4));
 
     //Start tick thread
     this->run();
@@ -76,7 +100,7 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     );
 
     //Ortho
-    Matrix projection_matrix = Matrix::orthographic(0, 5, 0, 5, 0, 1);
+    Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
 
     this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
@@ -123,17 +147,52 @@ void Cat::on_tick(GLuint64 time_delta)
     std::lock_guard<std::mutex> guard(this->tick_mutex);
 
     //Tick every object
+    bool in_motion = false;
     for (
         std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
         it != this->objects.end();
         ++it
     ) {
         it->second->on_tick(time_delta);
+        in_motion |= ((Tile *)it->second.get())->is_moving();
     }
 
-    //Now that the geometry has changed, trigger a render
-    /*GL::Area *gl_area = this->context->get_gl_area();
-    if (gl_area != NULL) {
-        gl_area->queue_render();
-    }*/
+    //If tiles are moving, skip
+    if (in_motion | this->move_sequence.empty()) {
+        return;
+    }
+
+    TaquinSolve::Moves move = this->move_sequence.front();
+    this->move_sequence.pop();
+
+    int from_position = this->zero_position;
+    int to_position = 0;
+    switch (move) {
+        case TaquinSolve::Moves::UP:
+            to_position = from_position - this->grid_size;
+            break;
+
+        case TaquinSolve::Moves::DOWN:
+            to_position = from_position + this->grid_size;
+            break;
+
+        case TaquinSolve::Moves::LEFT:
+            to_position = from_position - 1;
+            break;
+
+        case TaquinSolve::Moves::RIGHT:
+            to_position = from_position + 1;
+            break;
+    }
+
+    std::map<int, Tile *>::iterator it = this->tile_position_map.find(to_position);
+    Tile *tile = it->second;
+    it->second->move_to_board_position(Position(
+        from_position % this->grid_size,
+        from_position / this->grid_size
+    ));
+    this->tile_position_map.erase(it);
+    this->tile_position_map.insert(std::pair<int, Tile *>(from_position, tile));
+
+    this->zero_position = to_position;
 }

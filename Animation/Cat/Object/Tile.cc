@@ -66,8 +66,8 @@ void Tile::on_tick(GLuint64 time_delta)
 
     Point position_difference = this->board_position - this->position;
 
-    if (position_difference.dot(position_difference) > 0.0001) {
-        GLfloat move_factor = static_cast <GLfloat> (time_delta)/500000.;
+    if (position_difference.dot(position_difference) > 0.001) {
+        GLfloat move_factor = static_cast <GLfloat> (time_delta)/50000.;
         Point movement_vector = (this->board_position - this->position).normalise() * move_factor;
         this->move(movement_vector);
     } else {
@@ -76,7 +76,12 @@ void Tile::on_tick(GLuint64 time_delta)
     }
 }
 
-void Tile::set_board_position(Position board_position)
+bool Tile::is_moving()
+{
+    return this->moving;
+}
+
+void Tile::move_to_board_position(Position board_position)
 {
     //Check that the tile isn't trying to move more than one space
     Position difference = this->board_position.xy() - board_position;
@@ -91,4 +96,15 @@ void Tile::set_board_position(Position board_position)
     );
 
     this->moving = true;
+}
+
+void Tile::set_board_position(Position board_position)
+{
+    this->board_position = Point(
+        board_position.x,
+        board_position.y,
+        0.
+    );
+
+    this->position = this->board_position;
 }
