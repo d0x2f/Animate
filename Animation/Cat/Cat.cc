@@ -90,6 +90,8 @@ void Cat::on_realise()
  */
 bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
 {
+    Animation::on_render(gl_context);
+
     //Reset matrices
     Matrix model_matrix = Matrix::identity();
 

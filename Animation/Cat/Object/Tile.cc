@@ -66,8 +66,8 @@ void Tile::on_tick(GLuint64 time_delta)
 
     Point position_difference = this->board_position - this->position;
 
-    if (position_difference.dot(position_difference) > 0.001) {
-        GLfloat move_factor = static_cast <GLfloat> (time_delta)/50000.;
+    if (position_difference.dot(position_difference) > 0.01) {
+        GLfloat move_factor = static_cast <GLfloat> (time_delta)/250000.;
         Point movement_vector = (this->board_position - this->position).normalise() * move_factor;
         this->move(movement_vector);
     } else {

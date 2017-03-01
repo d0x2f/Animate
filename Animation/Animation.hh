@@ -16,7 +16,7 @@ namespace Animate::Animation
             Animation(Context *context);
             ~Animation();
 
-            virtual bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context) = 0;
+            virtual bool on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context);
             virtual void on_tick(GLuint64 time_delta) = 0;
             virtual void on_realise() = 0;
 
@@ -29,6 +29,8 @@ namespace Animate::Animation
             Context *context;
             std::mutex tick_mutex;
             int tick_rate = 60;
+            GLuint64 last_frame_time = 0;
+            int frame_count = 0;
             std::map< std::string, std::unique_ptr<Object::Object> > objects;
 
             void add_object(std::string name, Object::Object *object);
