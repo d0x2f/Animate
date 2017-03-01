@@ -16,8 +16,14 @@ using namespace Animate::Animation;
  */
 Gui::Gui()
 {
+    //set_resizable(false);
     set_default_size(1024, 1024);
     set_title("Animate");
+
+    Gdk::Geometry geometry_hints;
+    geometry_hints.min_aspect = 1.;
+    geometry_hints.max_aspect = 1.;
+    set_geometry_hints(*this, geometry_hints, Gdk::WindowHints::HINT_ASPECT);
 
     //Create context object
     this->context = std::unique_ptr<Context>( new Context() );
