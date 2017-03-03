@@ -37,44 +37,29 @@ void Cat::on_realise()
     this->shader.get()->initialise();
 
     //Set puzzle values
-    this->grid_size = 4;
+    this->grid_size = 3;
 
-    //TODO: Auto-generate puzzles
-    int initial_position[16] = {
-        13, //0
-        12, //1
-        2,  //2
-        9,  //3
-        1,  //4
-        10, //5
-        7,  //6
-        5,  //7
-        0,  //8
-        14, //9
-        8,  //10
-        4,  //11
-        3,  //12
-        6,  //13
-        11, //14
-        15  //15
-    };
-    this->move_sequence = taquin_solve("8 4 2 12 11 7 13 6 10 3 5 14 1 0 9 15", this->grid_size);
-    this->zero_position = 13;
+    std::vector<int> initial_position = taquin_generate_vector(this->grid_size);
+    this->move_sequence = taquin_solve(initial_position, this->grid_size);
 
     //Initialise cat tiles
     Tile *tile;
-    for (int i = 1; i < 16; i++) {
+    for (int i = 0; i < this->grid_size * this->grid_size; i++) {
+        if (initial_position[i] == 0) {
+            this->zero_position = i;
+            continue;
+        }
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
             this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
-            i, //Tile position
+            initial_position[i], //Tile position
             this->grid_size  //Grid size
         );
-        tile->set_board_position(Position(initial_position[i]%this->grid_size, initial_position[i]/this->grid_size));
+        tile->set_board_position(Position(i%this->grid_size, i/this->grid_size));
 
         this->add_object("tile"+std::to_string(i), tile);
-        this->tile_position_map.insert(std::pair<int, Tile *> (initial_position[i], tile));
+        this->tile_position_map.insert(std::pair<int, Tile *> (i, tile));
     }
 
     //Start tick thread
