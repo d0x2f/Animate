@@ -50,6 +50,7 @@ void Cat::reset_puzzle()
 
     //Set puzzle values
     this->grid_size = 3;
+    std::string texture_name = "/Animate/data/Cat/" + std::to_string(rand()%6) + ".jpg";
 
     std::vector<size_t> initial_position = taquin_generate_vector(this->grid_size);
     this->move_sequence = taquin_solve(initial_position, this->grid_size);
@@ -64,7 +65,7 @@ void Cat::reset_puzzle()
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
-            this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
+            this->context->get_textures()->get_texture(texture_name),
             initial_position[i], //board position
             this->grid_size  //Grid size
         );
@@ -169,6 +170,7 @@ void Cat::on_tick(GLuint64 time_delta)
 
     if (this->move_sequence.empty()) {
         this->reset_puzzle_flag = true;
+        sleep(1);
         return;
     }
 
