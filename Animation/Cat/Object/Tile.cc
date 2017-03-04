@@ -22,21 +22,22 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
 
     this->grid_size = grid_size;
 
+    position --;
+
     //Make sure our given position is valid
     if (position > pow(grid_size, 2)-1) {
         g_assert_not_reached();
     }
 
     //Calculate position
-    this->board_position = Point(position % grid_size, position / grid_size);
-    this->position = this->board_position;
+    this->set_board_position(Position(position % grid_size, position / grid_size));
 
     GLfloat grid_size_float = static_cast <GLfloat> (grid_size);
 
     //Calculate texture position
     Position texture_position = Position(
-        this->position.x / grid_size_float,
-        (1.0 - (1.0/grid_size))-this->position.y / grid_size_float
+        this->board_position.x / grid_size_float,
+        this->board_position.y / grid_size_float
     );
     Position texture_size = Position(
         1./grid_size_float,
@@ -64,14 +65,20 @@ void Tile::on_tick(GLuint64 time_delta)
         return;
     }
 
-    Point position_difference = this->board_position - this->position;
+
+    Point to_position(
+        this->board_position.x,
+        this->grid_size - this->board_position.y - 1.0
+    );
+
+    Point position_difference = to_position - this->position;
 
     if (position_difference.dot(position_difference) > 0.01) {
         GLfloat move_factor = static_cast <GLfloat> (time_delta)/250000.;
-        Point movement_vector = (this->board_position - this->position).normalise() * move_factor;
+        Point movement_vector = position_difference.normalise() * move_factor;
         this->move(movement_vector);
     } else {
-        this->set_position(this->board_position);
+        this->set_position(to_position);
         this->moving = false;
     }
 }
@@ -106,5 +113,8 @@ void Tile::set_board_position(Position board_position)
         0.
     );
 
-    this->position = this->board_position;
+    this->position = Point(
+        this->board_position.x,
+        this->grid_size - this->board_position.y - 1.0
+    );
 }

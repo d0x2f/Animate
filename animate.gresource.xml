@@ -4,5 +4,6 @@
         <file>data/Cat/shader.frag</file>
         <file>data/Cat/shader.vert</file>
         <file preprocess="to-pixdata" >data/Cat/lily.jpg</file>
+        <file preprocess="to-pixdata" >data/Cat/reference.jpg</file>
     </gresource>
 </gresources>

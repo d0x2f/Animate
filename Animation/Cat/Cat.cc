@@ -39,7 +39,7 @@ void Cat::on_realise()
     //Set puzzle values
     this->grid_size = 3;
 
-    std::vector<int> initial_position = taquin_generate_vector(this->grid_size);
+    std::vector<size_t> initial_position = taquin_generate_vector(this->grid_size);
     this->move_sequence = taquin_solve(initial_position, this->grid_size);
 
     //Initialise cat tiles
@@ -53,7 +53,7 @@ void Cat::on_realise()
         tile->initialise(
             this->shader.get(),
             this->context->get_textures()->get_texture("/Animate/data/Cat/lily.jpg"),
-            initial_position[i], //Tile position
+            initial_position[i], //board position
             this->grid_size  //Grid size
         );
         tile->set_board_position(Position(i%this->grid_size, i/this->grid_size));
