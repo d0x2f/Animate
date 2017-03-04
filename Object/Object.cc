@@ -7,6 +7,11 @@ Object::Object(Point position, Scale size)
     : Movable(position), Scalable(size)
 {}
 
+Object::~Object()
+{
+    this->clear_components();
+}
+
 /**
  * Add a component to those managed by this object.
  *
@@ -15,6 +20,14 @@ Object::Object(Point position, Scale size)
 void Object::add_component(Drawable *component)
 {
     this->components.push_back(std::unique_ptr<Drawable>(component));
+}
+
+/**
+ * Clear all components.
+ */
+void Object::clear_components()
+{
+    this->components.clear();
 }
 
 /**

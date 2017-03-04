@@ -36,6 +36,18 @@ void Cat::on_realise()
     this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 
+    this->reset_puzzle();
+
+    //Start tick thread
+    this->run();
+}
+
+void Cat::reset_puzzle()
+{
+    //Clear tiles
+    this->clear_objects();
+    this->tile_position_map.clear();
+
     //Set puzzle values
     this->grid_size = 3;
 
@@ -61,9 +73,6 @@ void Cat::on_realise()
         this->add_object("tile"+std::to_string(i), tile);
         this->tile_position_map.insert(std::pair<int, Tile *> (i, tile));
     }
-
-    //Start tick thread
-    this->run();
 }
 
 /**
@@ -76,6 +85,16 @@ void Cat::on_realise()
 bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
 {
     Animation::on_render(gl_context);
+
+    //Scoped multex lock
+    {
+        std::lock_guard<std::mutex> guard(this->tick_mutex);
+
+        if (this->reset_puzzle_flag) {
+            this->reset_puzzle();
+            this->reset_puzzle_flag = false;
+        }
+    }
 
     //Reset matrices
     Matrix model_matrix = Matrix::identity();
@@ -93,16 +112,15 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glClearColor(
+        0.7,
+        0.7,
+        0.7,
+        1.0
+    );
+
     //Scoped multex lock
     {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-        glClearColor(
-            0.7,
-            0.7,
-            0.7,
-            1.0
-        );
-
         //Draw every object
         for (
             std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
@@ -145,7 +163,12 @@ void Cat::on_tick(GLuint64 time_delta)
     }
 
     //If tiles are moving, skip
-    if (in_motion | this->move_sequence.empty()) {
+    if (in_motion) {
+        return;
+    }
+
+    if (this->move_sequence.empty()) {
+        this->reset_puzzle_flag = true;
         return;
     }
 

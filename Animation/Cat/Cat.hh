@@ -27,14 +27,13 @@ namespace Animate::Animation::Cat
             void on_realise();
 
         protected:
-            Colour colour;
             std::unique_ptr<GL::Shader> shader;
             std::queue<TaquinSolve::Moves> move_sequence;
             std::map<int, Tile *> tile_position_map;
             int zero_position = 0;
             int grid_size = 0;
 
-        private:
-            Vector3 cat_direction;
+            bool reset_puzzle_flag = false;
+            void reset_puzzle();
     };
 }

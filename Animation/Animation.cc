@@ -122,3 +122,11 @@ void Animation::add_object(std::string name, Object::Object *object)
 {
     this->objects.insert( std::pair<std::string, std::unique_ptr<Object::Object> >(name, object));
 }
+
+/**
+ * Remove all object references.
+ */
+void Animation::clear_objects()
+{
+    this->objects.clear();
+}

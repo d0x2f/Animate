@@ -35,6 +35,7 @@ namespace Animate::Animation
 
             void add_object(std::string name, Object::Object *object);
             Object::Object *get_object(std::string name);
+            void clear_objects();
 
         private:
             std::unique_ptr<std::thread> tick_thread;
