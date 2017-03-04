@@ -74,7 +74,7 @@ void Tile::on_tick(GLuint64 time_delta)
     Point position_difference = to_position - this->position;
 
     if (position_difference.dot(last_movement_vector) > 0.) {
-        GLfloat move_factor = static_cast <GLfloat> (time_delta)/50000.;
+        GLfloat move_factor = static_cast <GLfloat> (time_delta)/100000.;
         Point movement_vector = position_difference.normalise() * move_factor;
         this->move(movement_vector);
     } else {
