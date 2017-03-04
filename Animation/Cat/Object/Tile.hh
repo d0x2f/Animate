@@ -21,6 +21,7 @@ namespace Animate::Animation::Cat::Object
         protected:
             Point board_position;
             GLuint grid_size;
+            Point last_movement_vector;
             bool moving = false;
     };
 }
