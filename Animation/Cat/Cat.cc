@@ -50,7 +50,8 @@ void Cat::reset_puzzle()
 
     //Set puzzle values
     this->grid_size = 3;
-    std::string texture_name = "/Animate/data/Cat/" + std::to_string(rand()%6) + ".jpg";
+    std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
+    this->texture_index %= 6;
 
     std::vector<size_t> initial_position = taquin_generate_vector(this->grid_size);
     this->move_sequence = taquin_solve(initial_position, this->grid_size);

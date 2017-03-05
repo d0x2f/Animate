@@ -32,6 +32,7 @@ namespace Animate::Animation::Cat
             std::map<int, Tile *> tile_position_map;
             int zero_position = 0;
             int grid_size = 0;
+            int texture_index = 0;
 
             bool reset_puzzle_flag = false;
             void reset_puzzle();
