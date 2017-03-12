@@ -49,7 +49,7 @@ void Cat::reset_puzzle()
     this->tile_position_map.clear();
 
     //Set puzzle values
-    this->grid_size = 3;
+    this->grid_size = 4;
     std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 6;
 
