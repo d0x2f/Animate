@@ -3,9 +3,9 @@ Interesting minimalist animations
 
 ## Animations
 * Complete
-  * Taquin/15 puzzle solving [Video](https://www.youtube.com/watch?v=F2GyDwdp1KU).
+  * Taquin/15 puzzle solving ([video](https://www.youtube.com/watch?v=F2GyDwdp1KU)).
 * Ideas/Incomplete
-  * Multiplication module drawn on a circle [resource](https://www.youtube.com/watch?v=qhbuKbxJsk8).
+  * Multiplication module drawn on a circle ([resource](https://www.youtube.com/watch?v=qhbuKbxJsk8)).
   * Mandlebrot drawing.
 
 ## Intention
