@@ -1,6 +1,13 @@
 # Animate
 Interesting minimalist animations
 
+## Animations
+* Complete
+  * Taquin/15 puzzle solving [Video](https://www.youtube.com/watch?v=F2GyDwdp1KU).
+* Ideas/Incomplete
+  * Multiplication module drawn on a circle [resource](https://www.youtube.com/watch?v=qhbuKbxJsk8).
+  * Mandlebrot drawing.
+
 ## Intention
 
 I'm making this collection of OpenGL animations as a way to grow and showcase my C++/OGL abilities.
