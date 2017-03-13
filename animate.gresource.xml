@@ -9,5 +9,6 @@
         <file preprocess="to-pixdata" >data/Cat/3.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/4.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/5.jpg</file>
+        <file preprocess="to-pixdata" >data/Cat/6.jpg</file>
     </gresource>
 </gresources>
