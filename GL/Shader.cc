@@ -200,6 +200,16 @@ void Shader::set_model_matrix(Matrix model)
     std::free(model_raw);
 }
 
+void Shader::set_uniform(std::string name, Vector4 data)
+{
+    this->use();
+    int ptr = glGetUniformLocation(this->get_id(), name.c_str());
+    if(ptr != -1) {
+        glUniform4f(ptr, data.x, data.y, data.z, data.w);
+    }
+    glUseProgram(0);
+}
+
 /**
  * Enable this shader as active.
  */
@@ -224,13 +234,13 @@ void Shader::printShaderInfoLog(GLuint obj) {
     int chars_written  = 0;
     char *info_log;
 
-	glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
+    glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
 
     if (info_log_length > 0)
     {
         info_log = (char *)malloc(info_log_length);
         glGetProgramInfoLog(obj, info_log_length, &chars_written, info_log);
-		std::cerr << info_log << std::endl;
+        std::cerr << info_log << std::endl;
         std::free(info_log);
     }
 }
@@ -243,13 +253,13 @@ void Shader::printProgramInfoLog(GLuint obj) {
     int chars_written  = 0;
     char *info_log;
 
-	glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
+    glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
 
     if (info_log_length > 0)
     {
         info_log = (char *)malloc(info_log_length);
         glGetProgramInfoLog(obj, info_log_length, &chars_written, info_log);
-		std::cerr << info_log << std::endl;
+        std::cerr << info_log << std::endl;
         std::free(info_log);
     }
 }

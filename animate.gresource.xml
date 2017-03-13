@@ -10,5 +10,8 @@
         <file preprocess="to-pixdata" >data/Cat/4.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/5.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/6.jpg</file>
+
+        <file>data/Modulo/shader.frag</file>
+        <file>data/Modulo/shader.vert</file>
     </gresource>
 </gresources>

@@ -4,6 +4,7 @@
 
 #include "Gui.hh"
 #include "Animation/Cat/Cat.hh"
+#include "Animation/Modulo/Modulo.hh"
 
 using namespace Animate;
 using namespace Animate::Animation;
@@ -33,6 +34,7 @@ Gui::Gui()
     add(*(this->context.get()->get_gl_area()));
 
     //Create animation and connect it up
+    //Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
     Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
     set_animation(animation);
 
@@ -55,7 +57,7 @@ Gui::~Gui()
  */
 void Gui::set_animation(Animation::Animation *animation)
 {
-    //Triggerd an existing animations destructor
+    //Triggers an existing animation's destructor
     this->current_animation.reset(animation);
 
     //Connect the render signal

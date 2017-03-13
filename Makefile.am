@@ -3,6 +3,7 @@ bin_PROGRAMS = animate
 animatedir = .
 animate_SOURCES =   GL/Area.cc \
                     GL/Quad.cc \
+                    GL/Circle.cc \
                     GL/Shader.cc \
                     GL/Textures.cc \
                     GL/Texture.cc \
@@ -18,6 +19,8 @@ animate_SOURCES =   GL/Area.cc \
                     Animation/Animation.cc \
                     Animation/Cat/Cat.cc \
                     Animation/Cat/Object/Tile.cc \
+                    Animation/Modulo/Modulo.cc \
+                    Animation/Modulo/Object/Ring.cc \
                     \
                     Gui.cc \
                     Context.cc \
@@ -26,6 +29,7 @@ animate_SOURCES =   GL/Area.cc \
                     main.cc
 animate_HEADERS =   GL/Area.hh \
                     GL/Quad.hh \
+                    GL/Circle.hh \
                     GL/Shader.hh \
                     GL/Textures.hh \
                     GL/Texture.hh \
@@ -41,7 +45,9 @@ animate_HEADERS =   GL/Area.hh \
                     \
                     Animation/Animation.hh \
                     Animation/Cat/Cat.hh \
-                    Animation/Cat/Object/Tile.cc \
+                    Animation/Cat/Object/Tile.hh \
+                    Animation/Modulo/Modulo.hh \
+                    Animation/Modulo/Object/Ring.hh \
                     \
                     Gui.hh \
                     Context.hh \
