@@ -68,6 +68,7 @@ int Animation::get_tick_rate()
 
 bool Animation::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
 {
+    /*
     GLuint64 current_time = Utilities::get_micro_time();
     this->frame_count++;
     if (current_time - this->last_frame_time >= 1000000) {
@@ -75,6 +76,7 @@ bool Animation::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
         this->frame_count = 0;
         this->last_frame_time = current_time;
     }
+    */
 }
 
 /**

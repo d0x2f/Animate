@@ -15,6 +15,9 @@ I'm making this collection of OpenGL animations as a way to grow and showcase my
 
 Writting computer graphics binds two of my favourite subjects, programming and mathematics. In particlar modern C++ and differential geometry.
 
+## TODO
+* Gtk::GLArea doesn't support multi-sampling, switch to glfw.
+
 ## Requirememts
 
 * GLEW, GLU, GL

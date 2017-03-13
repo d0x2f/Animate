@@ -21,7 +21,7 @@ void Ring::initialise(Shader *shader)
     }
 
     //Add a circle
-    Circle *circle = new Circle(Point(0.5,0.5), Scale(0.5,0.5), Colour(1.,0.,0.,1.), .01);
+    Circle *circle = new Circle(Point(), Scale(0.5,0.5), Colour(1.,0.,0.,1.), .01);
     circle->initialise(
         shader,
         new Texture()

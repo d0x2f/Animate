@@ -39,7 +39,7 @@ void Modulo::on_realise()
     this->shader.get()->initialise();
 
     //Add a circle
-    Ring *ring = new Ring(Point(0.,0.), Scale(1.,1.));
+    Ring *ring = new Ring(Point(0.5,0.5), Scale(.8,.8));
     ring->initialise(
         this->shader.get()
     );
