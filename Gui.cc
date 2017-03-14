@@ -22,6 +22,8 @@ Gui::Gui() {
         throw std::string("Couldn't initialise GLFW.");
     }
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
     this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
     if (!this->window) {
         throw std::string("Couldn't create GLFW window.");
