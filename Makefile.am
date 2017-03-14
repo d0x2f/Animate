@@ -1,8 +1,7 @@
 bin_PROGRAMS = animate
 
 animatedir = .
-animate_SOURCES =   GL/Area.cc \
-                    GL/Quad.cc \
+animate_SOURCES =   GL/Quad.cc \
                     GL/Circle.cc \
                     GL/Shader.cc \
                     GL/Textures.cc \
@@ -27,8 +26,7 @@ animate_SOURCES =   GL/Area.cc \
                     resources.c \
                     Utilities.cc \
                     main.cc
-animate_HEADERS =   GL/Area.hh \
-                    GL/Quad.hh \
+animate_HEADERS =   GL/Quad.hh \
                     GL/Circle.hh \
                     GL/Shader.hh \
                     GL/Textures.hh \

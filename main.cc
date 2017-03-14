@@ -1,3 +1,6 @@
+#include <gtkmm.h>
+#include <iostream>
+
 #include "Gui.hh"
 
 /**
@@ -10,8 +13,12 @@
  */
 int main(int argc, char **argv)
 {
-    //Create the GTK application
-    auto app = Gtk::Application::create(argc, argv, "dog.dyl.animate");
-    Animate::Gui gui;
-    return app->run(gui);
+    try {
+        auto app = Gtk::Application::create(argc, argv, "dog.dyl.animate");
+        Animate::Gui gui;
+        gui.start_loop();
+    } catch (std::string error) {
+        std::cerr << error << std::endl;
+    }
+    return 0;
 }

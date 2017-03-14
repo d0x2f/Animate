@@ -1,5 +1,6 @@
 #include <gtkmm.h>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
@@ -32,7 +33,7 @@ Modulo::Modulo(Context *context) : Animation::Animation(context)
 /**
  * Perform initialisations.
  */
-void Modulo::on_realise()
+void Modulo::initialise()
 {
     //Set shaders
     this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag", "/Animate/data/Modulo/shader.vert"));
@@ -56,9 +57,9 @@ void Modulo::on_realise()
  *
  * @return True so as not to bubble into another render handler.
  */
-bool Modulo::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
+bool Modulo::on_render()
 {
-    Animation::on_render(gl_context);
+    Animation::on_render();
 
     //Reset matrices
     Matrix model_matrix = Matrix::identity();
@@ -96,11 +97,6 @@ bool Modulo::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     }
 
     glFlush();
-
-    GL::Area *gl_area = this->context->get_gl_area();
-    if (gl_area != NULL) {
-        gl_area->queue_render();
-    }
 
     GLenum error = glGetError();
     if(error != GL_NO_ERROR)

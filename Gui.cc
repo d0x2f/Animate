@@ -1,6 +1,6 @@
-#include <GL/glew.h>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 #include "Gui.hh"
 #include "Animation/Cat/Cat.hh"
@@ -11,35 +11,53 @@ using namespace Animate::Animation;
 
 /**
  * Sets the window size and title.
- * Adds a GLArea to the window.
  * Starts the cat animation.
  */
-Gui::Gui()
-{
-    //set_resizable(false);
-    set_default_size(1024, 1024);
-    set_title("Animate");
+Gui::Gui() {
+    glfwSetErrorCallback([](int error, const char* description){
+        std::cout << description << " (" << error << ")" << std::endl;
+    });
 
-    Gdk::Geometry geometry_hints;
-    geometry_hints.min_aspect = 1.;
-    geometry_hints.max_aspect = 1.;
-    set_geometry_hints(*this, geometry_hints, Gdk::WindowHints::HINT_ASPECT);
+    if (!glfwInit()) {
+        throw std::string("Couldn't initialise GLFW.");
+    }
+
+    this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
+    if (!this->window) {
+        throw std::string("Couldn't create GLFW window.");
+    }
+
+    //Set this window as the current context
+    glfwMakeContextCurrent(this->window);
+
+    //Initialise glew
+    glewInit();
 
     //Create context object
     this->context = std::unique_ptr<Context>( new Context() );
 
-    //Create a gl area and add it to the window
-    new GL::Area(this->context.get());
+    //Create a texture manager
+    new Textures(this->context.get());
 
-    add(*(this->context.get()->get_gl_area()));
+    //Print version information
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* version = glGetString(GL_VERSION);
+    std::cout << "Renderer: " << renderer << std::endl;
+    std::cout << "OpenGL version supported: " << version << std::endl;
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_MULTISAMPLE);
 
     //Create animation and connect it up
     //Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
     Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
+    animation->initialise();
     set_animation(animation);
-
-    //Show the childrem
-    show_all_children();
 }
 
 /**
@@ -47,6 +65,26 @@ Gui::Gui()
  */
 Gui::~Gui()
 {
+    glfwTerminate();
+}
+
+/**
+ * Start the gui loop.
+ */
+void Gui::start_loop()
+{
+    //Loop until the window is closed
+    while (!glfwWindowShouldClose(window))
+    {
+        //Render the current animation
+        this->current_animation->on_render();
+
+        //Swap buffers
+        glfwSwapBuffers(window);
+
+        //Poll events
+        glfwPollEvents();
+    }
 }
 
 /**
@@ -59,10 +97,4 @@ void Gui::set_animation(Animation::Animation *animation)
 {
     //Triggers an existing animation's destructor
     this->current_animation.reset(animation);
-
-    //Connect the render signal
-    this->context.get()->get_gl_area()->signal_render().connect(sigc::mem_fun(this->current_animation.get(), &Animation::Animation::on_render));
-
-    //Connect the realise signal
-    this->context.get()->get_gl_area()->signal_realize().connect(sigc::mem_fun(this->current_animation.get(), &Animation::Animation::on_realise));
 }

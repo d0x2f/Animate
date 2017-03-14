@@ -1,5 +1,6 @@
 #include <gtkmm.h>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
@@ -30,7 +31,7 @@ Cat::Cat(Context *context) : Animation::Animation(context)
 /**
  * Perform initialisations.
  */
-void Cat::on_realise()
+void Cat::initialise()
 {
     //Set shaders
     this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
@@ -80,13 +81,11 @@ void Cat::reset_puzzle()
 /**
  * Render a frame.
  *
- * @param gl_context    GDK Opengl context reference.
- *
  * @return True so as not to bubble into another render handler.
  */
-bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
+bool Cat::on_render()
 {
-    Animation::on_render(gl_context);
+    Animation::on_render();
 
     //Scoped multex lock
     {
@@ -134,11 +133,6 @@ bool Cat::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
     }
 
     glFlush();
-
-    GL::Area *gl_area = this->context->get_gl_area();
-    if (gl_area != NULL) {
-        gl_area->queue_render();
-    }
 
     GLenum error = glGetError();
     if(error != GL_NO_ERROR)

@@ -17,6 +17,7 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 
 ## TODO
 * Gtk::GLArea doesn't support multi-sampling, switch to glfw.
+* Move away from GDK resource manager in favor of some other stand alone resource management library.
 
 ## Requirememts
 

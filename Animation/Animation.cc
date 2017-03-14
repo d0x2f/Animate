@@ -66,7 +66,7 @@ int Animation::get_tick_rate()
     return this->tick_rate;
 }
 
-bool Animation::on_render(const Glib::RefPtr<Gdk::GLContext>& gl_context)
+bool Animation::on_render()
 {
     /*
     GLuint64 current_time = Utilities::get_micro_time();
@@ -109,7 +109,7 @@ Object *Animation::get_object(std::string name)
     std::map< std::string, std::unique_ptr<Object::Object> >::iterator it;
     it = this->objects.find(name);
     if (it == this->objects.end()) {
-        g_assert_not_reached();
+        throw std::string("Requested non existant object.");
     }
     return it->second.get();
 }

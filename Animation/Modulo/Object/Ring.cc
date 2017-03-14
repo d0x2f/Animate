@@ -17,7 +17,7 @@ void Ring::initialise(Shader *shader)
 {
     //Return if already initialised
     if (this->initialised) {
-        g_assert_not_reached();
+        return;
     }
 
     //Add a circle
