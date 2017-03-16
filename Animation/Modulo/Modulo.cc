@@ -109,5 +109,7 @@ bool Modulo::on_render()
  */
 void Modulo::on_tick(GLuint64 time_delta)
 {
+    Animation::on_tick(time_delta);
+
     //std::lock_guard<std::mutex> guard(this->tick_mutex);
 }

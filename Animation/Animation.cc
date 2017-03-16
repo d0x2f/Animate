@@ -78,6 +78,21 @@ bool Animation::on_render()
 }
 
 /**
+ * Compute a tick
+ */
+void Animation::on_tick(GLuint64 time_delta)
+{
+    //Tick all the objects
+    for (
+        std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+        it != this->objects.end();
+        ++it
+    ) {
+        it->second->on_tick(time_delta);
+    }
+}
+
+/**
  * Run a loop that calls the animations on_tick method.
  * Quit when check_running() returns false.
  */

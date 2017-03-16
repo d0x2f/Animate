@@ -17,7 +17,7 @@ namespace Animate::Animation
             ~Animation();
 
             virtual bool on_render();
-            virtual void on_tick(GLuint64 time_delta) = 0;
+            virtual void on_tick(GLuint64 time_delta);
             virtual void initialise() = 0;
 
             void run();

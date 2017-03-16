@@ -145,16 +145,17 @@ bool Cat::on_render()
  */
 void Cat::on_tick(GLuint64 time_delta)
 {
+    Animation::on_tick(time_delta);
+
     std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-    //Tick every object
+    //Check if any tiles are moving
     bool in_motion = false;
     for (
         std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
         it != this->objects.end();
         ++it
     ) {
-        it->second->on_tick(time_delta);
         in_motion |= ((Tile *)it->second.get())->is_moving();
     }
 
