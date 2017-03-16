@@ -3,6 +3,7 @@ bin_PROGRAMS = animate
 animatedir = .
 animate_SOURCES =   GL/Quad.cc \
                     GL/Circle.cc \
+                    GL/Line.cc \
                     GL/Shader.cc \
                     GL/Textures.cc \
                     GL/Texture.cc \
@@ -12,6 +13,7 @@ animate_SOURCES =   GL/Quad.cc \
                     Object/Property/Movable.cc \
                     Object/Property/Scalable.cc \
                     Object/Property/Coloured.cc \
+                    Object/Property/Rotatable.cc \
                     \
                     Geometry/Matrix.cc \
                     \
@@ -28,6 +30,7 @@ animate_SOURCES =   GL/Quad.cc \
                     main.cc
 animate_HEADERS =   GL/Quad.hh \
                     GL/Circle.hh \
+                    GL/Line.hh \
                     GL/Shader.hh \
                     GL/Textures.hh \
                     GL/Texture.hh \
@@ -37,6 +40,7 @@ animate_HEADERS =   GL/Quad.hh \
                     Object/Property/Movable.hh \
                     Object/Property/Scalable.hh \
                     Object/Property/Coloured.hh \
+                    Object/Property/Rotatable.hh \
                     \
                     Geometry/Matrix.hh \
                     Geometry/Definitions.hh \

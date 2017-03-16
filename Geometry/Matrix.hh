@@ -23,6 +23,7 @@ namespace Animate::Geometry
             Matrix translate(Vector3 delta);
             Matrix scale(Vector2 factor);
             Matrix scale(Vector3 factor);
+            Matrix rotate(Vector3 rotation);
 
             Matrix operator*(Matrix b);
             Matrix operator-(Matrix b);

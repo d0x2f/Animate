@@ -101,6 +101,37 @@ Matrix Matrix::scale(Vector3 factor)
 }
 
 /**
+ * Apply a rotation transform.
+ *
+ * @param factor A vector representing the x, y and z rotation values.
+ *
+ * @return A new matrix with the transform applied.
+ */
+Matrix Matrix::rotate(Vector3 rotation)
+{
+    const GLfloat& x = rotation.x;
+    const GLfloat& y = rotation.y;
+    const GLfloat& z = -rotation.z;
+
+    return Matrix(      //Z
+        Vector4(cos(z), -sin(z), 0, 0),
+        Vector4(sin(z), cos(z), 0, 0),
+        Vector4(0, 0, 1, 0),
+        Vector4(0, 0, 0, 1)
+    ) * Matrix(         //Y
+        Vector4(cos(y), 0, sin(y), 0),
+        Vector4(0, 1, 0, 0),
+        Vector4(-sin(y), 0, cos(y), 0),
+        Vector4(0, 0, 0, 1)
+    ) * Matrix(         //X
+        Vector4(1, 0, 0, 0),
+        Vector4(0, cos(x), -sin(x), 0),
+        Vector4(0, sin(x), cos(x), 0),
+        Vector4(0, 0, 0, 1)
+    ) * (*this);
+}
+
+/**
 * Matrix multiplication.
 **/
 Matrix Matrix::operator*(Matrix b)

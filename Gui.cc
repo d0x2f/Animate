@@ -32,6 +32,9 @@ Gui::Gui() {
     //Set this window as the current context
     glfwMakeContextCurrent(this->window);
 
+    //Disable VSync
+    glfwSwapInterval(0);
+
     //Initialise glew
     glewInit();
 

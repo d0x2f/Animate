@@ -68,15 +68,13 @@ int Animation::get_tick_rate()
 
 bool Animation::on_render()
 {
-    /*
     GLuint64 current_time = Utilities::get_micro_time();
     this->frame_count++;
     if (current_time - this->last_frame_time >= 1000000) {
-        std::cout << "Frame time: " << 1000000./static_cast<GLfloat>(this->frame_count) << std::endl;
+        std::cout << "Frame time: " << 1000000./static_cast<GLfloat>(this->frame_count) << " FPS: " << this->frame_count << std::endl;
         this->frame_count = 0;
         this->last_frame_time = current_time;
     }
-    */
 }
 
 /**
