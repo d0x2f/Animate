@@ -22,6 +22,7 @@ animate_SOURCES =   GL/Quad.cc \
                     Animation/Cat/Object/Tile.cc \
                     Animation/Modulo/Modulo.cc \
                     Animation/Modulo/Object/Ring.cc \
+                    Animation/Noise/Noise.cc \
                     \
                     Gui.cc \
                     Context.cc \
@@ -50,6 +51,7 @@ animate_HEADERS =   GL/Quad.hh \
                     Animation/Cat/Object/Tile.hh \
                     Animation/Modulo/Modulo.hh \
                     Animation/Modulo/Object/Ring.hh \
+                    Animation/Noise/Noise.hh \
                     \
                     Gui.hh \
                     Context.hh \

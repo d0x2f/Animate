@@ -5,6 +5,7 @@
 #include "Gui.hh"
 #include "Animation/Cat/Cat.hh"
 #include "Animation/Modulo/Modulo.hh"
+#include "Animation/Noise/Noise.hh"
 
 using namespace Animate;
 using namespace Animate::Animation;
@@ -59,6 +60,7 @@ Gui::Gui() {
     glEnable(GL_MULTISAMPLE);
 
     //Create animation and connect it up
+    //Animation::Noise::Noise *animation = new Animation::Noise::Noise(this->context.get());
     Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
     //Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
     animation->initialise();

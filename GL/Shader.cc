@@ -210,6 +210,16 @@ void Shader::set_uniform(std::string name, Vector4 data)
     glUseProgram(0);
 }
 
+void Shader::set_uniform(std::string name, GLfloat data)
+{
+    this->use();
+    int ptr = glGetUniformLocation(this->get_id(), name.c_str());
+    if(ptr != -1) {
+        glUniform1f(ptr, data);
+    }
+    glUseProgram(0);
+}
+
 /**
  * Enable this shader as active.
  */

@@ -15,7 +15,7 @@ namespace Animate::Object
     class Object : public Movable, public Scalable, public Drawable
     {
         public:
-            Object(Point position, Scale size);
+            Object(Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Object();
 
             void initialise();
@@ -23,7 +23,7 @@ namespace Animate::Object
             void clear_components();
             virtual void draw(Matrix model_matrix);
 
-            virtual void on_tick(GLuint64 time_delta) = 0;
+            virtual void on_tick(GLuint64 time_delta);
 
         protected:
             std::vector< std::unique_ptr<Drawable> > components;

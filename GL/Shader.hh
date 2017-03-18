@@ -24,6 +24,7 @@ namespace Animate::GL
             void set_matrices(Matrix model, Matrix view, Matrix projection);
             void set_model_matrix(Matrix model);
             void set_uniform(std::string name, Vector4 data);
+            void set_uniform(std::string name, GLfloat data);
 
             void use();
             GLuint get_id();

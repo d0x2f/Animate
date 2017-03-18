@@ -18,7 +18,7 @@ namespace Animate::GL
     class Quad : public Drawable, public Movable, public Scalable
     {
         public:
-            Quad(Point position, Scale size);
+            Quad(Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Quad();
 
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));

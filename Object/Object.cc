@@ -65,3 +65,13 @@ void Object::draw(Matrix model_matrix)
         (*it)->draw(model_matrix);
     }
 }
+
+/**
+ * Actions to perform for each tick.
+ *
+ * @param time_delta Time since last tick.
+ */
+void Object::on_tick(GLuint64 time_delta)
+{
+
+}

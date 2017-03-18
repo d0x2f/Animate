@@ -13,5 +13,8 @@
 
         <file>data/Modulo/shader.frag</file>
         <file>data/Modulo/shader.vert</file>
+
+        <file>data/Noise/shader.frag</file>
+        <file>data/Noise/shader.vert</file>
     </gresource>
 </gresources>
