@@ -25,7 +25,7 @@ using namespace Animate::Object;
  */
 Modulo::Modulo(Context *context) : Animation::Animation(context)
 {
-    this->tick_rate = 60;
+    this->tick_rate = 120;
 
     srand(time(NULL));
 }
@@ -78,14 +78,16 @@ bool Modulo::on_render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glClearColor(
-        0.7,
-        0.7,
-        0.7,
+        0.,
+        0.,
+        0.,
         1.0
     );
 
     //Scoped multex lock
     {
+        std::lock_guard<std::mutex> guard(this->tick_mutex);
+
         //Draw every object
         for (
             std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
@@ -109,7 +111,7 @@ bool Modulo::on_render()
  */
 void Modulo::on_tick(GLuint64 time_delta)
 {
-    Animation::on_tick(time_delta);
+    std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-    //std::lock_guard<std::mutex> guard(this->tick_mutex);
+    Animation::on_tick(time_delta);
 }

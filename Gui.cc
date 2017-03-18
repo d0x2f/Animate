@@ -22,7 +22,7 @@ Gui::Gui() {
         throw std::string("Couldn't initialise GLFW.");
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
     if (!this->window) {
@@ -59,8 +59,8 @@ Gui::Gui() {
     glEnable(GL_MULTISAMPLE);
 
     //Create animation and connect it up
-    //Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
-    Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
+    Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
+    //Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
     animation->initialise();
     set_animation(animation);
 }

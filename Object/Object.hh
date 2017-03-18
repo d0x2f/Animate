@@ -21,7 +21,7 @@ namespace Animate::Object
             void initialise();
             void add_component(Drawable *component);
             void clear_components();
-            void draw(Matrix model_matrix);
+            virtual void draw(Matrix model_matrix);
 
             virtual void on_tick(GLuint64 time_delta) = 0;
 
