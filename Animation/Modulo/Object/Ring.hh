@@ -31,7 +31,7 @@ namespace Animate::Animation::Modulo::Object
 
         private:
             GLfloat hue = 0;
-            GLuint modulo = 360;
+            GLuint modulo = 1000;
             GLfloat factor = 1;
             std::vector<LineDescription> line_descriptions;
 
