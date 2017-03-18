@@ -38,8 +38,6 @@ void Ring::initialise(Shader *shader)
         new Texture()
     );
 
-    sleep(3);
-
     this->initialised = true;
 }
 
