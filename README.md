@@ -1,5 +1,7 @@
 # Animate
-Interesting minimalist animations
+Interesting minimalist animations.
+
+Just a collection of animations, press space to "change the channel".
 
 ## Animations
 * Complete
@@ -16,8 +18,6 @@ I'm making this collection of OpenGL animations as a way to grow and showcase my
 Writting computer graphics binds two of my favourite subjects, programming and mathematics. In particlar modern C++ and differential geometry.
 
 ## TODO
-* Write a method to switch between animations
-  * I'm thinking of a keypress to "switch channels" with the noise animation in between to mast loading times.
 * Move away from GDK resource manager in favor of some other stand alone resource management library.
 
 ## Requirememts
