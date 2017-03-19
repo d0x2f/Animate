@@ -26,7 +26,7 @@ namespace Animate::Object
             virtual void on_tick(GLuint64 time_delta);
 
         protected:
-            std::vector< std::unique_ptr<Drawable> > components;
+            std::vector< std::shared_ptr<Drawable> > components;
 
             void initialise_buffers();
     };

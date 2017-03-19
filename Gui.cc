@@ -34,13 +34,13 @@ Gui::Gui() {
     glfwMakeContextCurrent(this->window);
 
     //Disable VSync
-    glfwSwapInterval(0);
+    //glfwSwapInterval(0);
 
     //Initialise glew
     glewInit();
 
     //Create context object
-    this->context = std::unique_ptr<Context>( new Context() );
+    this->context = std::shared_ptr<Context>( new Context() );
 
     //Create a texture manager
     new Textures(this->context.get());
@@ -59,12 +59,31 @@ Gui::Gui() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_MULTISAMPLE);
 
+    glfwSetWindowUserPointer(this->window, this);
+
+    glfwSetKeyCallback(
+        this->window,
+        [](GLFWwindow* w, int key, int scancode, int action, int mods) {
+            static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
+        }
+    );
+
     //Create animation and connect it up
-    //Animation::Noise::Noise *animation = new Animation::Noise::Noise(this->context.get());
-    Animation::Modulo::Modulo *animation = new Animation::Modulo::Modulo(this->context.get());
-    //Animation::Cat::Cat *animation = new Animation::Cat::Cat(this->context.get());
+    Animation::Noise::Noise *noise_animation = new Animation::Noise::Noise(this->context.get());
+    noise_animation->initialise();
+
+    Animation::Animation *animation = new Animation::Cat::Cat(this->context.get());
     animation->initialise();
-    set_animation(animation);
+
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+
+    animation = new Animation::Modulo::Modulo(this->context.get());
+    animation->initialise();
+
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+
+    this->current_animation = this->animations.begin();
+    (*this->current_animation)->start();
 }
 
 /**
@@ -75,33 +94,35 @@ Gui::~Gui()
     glfwTerminate();
 }
 
+void Gui::on_key(int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        (*this->current_animation)->stop();
+
+        this->current_animation++;
+        if (this->current_animation == this->animations.end()) {
+            this->current_animation = this->animations.begin();
+        }
+
+        (*this->current_animation)->start();
+    }
+}
+
 /**
  * Start the gui loop.
  */
 void Gui::start_loop()
 {
     //Loop until the window is closed
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(this->window))
     {
         //Render the current animation
-        this->current_animation->on_render();
+        (*this->current_animation)->on_render();
 
         //Swap buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(this->window);
 
         //Poll events
         glfwPollEvents();
     }
-}
-
-/**
- * Set the currently running animation.
- * Unbinds existing render signals and connects the given animation.
- *
- * @param animation        The animation to play.
- */
-void Gui::set_animation(Animation::Animation *animation)
-{
-    //Triggers an existing animation's destructor
-    this->current_animation.reset(animation);
 }

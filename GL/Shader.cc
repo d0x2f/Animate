@@ -139,7 +139,7 @@ void Shader::create_uniform_buffer()
 void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
 {
     //Bind
-    glBindBuffer(GL_UNIFORM_BUFFER, this->uniform_buffer_id);
+    this->use();
 
     //Storage
     GLint indices[3];
@@ -177,7 +177,7 @@ void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
 void Shader::set_model_matrix(Matrix model)
 {
     //Bind
-    glBindBuffer(GL_UNIFORM_BUFFER, this->uniform_buffer_id);
+    this->use();
 
     //Storage
     GLint indices[3];
@@ -207,6 +207,7 @@ void Shader::set_uniform(std::string name, Vector4 data)
     if(ptr != -1) {
         glUniform4f(ptr, data.x, data.y, data.z, data.w);
     }
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glUseProgram(0);
 }
 
@@ -217,6 +218,7 @@ void Shader::set_uniform(std::string name, GLfloat data)
     if(ptr != -1) {
         glUniform1f(ptr, data);
     }
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glUseProgram(0);
 }
 
@@ -225,13 +227,14 @@ void Shader::set_uniform(std::string name, GLfloat data)
  */
 void Shader::use()
 {
-    glUseProgram(this->program_id);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->uniform_buffer_id);
+    glUseProgram(this->get_id());
 }
 
 /**
  * Return the program id.
  */
-GLuint Shader::get_id()
+GLuint Shader::get_id() const
 {
     return this->program_id;
 }

@@ -24,6 +24,7 @@ using namespace Animate::Object;
 Cat::Cat(Context *context) : Animation::Animation(context)
 {
     this->tick_rate = 60;
+    this->reset_puzzle_flag = false;
 
     srand(time(NULL));
 }
@@ -33,34 +34,29 @@ Cat::Cat(Context *context) : Animation::Animation(context)
  */
 void Cat::initialise()
 {
+    std::cout << "cat init" << std::endl;
+
     //Set shaders
-    this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
-
-    this->reset_puzzle();
-
-    //Start tick thread
-    this->run();
 }
 
 void Cat::reset_puzzle()
 {
+    std::lock_guard<std::mutex> guard(this->tick_mutex);
+
     //Clear tiles
     this->clear_objects();
     this->tile_position_map.clear();
 
     //Set puzzle values
-    this->grid_size = 4;
     std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 7;
-
-    std::vector<uint8_t> initial_position = taquin_generate_vector(this->grid_size);
-    this->move_sequence = taquin_solve(initial_position, this->grid_size);
 
     //Initialise cat tiles
     Tile *tile;
     for (int i = 0; i < this->grid_size * this->grid_size; i++) {
-        if (initial_position[i] == 0) {
+        if (this->initial_position[i] == 0) {
             this->zero_position = i;
             continue;
         }
@@ -68,7 +64,7 @@ void Cat::reset_puzzle()
         tile->initialise(
             this->shader.get(),
             this->context->get_textures()->get_texture(texture_name),
-            initial_position[i], //board position
+            this->initial_position[i], //board position
             this->grid_size  //Grid size
         );
         tile->set_board_position(Position(i%this->grid_size, i/this->grid_size));
@@ -87,14 +83,9 @@ bool Cat::on_render()
 {
     Animation::on_render();
 
-    //Scoped multex lock
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-
-        if (this->reset_puzzle_flag) {
-            this->reset_puzzle();
-            this->reset_puzzle_flag = false;
-        }
+    if (this->reset_puzzle_flag) {
+        this->reset_puzzle();
+        this->reset_puzzle_flag = false;
     }
 
     //Reset matrices
@@ -109,7 +100,7 @@ bool Cat::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
 
-    this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -122,9 +113,11 @@ bool Cat::on_render()
 
     //Scoped multex lock
     {
+        std::lock_guard<std::mutex> guard(this->tick_mutex);
+
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
@@ -145,28 +138,32 @@ bool Cat::on_render()
  */
 void Cat::on_tick(GLuint64 time_delta)
 {
-    Animation::on_tick(time_delta);
+    {
+        std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-    std::lock_guard<std::mutex> guard(this->tick_mutex);
+        Animation::on_tick(time_delta);
 
-    //Check if any tiles are moving
-    bool in_motion = false;
-    for (
-        std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-        it != this->objects.end();
-        ++it
-    ) {
-        in_motion |= ((Tile *)it->second.get())->is_moving();
-    }
+        //Check if any tiles are moving
+        bool in_motion = false;
+        for (
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            it != this->objects.end();
+            ++it
+        ) {
+            in_motion |= ((Tile *)it->second.get())->is_moving();
+        }
 
-    //If tiles are moving, skip
-    if (in_motion) {
-        return;
+        //If tiles are moving, skip
+        if (in_motion) {
+            return;
+        }
     }
 
     if (this->move_sequence.empty()) {
+        this->initial_position = taquin_generate_vector(this->grid_size);
+        this->move_sequence = taquin_solve(this->initial_position, this->grid_size);
+
         this->reset_puzzle_flag = true;
-        sleep(1);
         return;
     }
 
@@ -193,14 +190,18 @@ void Cat::on_tick(GLuint64 time_delta)
             break;
     }
 
-    std::map<int, Tile *>::iterator it = this->tile_position_map.find(to_position);
-    Tile *tile = it->second;
-    it->second->move_to_board_position(Position(
-        from_position % this->grid_size,
-        from_position / this->grid_size
-    ));
-    this->tile_position_map.erase(it);
-    this->tile_position_map.insert(std::pair<int, Tile *>(from_position, tile));
+    {
+        std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-    this->zero_position = to_position;
+        std::map<int, Tile *>::iterator it = this->tile_position_map.find(to_position);
+        Tile *tile = it->second;
+        it->second->move_to_board_position(Position(
+            from_position % this->grid_size,
+            from_position / this->grid_size
+        ));
+        this->tile_position_map.erase(it);
+        this->tile_position_map.insert(std::pair<int, Tile *>(from_position, tile));
+
+        this->zero_position = to_position;
+    }
 }

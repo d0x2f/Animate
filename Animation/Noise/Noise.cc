@@ -34,7 +34,7 @@ Noise::Noise(Context *context) : Animation::Animation(context)
 void Noise::initialise()
 {
     //Set shaders
-    this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag", "/Animate/data/Noise/shader.vert"));
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag", "/Animate/data/Noise/shader.vert"));
     this->shader.get()->initialise();
 
     //Add a Quad
@@ -46,9 +46,6 @@ void Noise::initialise()
     );
     object->add_component(quad);
     this->add_object("quad", object);
-
-    //Start tick thread
-    this->run();
 }
 
 /**
@@ -93,7 +90,7 @@ bool Noise::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

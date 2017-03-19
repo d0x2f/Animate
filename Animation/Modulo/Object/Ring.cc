@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <iostream>
 
 #include "Ring.hh"
 #include "../../../GL/Circle.hh"
@@ -32,7 +33,7 @@ void Ring::initialise(Shader *shader)
     this->add_component(circle);
 
     //Create a line
-    this->line = std::unique_ptr<Line>(new Line(Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
+    this->line = std::shared_ptr<Line>(new Line(Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
     line->initialise(
         shader,
         new Texture()
@@ -94,7 +95,7 @@ void Ring::on_tick(GLuint64 time_delta)
 
     //Set the calculated colour for all components.
     for (
-        std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
+        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();
         ++it
     ) {

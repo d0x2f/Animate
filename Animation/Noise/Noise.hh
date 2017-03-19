@@ -21,6 +21,6 @@ namespace Animate::Animation::Noise
             void initialise();
 
         protected:
-            std::unique_ptr<GL::Shader> shader;
+            std::shared_ptr<GL::Shader> shader;
     };
 }

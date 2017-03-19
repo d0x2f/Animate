@@ -35,6 +35,6 @@ namespace Animate::Animation::Modulo::Object
             GLfloat factor = 1;
             std::vector<LineDescription> line_descriptions;
 
-            std::unique_ptr<Line> line;
+            std::shared_ptr<Line> line;
     };
 }

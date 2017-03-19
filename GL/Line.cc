@@ -21,7 +21,7 @@ Line::Line(Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat
         thickness = 0.;
 
     this->thickness = thickness;
-    this->instance_count++;
+    Line::instance_count++;
 }
 
 /**
@@ -30,10 +30,10 @@ Line::Line(Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat
  */
 Line::~Line()
 {
-    this->instance_count--;
-    if (this->instance_count == 0) {
-        glDeleteBuffers(1, &this->buffer_id);
-        glDeleteVertexArrays(1, &this->vao_id);
+    Line::instance_count--;
+    if (Line::instance_count == 0) {
+        glDeleteBuffers(1, &Line::buffer_id);
+        glDeleteVertexArrays(1, &Line::vao_id);
     }
 }
 
@@ -71,12 +71,12 @@ void Line::initialise_buffers()
     vertices[11] = 0.;                      //z
 
     //Generate vertex array
-    glGenVertexArrays(1, &this->vao_id);
-    glBindVertexArray(this->vao_id);
+    glGenVertexArrays(1, &Line::vao_id);
+    glBindVertexArray(Line::vao_id);
 
     //Upload vertex data
-    glGenBuffers(1, &this->buffer_id);
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
+    glGenBuffers(1, &Line::buffer_id);
+    glBindBuffer(GL_ARRAY_BUFFER, Line::buffer_id);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     //Unbind
@@ -92,7 +92,6 @@ void Line::initialise_buffers()
 void Line::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    //
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).rotate(this->rotation).translate(this->position);
 
     //Upload the matrix to the shader
@@ -102,8 +101,8 @@ void Line::draw(Matrix model_matrix)
     this->shader->set_uniform("colour", this->colour);
 
     //Bind
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
-    glBindVertexArray(this->vao_id);
+    glBindBuffer(GL_ARRAY_BUFFER, Line::buffer_id);
+    glBindVertexArray(Line::vao_id);
 
     //Enable and set vertex attributes
     glEnableVertexAttribArray(0);

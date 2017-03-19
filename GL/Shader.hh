@@ -27,7 +27,7 @@ namespace Animate::GL
             void set_uniform(std::string name, GLfloat data);
 
             void use();
-            GLuint get_id();
+            GLuint get_id() const;
 
         private:
             Context *context;

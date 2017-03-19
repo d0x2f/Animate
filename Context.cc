@@ -9,7 +9,7 @@ using namespace Animate;
  */
 void Context::set_textures(GL::Textures *textures)
 {
-    this->textures = std::unique_ptr<GL::Textures>(textures);
+    this->textures = std::shared_ptr<GL::Textures>(textures);
 }
 
 /**

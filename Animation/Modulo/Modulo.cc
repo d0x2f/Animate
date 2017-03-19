@@ -36,8 +36,8 @@ Modulo::Modulo(Context *context) : Animation::Animation(context)
 void Modulo::initialise()
 {
     //Set shaders
-    this->shader = std::unique_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag", "/Animate/data/Modulo/shader.vert"));
-    this->shader.get()->initialise();
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag", "/Animate/data/Modulo/shader.vert"));
+    this->shader->initialise();
 
     //Add a circle
     Ring *ring = new Ring(Point(0.5,0.5), Scale(.8,.8));
@@ -45,9 +45,6 @@ void Modulo::initialise()
         this->shader.get()
     );
     this->add_object("ring", ring);
-
-    //Start tick thread
-    this->run();
 }
 
 /**
@@ -73,7 +70,7 @@ bool Modulo::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
-    this->shader.get()->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -90,7 +87,7 @@ bool Modulo::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

@@ -2,6 +2,7 @@
 
 #include <map>
 #include <taquinsolve.hh>
+#include <atomic>
 
 #include "../Animation.hh"
 #include "../../GL/Quad.hh"
@@ -26,14 +27,15 @@ namespace Animate::Animation::Cat
             void initialise();
 
         protected:
-            std::unique_ptr<GL::Shader> shader;
+            std::shared_ptr<GL::Shader> shader;
+            std::vector<uint8_t> initial_position;
             std::queue<TaquinSolve::Moves> move_sequence;
             std::map<int, Tile *> tile_position_map;
             int zero_position = 0;
-            int grid_size = 0;
+            int grid_size = 4;
             int texture_index = 0;
 
-            bool reset_puzzle_flag = false;
+            std::atomic_bool reset_puzzle_flag;
             void reset_puzzle();
     };
 }

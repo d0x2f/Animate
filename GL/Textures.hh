@@ -22,7 +22,7 @@ namespace Animate
             protected:
                 Context *context;
 
-                std::map< std::string, std::unique_ptr<Texture> > texture_cache;
+                std::map< std::string, std::shared_ptr<Texture> > texture_cache;
         };
     }
 }

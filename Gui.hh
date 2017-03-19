@@ -2,6 +2,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <vector>
 
 #include "Animation/Animation.hh"
 #include "Context.hh"
@@ -18,10 +19,15 @@ namespace Animate
 
             void start_loop();
 
+            void on_key(int key, int scancode, int action, int mods);
+
         private:
             GLFWwindow *window;
-            std::unique_ptr<Context> context;
-            std::unique_ptr<Animation::Animation> current_animation;
+            std::shared_ptr<Context> context;
+            std::shared_ptr<Animation::Animation> noise_animation;
+            std::vector< std::shared_ptr<Animation::Animation> >::iterator current_animation;
+
+            std::vector< std::shared_ptr<Animation::Animation> > animations;
 
             void set_animation(Animation::Animation *animation);
     };

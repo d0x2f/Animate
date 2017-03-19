@@ -14,6 +14,6 @@ namespace Animate
             GL::Textures *get_textures();
 
         private:
-            std::unique_ptr<GL::Textures> textures;
+            std::shared_ptr<GL::Textures> textures;
     };
 }
