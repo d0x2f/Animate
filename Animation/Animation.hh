@@ -18,14 +18,16 @@ namespace Animate::Animation
             ~Animation();
 
             virtual bool on_render();
+            virtual void on_load();
             virtual void on_tick(GLuint64 time_delta);
             virtual void initialise() = 0;
 
             void start();
             void stop();
 
-            bool check_running();
-            int get_tick_rate();
+            bool check_running() const;
+            bool check_loaded() const;
+            int get_tick_rate() const;
 
         protected:
             Context *context;
@@ -34,6 +36,7 @@ namespace Animate::Animation
             GLuint64 last_frame_time = 0;
             int frame_count = 0;
             std::map< std::string, std::shared_ptr<Object::Object> > objects;
+            std::atomic_bool loaded;
 
             void add_object(std::string name, Object::Object *object);
             Object::Object *get_object(std::string name);

@@ -69,7 +69,7 @@ Gui::Gui() {
     );
 
     //Create animation and connect it up
-    Animation::Noise::Noise *noise_animation = new Animation::Noise::Noise(this->context.get());
+    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context.get()));
     noise_animation->initialise();
 
     Animation::Animation *animation = new Animation::Cat::Cat(this->context.get());
@@ -116,8 +116,13 @@ void Gui::start_loop()
     //Loop until the window is closed
     while (!glfwWindowShouldClose(this->window))
     {
-        //Render the current animation
-        (*this->current_animation)->on_render();
+        //Render the current animation if it's loaded, otherwise noise.
+        Animation::Animation *animation = (*this->current_animation).get();
+        if (animation->check_loaded()) {
+            animation->on_render();
+        } else {
+            this->noise_animation->on_render();
+        }
 
         //Swap buffers
         glfwSwapBuffers(this->window);

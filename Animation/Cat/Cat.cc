@@ -34,13 +34,14 @@ Cat::Cat(Context *context) : Animation::Animation(context)
  */
 void Cat::initialise()
 {
-    std::cout << "cat init" << std::endl;
-
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
     this->shader.get()->initialise();
 }
 
+/**
+ * Recreate the appropriate tiles in their new positions, ready to be solved.
+ */
 void Cat::reset_puzzle()
 {
     std::lock_guard<std::mutex> guard(this->tick_mutex);
@@ -134,6 +135,22 @@ bool Cat::on_render()
 }
 
 /**
+ * Perform functions in the tick thread that should occur before we call ourselves "loaded".
+ */
+void Cat::on_load()
+{
+    if (this->move_sequence.empty()) {
+        this->initial_position = taquin_generate_vector(this->grid_size);
+        this->move_sequence = taquin_solve(this->initial_position, this->grid_size);
+
+        this->reset_puzzle_flag = true;
+        this->loaded = true;
+    } else {
+        Animation::on_load();
+    }
+}
+
+/**
  * Compute a tick
  */
 void Cat::on_tick(GLuint64 time_delta)
@@ -164,6 +181,9 @@ void Cat::on_tick(GLuint64 time_delta)
         this->move_sequence = taquin_solve(this->initial_position, this->grid_size);
 
         this->reset_puzzle_flag = true;
+    }
+
+    if (this->reset_puzzle_flag) {
         return;
     }
 

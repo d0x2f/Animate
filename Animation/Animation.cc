@@ -1,4 +1,5 @@
 #include <iostream>
+#include <stdlib.h>
 
 #include "Animation.hh"
 #include "Utilities.hh"
@@ -12,6 +13,7 @@ using namespace Animate::Object;
 Animation::Animation(Context *context) : context(context)
 {
     this->running = false;
+    this->loaded = false;
 }
 
 /**
@@ -35,8 +37,12 @@ void Animation::start()
     this->tick_thread = std::shared_ptr<std::thread>( new std::thread(Animation::tick_loop, this) );
 }
 
+/**
+ * Stop the animation tick thread.
+ */
 void Animation::stop() {
     this->running = false;
+    this->loaded = false;
 
     if (this->tick_thread && this->tick_thread.get()->joinable()) {
         this->tick_thread.get()->join();
@@ -48,9 +54,14 @@ void Animation::stop() {
  *
  * @return bool
  */
-bool Animation::check_running()
+bool Animation::check_running() const
 {
     return this->running;
+}
+
+bool Animation::check_loaded() const
+{
+    return this->loaded;
 }
 
 /**
@@ -58,11 +69,14 @@ bool Animation::check_running()
  *
  * @return int
  */
-int Animation::get_tick_rate()
+int Animation::get_tick_rate() const
 {
     return this->tick_rate;
 }
 
+/**
+ * Default render behaviour simply prints the frame time and rate.
+ */
 bool Animation::on_render()
 {
     GLuint64 current_time = Utilities::get_micro_time();
@@ -72,6 +86,15 @@ bool Animation::on_render()
         this->frame_count = 0;
         this->last_frame_time = current_time;
     }
+}
+
+/**
+ * Perform functions in the tick thread that should occur before we call ourselves "loaded".
+ */
+void Animation::on_load()
+{
+    usleep(300000);
+    this->loaded = true;
 }
 
 /**
@@ -95,6 +118,8 @@ void Animation::on_tick(GLuint64 time_delta)
  */
 void Animation::tick_loop(Animation *animation)
 {
+    animation->on_load();
+
     GLuint64 last_tick_time = Utilities::get_micro_time();
     while (animation->check_running()) {
         //Supply a time difference since the last tick

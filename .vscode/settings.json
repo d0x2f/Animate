@@ -3,7 +3,9 @@
         "*.cc": "cpp",
         "*.hh": "cpp",
         "*.vert": "glsl",
-        "*.frag": "glsl"
+        "*.frag": "glsl",
+        "array": "cpp",
+        "string_view": "cpp"
     },
     "files.exclude": {
         "**/*.in": true,

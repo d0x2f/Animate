@@ -22,9 +22,10 @@ namespace Animate::Animation::Cat
         public:
             Cat(Context *context);
 
-            bool on_render();
-            void on_tick(GLuint64 time_delta);
-            void initialise();
+            bool on_render() override;
+            void on_load() override;
+            void on_tick(GLuint64 time_delta) override;
+            void initialise() override;
 
         protected:
             std::shared_ptr<GL::Shader> shader;
