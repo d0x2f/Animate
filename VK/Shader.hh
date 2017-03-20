@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <string>
 #include <map>
@@ -11,7 +11,7 @@
 
 using namespace Animate::Geometry;
 
-namespace Animate::GL
+namespace Animate::VK
 {
     class Shader
     {

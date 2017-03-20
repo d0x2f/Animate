@@ -1,7 +1,7 @@
 #include "Textures.hh"
 #include "../Context.hh"
 
-using namespace Animate::GL;
+using namespace Animate::VK;
 
 Textures::Textures(Context *context) : context(context)
 {

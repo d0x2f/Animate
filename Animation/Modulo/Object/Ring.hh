@@ -5,7 +5,7 @@
 
 #include "../../../Object/Object.hh"
 #include "../../../Object/Property/Coloured.hh"
-#include "../../../GL/Line.hh"
+#include "../../../VK/Line.hh"
 #include "../../../Geometry/Definitions.hh"
 
 using namespace Animate::Object;

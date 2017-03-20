@@ -10,7 +10,7 @@ namespace Animate
 {
     class Context;
 
-    namespace GL
+    namespace VK
     {
         class Textures
         {

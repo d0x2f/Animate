@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Animation.hh"
-#include "../../GL/Quad.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Quad.hh"
+#include "../../VK/Shader.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 
@@ -21,6 +21,6 @@ namespace Animate::Animation::Noise
             void initialise();
 
         protected:
-            std::shared_ptr<GL::Shader> shader;
+            std::shared_ptr<VK::Shader> shader;
     };
 }

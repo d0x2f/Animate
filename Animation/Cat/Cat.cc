@@ -1,5 +1,5 @@
 #include <gtkmm.h>
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,12 +9,12 @@
 #include "../../Utilities.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Shader.hh"
 
 using namespace Animate::Animation::Cat;
 using namespace Animate::Animation::Cat::Object;
 using namespace Animate::Geometry;
-using namespace Animate::GL;
+using namespace Animate::VK;
 using namespace Animate::Object;
 
 /**

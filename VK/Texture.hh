@@ -1,10 +1,10 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <string>
 
-namespace Animate::GL
+namespace Animate::VK
 {
     class Texture
     {

@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <cstdint>
 
 #include "Gui.hh"
 #include "Animation/Cat/Cat.hh"
@@ -14,7 +15,24 @@ using namespace Animate::Animation;
  * Sets the window size and title.
  * Starts the cat animation.
  */
-Gui::Gui() {
+Gui::Gui()
+{
+    this->init_glfw();
+    this->init_vulkan();
+    this->init_context();
+    this->init_animations();
+}
+
+/**
+ * Destructor
+ */
+Gui::~Gui()
+{
+    glfwTerminate();
+}
+
+void Gui::init_glfw()
+{
     glfwSetErrorCallback([](int error, const char* description){
         std::cout << description << " (" << error << ")" << std::endl;
     });
@@ -23,9 +41,11 @@ Gui::Gui() {
         throw std::string("Couldn't initialise GLFW.");
     }
 
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 8);
 
-    this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
+    this->window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
     if (!this->window) {
         throw std::string("Couldn't create GLFW window.");
     }
@@ -36,29 +56,6 @@ Gui::Gui() {
     //Disable VSync
     //glfwSwapInterval(0);
 
-    //Initialise glew
-    glewInit();
-
-    //Create context object
-    this->context = std::shared_ptr<Context>( new Context() );
-
-    //Create a texture manager
-    new Textures(this->context.get());
-
-    //Print version information
-    const GLubyte* renderer = glGetString(GL_RENDERER);
-    const GLubyte* version = glGetString(GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_MULTISAMPLE);
-
     glfwSetWindowUserPointer(this->window, this);
 
     glfwSetKeyCallback(
@@ -67,7 +64,41 @@ Gui::Gui() {
             static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
         }
     );
+}
 
+void Gui::init_vulkan()
+{
+    unsigned int glfwExtensionCount = 0;
+    const char** glfwExtensions;
+
+    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+    vk::ApplicationInfo app_info = vk::ApplicationInfo()
+        .pApplicationName("Animate")
+        .applicationVersion(VK_MAKE_VERSION(0, 0, 0))
+        .pEngineName("No Engine")
+        .engineVersion(VK_MAKE_VERSION(0, 0, 0))
+        .apiVersion(VK_API_VERSION_1_0);
+
+    vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo()
+        .pApplicationInfo(&appInfo)
+        .enabledExtensionCount(glfwExtensionCount)
+        .ppEnabledExtensionNames(glfwExtensions);
+
+    vk::createInstance(&create_info, nullptr, &this->vk_instance);
+}
+
+void Gui::init_context()
+{
+    //Create context object
+    this->context = std::shared_ptr<Context>( new Context() );
+
+    //Create a texture manager
+    new Textures(this->context.get());
+}
+
+void Gui::init_animations()
+{
     //Create animation and connect it up
     this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context.get()));
     noise_animation->initialise();
@@ -82,16 +113,8 @@ Gui::Gui() {
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
-    this->current_animation = this->animations.begin();
+    this->current_animation = this->animations.begin()+1;
     (*this->current_animation)->start();
-}
-
-/**
- * Destructor
- */
-Gui::~Gui()
-{
-    glfwTerminate();
 }
 
 void Gui::on_key(int key, int scancode, int action, int mods)

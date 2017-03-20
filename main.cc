@@ -1,5 +1,6 @@
 #include <gtkmm.h>
 #include <iostream>
+#include <stdexcept>
 
 #include "Gui.hh"
 
@@ -19,6 +20,10 @@ int main(int argc, char **argv)
         gui.start_loop();
     } catch (std::string error) {
         std::cerr << error << std::endl;
+        return EXIT_FAILURE;
+    } catch (std::string error) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

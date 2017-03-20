@@ -2,7 +2,7 @@
 
 #include "Quad.hh"
 
-using namespace Animate::GL;
+using namespace Animate::VK;
 using namespace Animate::Geometry;
 
 /**

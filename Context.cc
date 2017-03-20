@@ -7,15 +7,15 @@ using namespace Animate;
  *
  * @param textures A textures manager
  */
-void Context::set_textures(GL::Textures *textures)
+void Context::set_textures(VK::Textures *textures)
 {
-    this->textures = std::shared_ptr<GL::Textures>(textures);
+    this->textures = std::shared_ptr<VK::Textures>(textures);
 }
 
 /**
  * Retrieves the tracked GL Textures object.
  */
-GL::Textures *Context::get_textures()
+VK::Textures *Context::get_textures()
 {
     if (!this->textures) {
         return NULL;

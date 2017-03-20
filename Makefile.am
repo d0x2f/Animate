@@ -1,12 +1,12 @@
 bin_PROGRAMS = animate
 
 animatedir = .
-animate_SOURCES =   GL/Quad.cc \
-                    GL/Circle.cc \
-                    GL/Line.cc \
-                    GL/Shader.cc \
-                    GL/Textures.cc \
-                    GL/Texture.cc \
+animate_SOURCES =   VK/Quad.cc \
+                    VK/Circle.cc \
+                    VK/Line.cc \
+                    VK/Shader.cc \
+                    VK/Textures.cc \
+                    VK/Texture.cc \
                     \
                     Object/Object.cc \
                     Object/Property/Drawable.cc \
@@ -29,12 +29,12 @@ animate_SOURCES =   GL/Quad.cc \
                     resources.c \
                     Utilities.cc \
                     main.cc
-animate_HEADERS =   GL/Quad.hh \
-                    GL/Circle.hh \
-                    GL/Line.hh \
-                    GL/Shader.hh \
-                    GL/Textures.hh \
-                    GL/Texture.hh \
+animate_HEADERS =   VK/Quad.hh \
+                    VK/Circle.hh \
+                    VK/Line.hh \
+                    VK/Shader.hh \
+                    VK/Textures.hh \
+                    VK/Texture.hh \
                     \
                     Object/Object.hh \
                     Object/Property/Drawable.hh \
@@ -62,7 +62,7 @@ animate_CPPFLAGS = @GTK_CFLAGS@ @GTKMM_CFLAGS@
 animate_LDADD = @GTK_LIBS@ @GTKMM_LIBS@
 
 SUBDIRS =   Animation \
-            GL \
+            VK \
             Geometry \
             Object
 

@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "Ring.hh"
-#include "../../../GL/Circle.hh"
+#include "../../../VK/Circle.hh"
 
 #define PI 3.1415926535897f
 

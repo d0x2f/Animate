@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>
 
@@ -23,11 +23,15 @@ namespace Animate
 
         private:
             GLFWwindow *window;
+            vk::Instance vk_instance;
             std::shared_ptr<Context> context;
+
             std::shared_ptr<Animation::Animation> noise_animation;
             std::vector< std::shared_ptr<Animation::Animation> >::iterator current_animation;
 
             std::vector< std::shared_ptr<Animation::Animation> > animations;
+
+            void init_vulkan();
 
             void set_animation(Animation::Animation *animation);
     };

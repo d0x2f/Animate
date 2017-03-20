@@ -2,18 +2,18 @@
 
 #include <memory>
 
-#include "GL/Textures.hh"
+#include "VK/Textures.hh"
 
 namespace Animate
 {
     class Context
     {
         public:
-            void set_textures(GL::Textures *textures);
+            void set_textures(VK::Textures *textures);
 
-            GL::Textures *get_textures();
+            VK::Textures *get_textures();
 
         private:
-            std::shared_ptr<GL::Textures> textures;
+            std::shared_ptr<VK::Textures> textures;
     };
 }

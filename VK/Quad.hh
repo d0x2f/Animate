@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
 #include "../Geometry/Definitions.hh"
@@ -13,7 +13,7 @@
 using namespace Animate::Geometry;
 using namespace Animate::Object::Property;
 
-namespace Animate::GL
+namespace Animate::VK
 {
     class Quad : public Drawable, public Movable, public Scalable
     {

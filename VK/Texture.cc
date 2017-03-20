@@ -4,7 +4,7 @@
 #include "Texture.hh"
 #include "../Utilities.hh"
 
-using namespace Animate::GL;
+using namespace Animate::VK;
 
 Texture::~Texture()
 {

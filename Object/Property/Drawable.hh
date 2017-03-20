@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../../GL/Shader.hh"
-#include "../../GL/Texture.hh"
+#include "../../VK/Shader.hh"
+#include "../../VK/Texture.hh"
 #include "../Geometry/Matrix.hh"
 
 using namespace Animate::Geometry;
-using namespace Animate::GL;
+using namespace Animate::VK;
 
 namespace Animate::Object::Property
 {

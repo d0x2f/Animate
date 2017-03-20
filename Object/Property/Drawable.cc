@@ -1,7 +1,7 @@
 #include "Drawable.hh"
 
 using namespace Animate::Object::Property;
-using namespace Animate::GL;
+using namespace Animate::VK;
 
 /**
  * Initialise the drawable.
