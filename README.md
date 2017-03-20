@@ -13,7 +13,7 @@ Just a collection of animations, press space to "change the channel".
 
 ## Intention
 
-I'm making this collection of OpenGL animations as a way to grow and showcase my C++/OGL abilities.
+I'm making this collection of Vulkan/OpenGL animations as a way to grow and showcase my C++/GL abilities.
 
 Writting computer graphics binds two of my favourite subjects, programming and mathematics. In particlar modern C++ and differential geometry.
 
@@ -22,7 +22,7 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 
 ## Requirememts
 
-* GLEW, GLU, GL
+* Vulkan library and vulkan compatible hardware
 * GTK3, GTKMM3
 * [libtaquinsolve](https://github.com/d0x2f/libtaquinsolve)
 
@@ -32,6 +32,6 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 * https://en.wikipedia.org/wiki/3D_projection
 * http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
 * https://en.wikipedia.org/wiki/Affine_transformation#Affine_transformation_in_plane_geometry
-* https://github.com/GNOME/gtkmm/blob/master/demos/gtk-demo/example_glarea.cc
-* https://www.khronos.org/registry/OpenGL-Refpages/gl4/
 * https://developer.gnome.org/gtkmm/stable/
+* https://developer.nvidia.com/open-source-vulkan-c-api
+* https://www.khronos.org/registry/vulkan/specs/1.0/apispec.html
