@@ -24,6 +24,10 @@ Gui::Gui() {
     }
 
     glfwWindowHint(GLFW_SAMPLES, 8);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
     if (!this->window) {
@@ -34,7 +38,7 @@ Gui::Gui() {
     glfwMakeContextCurrent(this->window);
 
     //Disable VSync
-    //glfwSwapInterval(0);
+    glfwSwapInterval(0);
 
     //Initialise glew
     glewInit();
