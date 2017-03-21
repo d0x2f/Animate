@@ -8,7 +8,6 @@ using namespace Animate::VK;
 
 Texture::~Texture()
 {
-    glDeleteTextures(1, &this->texture_id);
 }
 
 void Texture::load_from_resource(std::string resource_id)
@@ -19,6 +18,7 @@ void Texture::load_from_resource(std::string resource_id)
         throw std::string("Couldn't load texture resource: " + resource_id);
     }
 
+    /*
     glGenTextures(1, &this->texture_id);
     glBindTexture(GL_TEXTURE_2D, this->texture_id);
 
@@ -46,13 +46,14 @@ void Texture::load_from_resource(std::string resource_id)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+    */
 
     std::cout << "Loaded texture: " << resource_id << " (" << this->texture_id << ")" << std::endl;
 }
 
 void Texture::use()
 {
-    glBindTexture(GL_TEXTURE_2D, this->texture_id);
+    //glBindTexture(GL_TEXTURE_2D, this->texture_id);
 }
 
 GLuint Texture::get_id()

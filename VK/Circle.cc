@@ -27,10 +27,6 @@ Circle::Circle(Point position, Scale size, Colour colour, GLfloat thickness)
  */
 Circle::~Circle()
 {
-    if (this->initialised) {
-        glDeleteBuffers(1, &this->buffer_id);
-        glDeleteVertexArrays(1, &this->vao_id);
-    }
 }
 
 
@@ -58,6 +54,7 @@ void Circle::initialise_buffers()
         vertices[(i*6)+5] = 0.;                                                     //z
     }
 
+    /*
     //Generate vertex array
     glGenVertexArrays(1, &this->vao_id);
     glBindVertexArray(this->vao_id);
@@ -70,6 +67,7 @@ void Circle::initialise_buffers()
     //Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    */
 }
 
 /**
@@ -88,6 +86,7 @@ void Circle::draw(Matrix model_matrix)
     //Set the colour
     this->shader->set_uniform("colour", this->colour);
 
+    /*
     //Bind
     glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
     glBindVertexArray(this->vao_id);
@@ -96,13 +95,13 @@ void Circle::draw(Matrix model_matrix)
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void*)0);
-
+    */
     //Set the shader
     this->shader->use();
 
+    /*
     //Perform the draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 361*2);
-
     //Disable attribute pointers
     glDisableVertexAttribArray(0);
 
@@ -110,4 +109,5 @@ void Circle::draw(Matrix model_matrix)
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
+    */
 }

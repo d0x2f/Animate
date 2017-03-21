@@ -103,15 +103,6 @@ bool Cat::on_render()
 
     this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glClearColor(
-        0.7,
-        0.7,
-        0.7,
-        1.0
-    );
-
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
@@ -125,13 +116,6 @@ bool Cat::on_render()
             it->second->draw(model_matrix);
         }
     }
-
-    glFlush();
-
-    GLenum error = glGetError();
-    if(error != GL_NO_ERROR)
-        std::cerr << "OPENGL ERROR: " << gluErrorString(error) << "(" << error << ")" << std::endl;
-    return true;
 }
 
 /**

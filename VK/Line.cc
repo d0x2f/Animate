@@ -30,11 +30,6 @@ Line::Line(Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat
  */
 Line::~Line()
 {
-    Line::instance_count--;
-    if (Line::instance_count == 0) {
-        glDeleteBuffers(1, &Line::buffer_id);
-        glDeleteVertexArrays(1, &Line::vao_id);
-    }
 }
 
 
@@ -70,6 +65,7 @@ void Line::initialise_buffers()
     vertices[10] = 1.;                      //y
     vertices[11] = 0.;                      //z
 
+    /*
     //Generate vertex array
     glGenVertexArrays(1, &Line::vao_id);
     glBindVertexArray(Line::vao_id);
@@ -82,6 +78,7 @@ void Line::initialise_buffers()
     //Unbind
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    */
 }
 
 /**
@@ -100,6 +97,7 @@ void Line::draw(Matrix model_matrix)
     //Set the colour
     this->shader->set_uniform("colour", this->colour);
 
+    /*
     //Bind
     glBindBuffer(GL_ARRAY_BUFFER, Line::buffer_id);
     glBindVertexArray(Line::vao_id);
@@ -108,10 +106,12 @@ void Line::draw(Matrix model_matrix)
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void*)0);
+    */
 
     //Set the shader
     this->shader->use();
 
+    /*
     //Perform the draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -122,4 +122,5 @@ void Line::draw(Matrix model_matrix)
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
+    */
 }

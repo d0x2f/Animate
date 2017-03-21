@@ -74,16 +74,16 @@ void Gui::init_vulkan()
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
     vk::ApplicationInfo app_info = vk::ApplicationInfo()
-        .pApplicationName("Animate")
-        .applicationVersion(VK_MAKE_VERSION(0, 0, 0))
-        .pEngineName("No Engine")
-        .engineVersion(VK_MAKE_VERSION(0, 0, 0))
-        .apiVersion(VK_API_VERSION_1_0);
+        .setPApplicationName("Animate")
+        .setApplicationVersion(1)
+        .setPEngineName("No Engine")
+        .setEngineVersion(1)
+        .setApiVersion(VK_API_VERSION_1_0);
 
     vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo()
-        .pApplicationInfo(&appInfo)
-        .enabledExtensionCount(glfwExtensionCount)
-        .ppEnabledExtensionNames(glfwExtensions);
+        .setPApplicationInfo(&app_info)
+        .setEnabledExtensionCount(glfwExtensionCount)
+        .setPpEnabledExtensionNames(glfwExtensions);
 
     vk::createInstance(&create_info, nullptr, &this->vk_instance);
 }

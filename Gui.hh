@@ -31,7 +31,10 @@ namespace Animate
 
             std::vector< std::shared_ptr<Animation::Animation> > animations;
 
+            void init_glfw();
             void init_vulkan();
+            void init_context();
+            void init_animations();
 
             void set_animation(Animation::Animation *animation);
     };

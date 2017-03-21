@@ -29,10 +29,6 @@ Shader::~Shader()
  */
 void Shader::free()
 {
-    if (this->program_id != 0) {
-        glDeleteProgram(this->program_id);
-        this->program_id = 0;
-    }
 }
 
 /**
@@ -56,15 +52,15 @@ void Shader::initialise()
 void Shader::compile_shaders()
 {
     //Create shaders
-    GLuint frag_id, vert_id;
-    frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-    vert_id = glCreateShader(GL_VERTEX_SHADER);
+    //GLuint frag_id, vert_id;
+    //frag_id = glCreateShader(GL_FRAGMENT_SHADER);
+    //vert_id = glCreateShader(GL_VERTEX_SHADER);
 
     //Load shader code
     const char *f = (const char *)Utilities::get_resource_as_bytes(fragment_code_id);
     const char *v = (const char *)Utilities::get_resource_as_bytes(vertex_code_id);
 
-    glShaderSource(frag_id, 1, &f, NULL);
+    /*glShaderSource(frag_id, 1, &f, NULL);
     glShaderSource(vert_id, 1, &v, NULL);
 
     //Compile
@@ -96,7 +92,7 @@ void Shader::compile_shaders()
 
     glDeleteShader(frag_id);
     glDeleteShader(vert_id);
-
+    */
     std::cout << "Created Shader: " << this->program_id << std::endl;
 }
 
@@ -105,6 +101,7 @@ void Shader::compile_shaders()
  */
 void Shader::create_uniform_buffer()
 {
+    /*
     //Create buffer
     glGenBuffers(1, &this->uniform_buffer_id);
 
@@ -125,6 +122,7 @@ void Shader::create_uniform_buffer()
 
     //Unbind
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    */
 
     std::cout << "Uniform buffer: " << this->uniform_buffer_id << std::endl;
 }
@@ -141,6 +139,7 @@ void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
     //Bind
     this->use();
 
+    /*
     //Storage
     GLint indices[3];
     GLint offset[3];
@@ -167,6 +166,7 @@ void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
     std::free(model_raw);
     std::free(view_raw);
     std::free(projection_raw);
+    */
 }
 
 /**
@@ -176,6 +176,7 @@ void Shader::set_matrices(Matrix model, Matrix view, Matrix projection)
  */
 void Shader::set_model_matrix(Matrix model)
 {
+    /*
     //Bind
     this->use();
 
@@ -198,10 +199,12 @@ void Shader::set_model_matrix(Matrix model)
 
     //Free memory
     std::free(model_raw);
+    */
 }
 
 void Shader::set_uniform(std::string name, Vector4 data)
 {
+    /*
     this->use();
     int ptr = glGetUniformLocation(this->get_id(), name.c_str());
     if(ptr != -1) {
@@ -209,10 +212,12 @@ void Shader::set_uniform(std::string name, Vector4 data)
     }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glUseProgram(0);
+    */
 }
 
 void Shader::set_uniform(std::string name, GLfloat data)
 {
+    /*
     this->use();
     int ptr = glGetUniformLocation(this->get_id(), name.c_str());
     if(ptr != -1) {
@@ -220,6 +225,7 @@ void Shader::set_uniform(std::string name, GLfloat data)
     }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glUseProgram(0);
+    */
 }
 
 /**
@@ -227,8 +233,8 @@ void Shader::set_uniform(std::string name, GLfloat data)
  */
 void Shader::use()
 {
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->uniform_buffer_id);
-    glUseProgram(this->get_id());
+    //glBindBufferBase(GL_UNIFORM_BUFFER, 0, this->uniform_buffer_id);
+    //glUseProgram(this->get_id());
 }
 
 /**
@@ -243,6 +249,7 @@ GLuint Shader::get_id() const
  * Print shader debug info.
  */
 void Shader::printShaderInfoLog(GLuint obj) {
+    /*
     int info_log_length = 0;
     int chars_written  = 0;
     char *info_log;
@@ -256,12 +263,14 @@ void Shader::printShaderInfoLog(GLuint obj) {
         std::cerr << info_log << std::endl;
         std::free(info_log);
     }
+    */
 }
 
 /**
  * Print program debug info.
  */
 void Shader::printProgramInfoLog(GLuint obj) {
+    /*
     int info_log_length = 0;
     int chars_written  = 0;
     char *info_log;
@@ -275,4 +284,5 @@ void Shader::printProgramInfoLog(GLuint obj) {
         std::cerr << info_log << std::endl;
         std::free(info_log);
     }
+    */
 }

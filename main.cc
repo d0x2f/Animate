@@ -18,10 +18,10 @@ int main(int argc, char **argv)
         auto app = Gtk::Application::create(argc, argv, "dog.dyl.animate");
         Animate::Gui gui;
         gui.start_loop();
-    } catch (std::string error) {
+    } catch (std::string const& error) {
         std::cerr << error << std::endl;
         return EXIT_FAILURE;
-    } catch (std::string error) {
+    } catch (std::runtime_error const& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
