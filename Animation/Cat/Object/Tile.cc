@@ -26,7 +26,7 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
 
     //Make sure our given position is valid
     if (position > pow(grid_size, 2)-1) {
-        throw std::string("Invalid tile position given.");
+        throw std::runtime_error("Invalid tile position given.");
     }
 
     //Calculate position
@@ -93,7 +93,7 @@ void Tile::move_to_board_position(Position board_position)
     //Check that the tile isn't trying to move more than one space
     Position difference = this->board_position.xy() - board_position;
     if ( sqrt(difference.dot(difference)) > 1 ) {
-        throw std::string("Tried to move a tile more than one space.");
+        throw std::runtime_error("Tried to move a tile more than one space.");
     }
 
     this->board_position = Point(

@@ -15,7 +15,7 @@ void Texture::load_from_resource(std::string resource_id)
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_resource(resource_id);
 
     if (!pixbuf) {
-        throw std::string("Couldn't load texture resource: " + resource_id);
+        throw std::runtime_error("Couldn't load texture resource: " + resource_id);
     }
 
     /*

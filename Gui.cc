@@ -38,7 +38,7 @@ void Gui::init_glfw()
     });
 
     if (!glfwInit()) {
-        throw std::string("Couldn't initialise GLFW.");
+        throw std::runtime_error("Couldn't initialise GLFW.");
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -47,7 +47,7 @@ void Gui::init_glfw()
 
     this->window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
     if (!this->window) {
-        throw std::string("Couldn't create GLFW window.");
+        throw std::runtime_error("Couldn't create GLFW window.");
     }
 
     //Set this window as the current context
@@ -68,11 +68,26 @@ void Gui::init_glfw()
 
 void Gui::init_vulkan()
 {
-    unsigned int glfwExtensionCount = 0;
-    const char** glfwExtensions;
+    //Check that the required extensions are available
+    if (!this->check_vulkan_extensions()) {
+        throw std::runtime_error("Missing required vulkan extension.");
+    }
 
-    glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+    //Check for required layers
+    if (!this->check_vulkan_layers()) {
+        throw std::runtime_error("Missing required vulkan layer.");
+    }
 
+    //Set the debug callback
+    vk::DebugReportCallbackCreateInfoEXT debug_create_info()
+    .setFlags(VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT)
+    .setPfnCallback(vulkan_debug_callback);
+
+    //Get the required extensions and layers
+    std::vector<const char*> extensions = this->get_required_vulkan_extensions();
+    std::vector<const char*> layers = this->get_required_vulkan_layers();
+
+    //Create a vulkan instance
     vk::ApplicationInfo app_info = vk::ApplicationInfo()
         .setPApplicationName("Animate")
         .setApplicationVersion(1)
@@ -82,8 +97,10 @@ void Gui::init_vulkan()
 
     vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo()
         .setPApplicationInfo(&app_info)
-        .setEnabledExtensionCount(glfwExtensionCount)
-        .setPpEnabledExtensionNames(glfwExtensions);
+        .setEnabledExtensionCount(extensions.size())
+        .setPpEnabledExtensionNames(extensions.data())
+        .setEnabledLayerCount(layers.size())
+        .setPpEnabledLayerNames(layers.data());
 
     vk::createInstance(&create_info, nullptr, &this->vk_instance);
 }
@@ -117,6 +134,115 @@ void Gui::init_animations()
     (*this->current_animation)->start();
 }
 
+std::vector<const char*> Gui::get_required_vulkan_extensions() const
+{
+    std::vector<const char*> extensions;
+
+    unsigned int glfw_extension_count = 0;
+    const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+
+    for (unsigned int i=0; i<glfw_extension_count; i++) {
+        extensions.push_back(glfw_extensions[i]);
+    }
+
+    extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+
+    return extensions;
+}
+
+std::vector<vk::ExtensionProperties> Gui::get_avalable_vulkan_extensions() const
+{
+    uint32_t extension_count = 0;
+    vk::enumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
+
+    std::vector<vk::ExtensionProperties> extensions(extension_count);
+    vk::enumerateInstanceExtensionProperties(nullptr, &extension_count, extensions.data());
+
+    return extensions;
+}
+
+std::vector<const char*> Gui::get_required_vulkan_layers() const
+{
+    return {
+        "VK_LAYER_LUNARG_standard_validation"
+    };
+}
+
+std::vector<vk::LayerProperties> Gui::get_available_vulkan_layers() const
+{
+    uint32_t layer_count;
+    vk::enumerateInstanceLayerProperties(&layer_count, nullptr);
+
+    std::vector<vk::LayerProperties> layers(layer_count);
+    vk::enumerateInstanceLayerProperties(&layer_count, layers.data());
+
+    return layers;
+}
+
+bool Gui::check_vulkan_extensions()
+{
+    //Get extensions required by glfw
+    std::vector<const char*> const required_extensions = this->get_required_vulkan_extensions();
+
+    //Get available extensions
+    std::vector<vk::ExtensionProperties> const available_extensions = this->get_avalable_vulkan_extensions();
+
+    //Check we have all the required extensions
+    bool found;
+    for (const auto& required_extension : required_extensions) {
+        found = false;
+        for (const auto& available_extension : available_extensions) {
+            if (strcmp(required_extension, available_extension.extensionName) == 0){
+                found = true;
+            }
+        }
+        if (!found){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Gui::check_vulkan_layers()
+{
+    std::vector<const char*> const required_layers = this->get_required_vulkan_layers();
+    std::vector<vk::LayerProperties> const available_layers = this->get_available_vulkan_layers();
+
+
+    for (const auto& layer_name : required_layers) {
+        bool found = false;
+
+        for (const auto& layer_properties : available_layers) {
+            if (strcmp(layer_name, layer_properties.layerName) == 0) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL Gui::vulkan_debug_callback(
+    VkDebugReportFlagsEXT flags,
+    VkDebugReportObjectTypeEXT object_type,
+    uint64_t object,
+    size_t location,
+    int32_t code,
+    const char* layer_prefix,
+    const char* msg,
+    void* user_data
+) {
+    std::cerr << "validation layer: " << msg << std::endl;
+
+    return VK_FALSE;
+}
+
 void Gui::on_key(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
@@ -148,7 +274,7 @@ void Gui::start_loop()
         }
 
         //Swap buffers
-        glfwSwapBuffers(this->window);
+        //glfwSwapBuffers(this->window);
 
         //Poll events
         glfwPollEvents();

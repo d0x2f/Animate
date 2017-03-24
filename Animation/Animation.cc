@@ -144,7 +144,7 @@ Object *Animation::get_object(std::string name)
     std::map< std::string, std::shared_ptr<Object::Object> >::iterator it;
     it = this->objects.find(name);
     if (it == this->objects.end()) {
-        throw std::string("Requested non existant object.");
+        throw std::runtime_error("Requested non existant object.");
     }
     return it->second.get();
 }
