@@ -17,9 +17,9 @@ using namespace Animate::Animation;
  */
 Gui::Gui()
 {
+    this->init_context();
     this->init_glfw();
     this->init_vulkan();
-    this->init_context();
     this->init_animations();
 }
 
@@ -29,7 +29,6 @@ Gui::Gui()
 Gui::~Gui()
 {
     glfwTerminate();
-    delete this->vulkan_context;
 }
 
 void Gui::init_glfw()
@@ -46,21 +45,20 @@ void Gui::init_glfw()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_SAMPLES, 8);
 
-    this->window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
-    if (!this->window) {
+
+    GLFWwindow *window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
+    if (!window) {
         throw std::runtime_error("Couldn't create GLFW window.");
     }
-
-    //Set this window as the current context
-    glfwMakeContextCurrent(this->window);
+    this->context->set_window(window);
 
     //Disable VSync
     //glfwSwapInterval(0);
 
-    glfwSetWindowUserPointer(this->window, this);
+    glfwSetWindowUserPointer(this->context->get_window(), this);
 
     glfwSetKeyCallback(
-        this->window,
+        this->context->get_window(),
         [](GLFWwindow* w, int key, int scancode, int action, int mods) {
             static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
         }
@@ -69,7 +67,11 @@ void Gui::init_glfw()
 
 void Gui::init_vulkan()
 {
-    this->vulkan_context = new VulkanContext();
+    VulkanContext *vulkan_context;
+    vulkan_context = new VulkanContext(this->context);
+
+    //Now that we have a context, provide it to the window.
+    glfwMakeContextCurrent(this->context->get_window());
 }
 
 void Gui::init_context()
@@ -78,7 +80,7 @@ void Gui::init_context()
     this->context = std::shared_ptr<Context>( new Context() );
 
     //Create a texture manager
-    new Textures(this->context.get());
+    new Textures(this->context);
 }
 
 void Gui::init_animations()
@@ -121,7 +123,7 @@ void Gui::on_key(int key, int scancode, int action, int mods)
 void Gui::start_loop()
 {
     //Loop until the window is closed
-    while (!glfwWindowShouldClose(this->window))
+    while (!glfwWindowShouldClose(this->context->get_window()))
     {
         //Render the current animation if it's loaded, otherwise noise.
         Animation::Animation *animation = (*this->current_animation).get();
@@ -132,7 +134,7 @@ void Gui::start_loop()
         }
 
         //Swap buffers
-        //glfwSwapBuffers(this->window);
+        //glfwSwapBuffers(this->context->get_window());
 
         //Poll events
         glfwPollEvents();

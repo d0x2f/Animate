@@ -16,15 +16,13 @@ namespace Animate
     {
         public:
             Gui();
-            virtual ~Gui();
+            ~Gui();
 
             void start_loop();
 
             void on_key(int key, int scancode, int action, int mods);
 
         private:
-            GLFWwindow *window;
-            VulkanContext *vulkan_context;
             std::shared_ptr<Context> context;
 
             std::shared_ptr<Animation::Animation> noise_animation;

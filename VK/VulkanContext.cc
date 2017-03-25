@@ -1,21 +1,26 @@
-#include <GLFW/glfw3.h>
 #include <iostream>
+#include <set>
 
 #include "VulkanContext.hh"
+#include "../Context.hh"
 
 using namespace Animate::VK;
 
-VulkanContext::VulkanContext()
+VulkanContext::VulkanContext(std::shared_ptr<Animate::Context> context)
 {
+    this->context = std::weak_ptr<Animate::Context>(context);
+
     this->create_instance();
     this->bind_debug_callback();
+    this->create_surface();
     this->pick_physical_device();
     this->create_logical_device();
+
+    this->context.lock()->set_vulkan(this);
 }
 
 VulkanContext::~VulkanContext()
 {
-
 }
 
 void VulkanContext::create_instance()
@@ -99,18 +104,28 @@ void VulkanContext::create_logical_device()
     QueueFamilyIndices indices = this->get_device_queue_famlilies(this->physical_device);
 
     float const priority = 1.0f;
-    vk::DeviceQueueCreateInfo queue_create_info = vk::DeviceQueueCreateInfo()
-        .setQueueFamilyIndex(indices.graphics_family)
-        .setQueueCount(1)
-        .setPQueuePriorities(&priority);
+    std::vector<vk::DeviceQueueCreateInfo> queue_create_infos;
+    std::set<int> queue_families = {
+        indices.graphics_family,
+        indices.present_family
+    };
+
+    for (int queue_family : queue_families) {
+        queue_create_infos.push_back(
+            vk::DeviceQueueCreateInfo()
+                .setQueueFamilyIndex(queue_family)
+                .setQueueCount(1)
+                .setPQueuePriorities(&priority)
+        );
+    }
 
     vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures();
 
     std::vector<const char*> layers = this->get_required_layers();
 
     vk::DeviceCreateInfo device_create_info = vk::DeviceCreateInfo()
-        .setPQueueCreateInfos(&queue_create_info)
-        .setQueueCreateInfoCount(1)
+        .setPQueueCreateInfos(queue_create_infos.data())
+        .setQueueCreateInfoCount(queue_create_infos.size())
         .setPEnabledFeatures(&features)
         .setEnabledLayerCount(layers.size())
         .setPpEnabledLayerNames(layers.data());
@@ -118,6 +133,17 @@ void VulkanContext::create_logical_device()
     this->physical_device.createDevice(&device_create_info, nullptr, &this->logical_device);
 
     this->graphics_queue = this->logical_device.getQueue(indices.graphics_family, 0);
+    this->present_queue = this->logical_device.getQueue(indices.present_family, 0);
+}
+
+void VulkanContext::create_surface()
+{
+    VkSurfaceKHR surface;
+    VkResult err = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
+    if (err) {
+        throw std::runtime_error("Couldn't create window surface.");
+    }
+    this->context.lock()->set_surface(new vk::SurfaceKHR(surface));
 }
 
 bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
@@ -139,8 +165,18 @@ QueueFamilyIndices VulkanContext::get_device_queue_famlilies(vk::PhysicalDevice 
     QueueFamilyIndices indices;
     int i = 0;
     for (const auto& property : properties) {
-        if (property.queueCount > 0 && property.queueFlags & vk::QueueFlagBits::eGraphics) {
-            indices.graphics_family = i;
+        //Check whether our surface can be drawn to with this device
+        vk::Bool32 present_supported = false;
+        device.getSurfaceSupportKHR(i, *this->context.lock()->get_surface().get(), &present_supported);
+
+        if (property.queueCount > 0) {
+            if (property.queueFlags & vk::QueueFlagBits::eGraphics) {
+                indices.graphics_family = i;
+            }
+
+            if (present_supported) {
+                indices.present_family = i;
+            }
         }
 
         if (indices.is_complete()) {

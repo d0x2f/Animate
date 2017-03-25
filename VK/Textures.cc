@@ -3,9 +3,9 @@
 
 using namespace Animate::VK;
 
-Textures::Textures(Context *context) : context(context)
+Textures::Textures(std::shared_ptr<Context> context) : context(context)
 {
-    context->set_textures(this);
+    this->context.lock()->set_textures(this);
 }
 
 Texture *Textures::get_texture(std::string resource_id)
