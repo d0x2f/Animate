@@ -21,6 +21,12 @@ namespace Animate
             }
         };
 
+        struct SwapChainSupportDetails {
+            vk::SurfaceCapabilitiesKHR capabilities;
+            std::vector<vk::SurfaceFormatKHR> formats;
+            std::vector<vk::PresentModeKHR> present_modes;
+        };
+
         class VulkanContext
         {
             public:
@@ -42,15 +48,21 @@ namespace Animate
                 void create_surface();
 
                 bool is_device_suitable(vk::PhysicalDevice device);
-                QueueFamilyIndices get_device_queue_famlilies(vk::PhysicalDevice device);
 
-                std::vector<const char*> get_required_extensions() const;
-                std::vector<vk::ExtensionProperties> get_avalable_extensions() const;
-                std::vector<const char*> get_required_layers() const;
-                std::vector<vk::LayerProperties> get_available_layers() const;
+                QueueFamilyIndices get_device_queue_families(vk::PhysicalDevice device);
+                SwapChainSupportDetails get_swap_chain_support(vk::PhysicalDevice device);
 
-                bool check_extensions();
-                bool check_layers();
+                std::vector<const char*> get_required_instance_extensions() const;
+                std::vector<vk::ExtensionProperties> get_avalable_instance_extensions() const;
+                std::vector<const char*> get_required_instance_layers() const;
+                std::vector<vk::LayerProperties> get_available_instance_layers() const;
+
+                std::vector<const char*> get_required_device_extensions() const;
+                std::vector<vk::ExtensionProperties> get_available_device_extensions(vk::PhysicalDevice device) const;
+
+                bool check_instance_extensions();
+                bool check_instance_layers();
+                bool check_device_extensions(vk::PhysicalDevice device);
 
                 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
                     VkDebugReportFlagsEXT flags,

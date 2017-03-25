@@ -26,18 +26,18 @@ VulkanContext::~VulkanContext()
 void VulkanContext::create_instance()
 {
     //Check that the required extensions are available
-    if (!this->check_extensions()) {
+    if (!this->check_instance_extensions()) {
         throw std::runtime_error("Missing required vulkan extension.");
     }
 
     //Check for required layers
-    if (!this->check_layers()) {
+    if (!this->check_instance_layers()) {
         throw std::runtime_error("Missing required vulkan layer.");
     }
 
     //Get the required extensions and layers
-    std::vector<const char*> extensions = this->get_required_extensions();
-    std::vector<const char*> layers = this->get_required_layers();
+    std::vector<const char*> extensions = this->get_required_instance_extensions();
+    std::vector<const char*> layers = this->get_required_instance_layers();
     std::vector<const char*>::iterator it = extensions.begin();
 
     //Create a vulkan instance
@@ -101,7 +101,7 @@ void VulkanContext::pick_physical_device()
 
 void VulkanContext::create_logical_device()
 {
-    QueueFamilyIndices indices = this->get_device_queue_famlilies(this->physical_device);
+    QueueFamilyIndices indices = this->get_device_queue_families(this->physical_device);
 
     float const priority = 1.0f;
     std::vector<vk::DeviceQueueCreateInfo> queue_create_infos;
@@ -121,14 +121,17 @@ void VulkanContext::create_logical_device()
 
     vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures();
 
-    std::vector<const char*> layers = this->get_required_layers();
+    std::vector<const char*> layers = this->get_required_instance_layers();
+    std::vector<const char*> extensions = this->get_required_device_extensions();
 
     vk::DeviceCreateInfo device_create_info = vk::DeviceCreateInfo()
         .setPQueueCreateInfos(queue_create_infos.data())
         .setQueueCreateInfoCount(queue_create_infos.size())
         .setPEnabledFeatures(&features)
         .setEnabledLayerCount(layers.size())
-        .setPpEnabledLayerNames(layers.data());
+        .setPpEnabledLayerNames(layers.data())
+        .setEnabledExtensionCount(extensions.size())
+        .setPpEnabledExtensionNames(extensions.data());
 
     this->physical_device.createDevice(&device_create_info, nullptr, &this->logical_device);
 
@@ -148,13 +151,22 @@ void VulkanContext::create_surface()
 
 bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
 {
+    QueueFamilyIndices queue_families = this->get_device_queue_families(device);
+    bool extensions_suported = this->check_device_extensions(device);
+
+    bool swap_chain_adequate = false;
+    if (extensions_suported) {
+        SwapChainSupportDetails swap_chain_support = get_swap_chain_support(device);
+        swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
+    }
+
     //vk::PhysicalDeviceProperties properties = device.getProperties();
     vk::PhysicalDeviceFeatures features = device.getFeatures();
 
-    return features.geometryShader && this->get_device_queue_famlilies(device).is_complete();
+    return features.geometryShader && queue_families.is_complete() && swap_chain_adequate;
 }
 
-QueueFamilyIndices VulkanContext::get_device_queue_famlilies(vk::PhysicalDevice device)
+QueueFamilyIndices VulkanContext::get_device_queue_families(vk::PhysicalDevice device)
 {
     uint32_t property_count = 0;
     device.getQueueFamilyProperties(&property_count, nullptr);
@@ -188,7 +200,34 @@ QueueFamilyIndices VulkanContext::get_device_queue_famlilies(vk::PhysicalDevice 
     return indices;
 }
 
-std::vector<const char*> VulkanContext::get_required_extensions() const
+SwapChainSupportDetails VulkanContext::get_swap_chain_support(vk::PhysicalDevice device)
+{
+    SwapChainSupportDetails details;
+
+    vk::SurfaceKHR surface = *this->context.lock()->get_surface().get();
+
+    device.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
+
+    uint32_t format_count;
+    device.getSurfaceFormatsKHR(surface, &format_count, nullptr);
+
+    if (format_count != 0) {
+        details.formats.resize(format_count);
+        device.getSurfaceFormatsKHR(surface, &format_count, details.formats.data());
+    }
+
+    uint32_t present_mode_count;
+    device.getSurfacePresentModesKHR(surface, &present_mode_count, nullptr);
+
+    if (present_mode_count != 0) {
+        details.present_modes.resize(present_mode_count);
+        device.getSurfacePresentModesKHR(surface, &present_mode_count, details.present_modes.data());
+    }
+
+    return details;
+}
+
+std::vector<const char*> VulkanContext::get_required_instance_extensions() const
 {
     std::vector<const char*> extensions;
 
@@ -204,7 +243,7 @@ std::vector<const char*> VulkanContext::get_required_extensions() const
     return extensions;
 }
 
-std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_extensions() const
+std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_instance_extensions() const
 {
     uint32_t extension_count = 0;
     vk::enumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -215,14 +254,14 @@ std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_extensions() co
     return extensions;
 }
 
-std::vector<const char*> VulkanContext::get_required_layers() const
+std::vector<const char*> VulkanContext::get_required_instance_layers() const
 {
     return {
         "VK_LAYER_LUNARG_standard_validation"
     };
 }
 
-std::vector<vk::LayerProperties> VulkanContext::get_available_layers() const
+std::vector<vk::LayerProperties> VulkanContext::get_available_instance_layers() const
 {
     uint32_t layer_count;
     vk::enumerateInstanceLayerProperties(&layer_count, nullptr);
@@ -233,13 +272,31 @@ std::vector<vk::LayerProperties> VulkanContext::get_available_layers() const
     return layers;
 }
 
-bool VulkanContext::check_extensions()
+std::vector<const char*> VulkanContext::get_required_device_extensions() const
+{
+    return {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+}
+
+std::vector<vk::ExtensionProperties> VulkanContext::get_available_device_extensions(vk::PhysicalDevice device) const
+{
+    uint32_t extension_count;
+    device.enumerateDeviceExtensionProperties(nullptr, &extension_count, nullptr);
+
+    std::vector<vk::ExtensionProperties> extensions(extension_count);
+    device.enumerateDeviceExtensionProperties(nullptr, &extension_count, extensions.data());
+
+    return extensions;
+}
+
+bool VulkanContext::check_instance_extensions()
 {
     //Get extensions required by glfw
-    std::vector<const char*> const required_extensions = this->get_required_extensions();
+    std::vector<const char*> const required_extensions = this->get_required_instance_extensions();
 
     //Get available extensions
-    std::vector<vk::ExtensionProperties> const available_extensions = this->get_avalable_extensions();
+    std::vector<vk::ExtensionProperties> const available_extensions = this->get_avalable_instance_extensions();
 
     //Check we have all the required extensions
     bool found;
@@ -258,10 +315,10 @@ bool VulkanContext::check_extensions()
     return true;
 }
 
-bool VulkanContext::check_layers()
+bool VulkanContext::check_instance_layers()
 {
-    std::vector<const char*> const required_layers = this->get_required_layers();
-    std::vector<vk::LayerProperties> const available_layers = this->get_available_layers();
+    std::vector<const char*> const required_layers = this->get_required_instance_layers();
+    std::vector<vk::LayerProperties> const available_layers = this->get_available_instance_layers();
 
 
     for (const auto& layer_name : required_layers) {
@@ -280,6 +337,20 @@ bool VulkanContext::check_layers()
     }
 
     return true;
+}
+
+bool VulkanContext::check_device_extensions(vk::PhysicalDevice device)
+{
+    std::vector<vk::ExtensionProperties> available_extensions = this->get_available_device_extensions(device);
+    std::vector<const char *> required_extensions_cstr = this->get_required_device_extensions();
+
+    std::set<std::string> required_extensions(required_extensions_cstr.begin(), required_extensions_cstr.end());
+
+    for (const auto& extension : available_extensions) {
+        required_extensions.erase(extension.extensionName);
+    }
+
+    return required_extensions.empty();
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debug_callback(
