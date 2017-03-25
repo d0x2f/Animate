@@ -16,16 +16,22 @@ namespace Animate::VK
     class VulkanContext
     {
         public:
-            void initialise();
+            VulkanContext();
+            ~VulkanContext();
 
         private:
-            vk::Instance vk_instance;
-            vk::PhysicalDevice selected_device;
+            vk::Instance instance;
+            vk::PhysicalDevice physical_device;
+            vk::Device logical_device;
+            vk::Queue graphics_queue;
 
             void create_instance();
             void bind_debug_callback();
-            void pick_device();
+            void pick_physical_device();
+            void create_logical_device();
+
             bool is_device_suitable(vk::PhysicalDevice device);
+            QueueFamilyIndices get_device_queue_famlilies(vk::PhysicalDevice device);
 
             std::vector<const char*> get_required_extensions() const;
             std::vector<vk::ExtensionProperties> get_avalable_extensions() const;

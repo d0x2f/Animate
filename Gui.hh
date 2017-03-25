@@ -24,7 +24,7 @@ namespace Animate
 
         private:
             GLFWwindow *window;
-            VulkanContext vulkan_context;
+            VulkanContext *vulkan_context;
             std::shared_ptr<Context> context;
 
             std::shared_ptr<Animation::Animation> noise_animation;

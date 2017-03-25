@@ -29,6 +29,7 @@ Gui::Gui()
 Gui::~Gui()
 {
     glfwTerminate();
+    delete this->vulkan_context;
 }
 
 void Gui::init_glfw()
@@ -68,7 +69,7 @@ void Gui::init_glfw()
 
 void Gui::init_vulkan()
 {
-    this->vulkan_context.initialise();
+    this->vulkan_context = new VulkanContext();
 }
 
 void Gui::init_context()

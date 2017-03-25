@@ -5,11 +5,17 @@
 
 using namespace Animate::VK;
 
-void VulkanContext::initialise()
+VulkanContext::VulkanContext()
 {
     this->create_instance();
     this->bind_debug_callback();
-    this->pick_device();
+    this->pick_physical_device();
+    this->create_logical_device();
+}
+
+VulkanContext::~VulkanContext()
+{
+
 }
 
 void VulkanContext::create_instance()
@@ -44,7 +50,7 @@ void VulkanContext::create_instance()
         .setEnabledLayerCount(layers.size())
         .setPpEnabledLayerNames(layers.data());
 
-    vk::createInstance(&create_info, nullptr, &this->vk_instance);
+    vk::createInstance(&create_info, nullptr, &this->instance);
 }
 
 void VulkanContext::bind_debug_callback()
@@ -54,38 +60,64 @@ void VulkanContext::bind_debug_callback()
     .setFlags(vk::DebugReportFlagBitsEXT::eInformation | vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug)
     .setPfnCallback((PFN_vkDebugReportCallbackEXT)debug_callback);
 
-    auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)this->vk_instance.getProcAddr("vkCreateDebugReportCallbackEXT");
+    auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)this->instance.getProcAddr("vkCreateDebugReportCallbackEXT");
     if (CreateDebugReportCallback != nullptr) {
         VkDebugReportCallbackEXT callback;
         const VkDebugReportCallbackCreateInfoEXT tmp(debug_create_info);
-        CreateDebugReportCallback(this->vk_instance, &tmp, nullptr, &callback);
+        CreateDebugReportCallback(this->instance, &tmp, nullptr, &callback);
     } else {
         throw std::runtime_error("Cannot find required vkCreateDebugReportCallbackEXT function.");
     }
 }
 
-void VulkanContext::pick_device()
+void VulkanContext::pick_physical_device()
 {
     uint32_t device_count = 0;
-    this->vk_instance.enumeratePhysicalDevices(&device_count, nullptr);
+    this->instance.enumeratePhysicalDevices(&device_count, nullptr);
     if (device_count == 0) {
         throw std::runtime_error("No suitable GPU device found.");
     }
 
     std::vector<vk::PhysicalDevice> devices(device_count);
-    this->vk_instance.enumeratePhysicalDevices(&device_count, devices.data());
+    this->instance.enumeratePhysicalDevices(&device_count, devices.data());
 
     //Just pick the first device for now
     for (auto const & device : devices) {
         if (this->is_device_suitable(device)) {
-            this->selected_device = device;
+            this->physical_device = device;
             break;
         }
     }
 
-    if (!this->selected_device) {
+    if (!this->physical_device) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
+}
+
+void VulkanContext::create_logical_device()
+{
+    QueueFamilyIndices indices = this->get_device_queue_famlilies(this->physical_device);
+
+    float const priority = 1.0f;
+    vk::DeviceQueueCreateInfo queue_create_info = vk::DeviceQueueCreateInfo()
+        .setQueueFamilyIndex(indices.graphics_family)
+        .setQueueCount(1)
+        .setPQueuePriorities(&priority);
+
+    vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures();
+
+    std::vector<const char*> layers = this->get_required_layers();
+
+    vk::DeviceCreateInfo device_create_info = vk::DeviceCreateInfo()
+        .setPQueueCreateInfos(&queue_create_info)
+        .setQueueCreateInfoCount(1)
+        .setPEnabledFeatures(&features)
+        .setEnabledLayerCount(layers.size())
+        .setPpEnabledLayerNames(layers.data());
+
+    this->physical_device.createDevice(&device_create_info, nullptr, &this->logical_device);
+
+    this->graphics_queue = this->logical_device.getQueue(indices.graphics_family, 0);
 }
 
 bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
@@ -93,7 +125,31 @@ bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
     //vk::PhysicalDeviceProperties properties = device.getProperties();
     vk::PhysicalDeviceFeatures features = device.getFeatures();
 
-    return features.geometryShader;
+    return features.geometryShader && this->get_device_queue_famlilies(device).is_complete();
+}
+
+QueueFamilyIndices VulkanContext::get_device_queue_famlilies(vk::PhysicalDevice device)
+{
+    uint32_t property_count = 0;
+    device.getQueueFamilyProperties(&property_count, nullptr);
+
+    std::vector<vk::QueueFamilyProperties> properties(property_count);
+    device.getQueueFamilyProperties(&property_count, properties.data());
+
+    QueueFamilyIndices indices;
+    int i = 0;
+    for (const auto& property : properties) {
+        if (property.queueCount > 0 && property.queueFlags & vk::QueueFlagBits::eGraphics) {
+            indices.graphics_family = i;
+        }
+
+        if (indices.is_complete()) {
+            break;
+        }
+
+        i++;
+    }
+    return indices;
 }
 
 std::vector<const char*> VulkanContext::get_required_extensions() const
@@ -126,12 +182,7 @@ std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_extensions() co
 std::vector<const char*> VulkanContext::get_required_layers() const
 {
     return {
-        "VK_LAYER_GOOGLE_threading",
-        "VK_LAYER_LUNARG_parameter_validation",
-        "VK_LAYER_LUNARG_object_tracker",
-        "VK_LAYER_LUNARG_core_validation",
-        "VK_LAYER_LUNARG_swapchain",
-        "VK_LAYER_GOOGLE_unique_objects"
+        "VK_LAYER_LUNARG_standard_validation"
     };
 }
 
