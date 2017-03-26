@@ -1,5 +1,6 @@
 #include <iostream>
 #include <set>
+#include <algorithm>
 
 #include "VulkanContext.hh"
 #include "../Context.hh"
@@ -15,6 +16,7 @@ VulkanContext::VulkanContext(std::shared_ptr<Animate::Context> context)
     this->create_surface();
     this->pick_physical_device();
     this->create_logical_device();
+    this->create_swap_chain();
 
     this->context.lock()->set_vulkan(this);
 }
@@ -87,7 +89,7 @@ void VulkanContext::pick_physical_device()
     this->instance.enumeratePhysicalDevices(&device_count, devices.data());
 
     //Just pick the first device for now
-    for (auto const & device : devices) {
+    for (auto const& device : devices) {
         if (this->is_device_suitable(device)) {
             this->physical_device = device;
             break;
@@ -110,7 +112,7 @@ void VulkanContext::create_logical_device()
         indices.present_family
     };
 
-    for (int queue_family : queue_families) {
+    for (const int& queue_family : queue_families) {
         queue_create_infos.push_back(
             vk::DeviceQueueCreateInfo()
                 .setQueueFamilyIndex(queue_family)
@@ -139,11 +141,61 @@ void VulkanContext::create_logical_device()
     this->present_queue = this->logical_device.getQueue(indices.present_family, 0);
 }
 
+void VulkanContext::create_swap_chain()
+{
+    SwapChainSupportDetails swap_chain_support = get_swap_chain_support(this->physical_device);
+
+    vk::SurfaceFormatKHR surface_format = this->choose_swap_surface_format(swap_chain_support.formats);
+    vk::PresentModeKHR present_mode = this->choose_swap_present_mode(swap_chain_support.present_modes);
+    vk::Extent2D extent = this->choose_swap_extent(swap_chain_support.capabilities);
+
+    uint32_t image_count = swap_chain_support.capabilities.minImageCount + 1;
+    if (swap_chain_support.capabilities.maxImageCount > 0 && image_count > swap_chain_support.capabilities.maxImageCount) {
+        image_count = swap_chain_support.capabilities.maxImageCount;
+    }
+
+    vk::SwapchainCreateInfoKHR create_info = vk::SwapchainCreateInfoKHR()
+        .setSurface(*this->context.lock()->get_surface().get())
+        .setMinImageCount(image_count)
+        .setImageFormat(surface_format.format)
+        .setImageColorSpace(surface_format.colorSpace)
+        .setImageExtent(extent)
+        .setImageArrayLayers(1)
+        .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+        .setPreTransform(swap_chain_support.capabilities.currentTransform)
+        .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+        .setPresentMode(present_mode)
+        .setClipped(VK_TRUE);
+
+    QueueFamilyIndices indices = get_device_queue_families(this->physical_device);
+    uint32_t indices_arr[] = {(uint32_t) indices.graphics_family, (uint32_t) indices.present_family};
+
+    if (indices.graphics_family != indices.present_family) {
+        create_info.setImageSharingMode(vk::SharingMode::eConcurrent)
+        .setQueueFamilyIndexCount(2)
+        .setPQueueFamilyIndices(indices_arr);
+    } else {
+        create_info.setImageSharingMode(vk::SharingMode::eExclusive);
+    }
+
+    if (this->logical_device.createSwapchainKHR(&create_info, nullptr, &this->swap_chain) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create swap chain.");
+    }
+
+    this->logical_device.getSwapchainImagesKHR(this->swap_chain, &image_count, nullptr);
+
+    this->swap_chain_images.resize(image_count);
+    this->logical_device.getSwapchainImagesKHR(this->swap_chain, &image_count, this->swap_chain_images.data());
+
+    this->swap_chain_image_format = surface_format.format;
+    this->swap_chain_extent = extent;
+}
+
 void VulkanContext::create_surface()
 {
     VkSurfaceKHR surface;
-    VkResult err = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
-    if (err) {
+    VkResult result = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
+    if (result != VK_SUCCESS) {
         throw std::runtime_error("Couldn't create window surface.");
     }
     this->context.lock()->set_surface(new vk::SurfaceKHR(surface));
@@ -351,6 +403,53 @@ bool VulkanContext::check_device_extensions(vk::PhysicalDevice device)
     }
 
     return required_extensions.empty();
+}
+
+vk::SurfaceFormatKHR VulkanContext::choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
+{
+    if (available_formats.size() == 1 && available_formats.front().format == vk::Format::eUndefined) {
+        return {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
+    }
+
+    for (const auto& available_format : available_formats) {
+        if (available_format.format == vk::Format::eB8G8R8A8Unorm && available_format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+            return available_format;
+        }
+    }
+
+    return available_formats.front();
+}
+
+vk::PresentModeKHR VulkanContext::choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) const
+{
+    vk::PresentModeKHR chosen_mode = vk::PresentModeKHR::eFifo;
+
+    for (const auto& present_mode : available_present_modes) {
+        if (present_mode == vk::PresentModeKHR::eMailbox) {
+            return present_mode;
+        } else if (present_mode == vk::PresentModeKHR::eImmediate) {
+            chosen_mode = present_mode;
+        }
+    }
+
+    return chosen_mode;
+}
+
+vk::Extent2D VulkanContext::choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities) const
+{
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        return capabilities.currentExtent;
+    } else {
+        int width, height;
+        glfwGetWindowSize(this->context.lock()->get_window(), &width, &height);
+
+        vk::Extent2D actual_extent = {(uint32_t)width, (uint32_t)height};
+
+        actual_extent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actual_extent.width));
+        actual_extent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, actual_extent.height));
+
+        return actual_extent;
+    }
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debug_callback(

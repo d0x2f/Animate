@@ -40,12 +40,17 @@ namespace Animate
                 vk::Device logical_device;
                 vk::Queue   graphics_queue,
                             present_queue;
+                vk::SwapchainKHR swap_chain;
+                std::vector<vk::Image> swap_chain_images;
+                vk::Format swap_chain_image_format;
+                vk::Extent2D swap_chain_extent;
 
                 void create_instance();
                 void bind_debug_callback();
                 void pick_physical_device();
                 void create_logical_device();
                 void create_surface();
+                void create_swap_chain();
 
                 bool is_device_suitable(vk::PhysicalDevice device);
 
@@ -63,6 +68,10 @@ namespace Animate
                 bool check_instance_extensions();
                 bool check_instance_layers();
                 bool check_device_extensions(vk::PhysicalDevice device);
+
+                vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const;
+                vk::PresentModeKHR choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) const;
+                vk::Extent2D choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities) const;
 
                 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
                     VkDebugReportFlagsEXT flags,
