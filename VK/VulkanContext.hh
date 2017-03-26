@@ -44,6 +44,7 @@ namespace Animate
                 std::vector<vk::Image> swap_chain_images;
                 vk::Format swap_chain_image_format;
                 vk::Extent2D swap_chain_extent;
+                std::vector<vk::ImageView> swap_chain_image_views;
 
                 void create_instance();
                 void bind_debug_callback();
@@ -51,6 +52,7 @@ namespace Animate
                 void create_logical_device();
                 void create_surface();
                 void create_swap_chain();
+                void create_image_views();
 
                 bool is_device_suitable(vk::PhysicalDevice device);
 

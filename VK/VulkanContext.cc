@@ -17,6 +17,7 @@ VulkanContext::VulkanContext(std::shared_ptr<Animate::Context> context)
     this->pick_physical_device();
     this->create_logical_device();
     this->create_swap_chain();
+    this->create_image_views();
 
     this->context.lock()->set_vulkan(this);
 }
@@ -75,6 +76,16 @@ void VulkanContext::bind_debug_callback()
     } else {
         throw std::runtime_error("Cannot find required vkCreateDebugReportCallbackEXT function.");
     }
+}
+
+void VulkanContext::create_surface()
+{
+    VkSurfaceKHR surface;
+    VkResult result = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
+    if (result != VK_SUCCESS) {
+        throw std::runtime_error("Couldn't create window surface.");
+    }
+    this->context.lock()->set_surface(new vk::SurfaceKHR(surface));
 }
 
 void VulkanContext::pick_physical_device()
@@ -191,14 +202,22 @@ void VulkanContext::create_swap_chain()
     this->swap_chain_extent = extent;
 }
 
-void VulkanContext::create_surface()
+void VulkanContext::create_image_views()
 {
-    VkSurfaceKHR surface;
-    VkResult result = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Couldn't create window surface.");
+    this->swap_chain_image_views.resize(this->swap_chain_images.size());
+
+    for (uint32_t i = 0; i < this->swap_chain_images.size(); i++) {
+        vk::ImageViewCreateInfo create_info = vk::ImageViewCreateInfo()
+            .setImage(this->swap_chain_images.at(i))
+            .setViewType(vk::ImageViewType::e2D)
+            .setFormat(this->swap_chain_image_format)
+            .setComponents(vk::ComponentMapping())
+            .setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+
+        if (this->logical_device.createImageView(&create_info, nullptr, &this->swap_chain_image_views.at(i)) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create image view.");
+        }
     }
-    this->context.lock()->set_surface(new vk::SurfaceKHR(surface));
 }
 
 bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
