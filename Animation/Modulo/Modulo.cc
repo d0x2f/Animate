@@ -23,7 +23,7 @@ using namespace Animate::Object;
  * Constructor.
  * Seed the RNG.
  */
-Modulo::Modulo(Context *context) : Animation::Animation(context)
+Modulo::Modulo(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
     this->tick_rate = 120;
 
@@ -37,7 +37,6 @@ void Modulo::initialise()
 {
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag", "/Animate/data/Modulo/shader.vert"));
-    this->shader->initialise();
 
     //Add a circle
     Ring *ring = new Ring(Point(0.5,0.5), Scale(.8,.8));

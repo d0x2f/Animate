@@ -21,7 +21,7 @@ using namespace Animate::Object;
  * Constructor.
  * Seed the RNG.
  */
-Cat::Cat(Context *context) : Animation::Animation(context)
+Cat::Cat(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
     this->tick_rate = 60;
     this->reset_puzzle_flag = false;
@@ -36,7 +36,6 @@ void Cat::initialise()
 {
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
-    this->shader.get()->initialise();
 }
 
 /**
@@ -64,7 +63,7 @@ void Cat::reset_puzzle()
         tile = new Tile(Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
-            this->context->get_textures()->get_texture(texture_name),
+            this->context.lock()->get_textures()->get_texture(texture_name),
             this->initial_position[i], //board position
             this->grid_size  //Grid size
         );

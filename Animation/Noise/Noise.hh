@@ -14,7 +14,7 @@ namespace Animate::Animation::Noise
     class Noise : public Animation
     {
         public:
-            Noise(Context *context);
+            Noise(std::weak_ptr<AppContext> context);
 
             bool on_render();
             void on_tick(GLuint64 time_delta);

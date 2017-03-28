@@ -48,7 +48,7 @@ void Texture::load_from_resource(std::string resource_id)
     glBindTexture(GL_TEXTURE_2D, 0);
     */
 
-    std::cout << "Loaded texture: " << resource_id << " (" << this->texture_id << ")" << std::endl;
+    std::cout << "Loaded texture" << std::endl;
 }
 
 void Texture::use()

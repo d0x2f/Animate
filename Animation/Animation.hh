@@ -6,7 +6,7 @@
 #include <string>
 #include <atomic>
 
-#include "../Context.hh"
+#include "../AppContext.hh"
 #include "../Object/Object.hh"
 
 namespace Animate::Animation
@@ -14,7 +14,7 @@ namespace Animate::Animation
     class Animation
     {
         public:
-            Animation(Context *context);
+            Animation(std::weak_ptr<AppContext> context);
             ~Animation();
 
             virtual bool on_render();
@@ -30,7 +30,7 @@ namespace Animate::Animation
             int get_tick_rate() const;
 
         protected:
-            Context *context;
+            std::weak_ptr<AppContext> context;
             std::mutex tick_mutex;
             int tick_rate = 60;
             GLuint64 last_frame_time = 0;

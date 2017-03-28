@@ -10,7 +10,7 @@ using namespace Animate::Object;
 /**
  * Constructor
  */
-Animation::Animation(Context *context) : context(context)
+Animation::Animation(std::weak_ptr<AppContext> context) : context(context)
 {
     this->running = false;
     this->loaded = false;

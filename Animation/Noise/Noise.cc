@@ -21,7 +21,7 @@ using namespace Animate::Object;
  * Constructor.
  * Seed the RNG.
  */
-Noise::Noise(Context *context) : Animation::Animation(context)
+Noise::Noise(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
     this->tick_rate = 1;
 
@@ -35,7 +35,6 @@ void Noise::initialise()
 {
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag", "/Animate/data/Noise/shader.vert"));
-    this->shader.get()->initialise();
 
     //Add a Quad
     Object::Object *object = new Object::Object();

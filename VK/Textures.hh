@@ -8,19 +8,19 @@
 
 namespace Animate
 {
-    class Context;
+    class AppContext;
 
     namespace VK
     {
         class Textures
         {
             public:
-                Textures(std::shared_ptr<Context> context);
+                Textures(std::shared_ptr<AppContext> context);
 
                 Texture *get_texture(std::string resource_id);
 
             protected:
-                std::weak_ptr<Context> context;
+                std::weak_ptr<AppContext> context;
 
                 std::map< std::string, std::shared_ptr<Texture> > texture_cache;
         };

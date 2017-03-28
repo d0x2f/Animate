@@ -9,11 +9,16 @@ using namespace Animate::VK;
  * Constructor.
  */
 Shader::Shader(
-    Context *context,
+    std::weak_ptr<Animate::AppContext> context,
     std::string fragment_code_id,
     std::string vertex_code_id
 ) : context(context), fragment_code_id(fragment_code_id), vertex_code_id(vertex_code_id)
 {
+    //Upload shader bytecode to the gpu.
+    this->upload();
+
+    //Create buffer space for matrix uniforms.
+    this->create_uniform_buffer();
 }
 
 /**
@@ -21,35 +26,12 @@ Shader::Shader(
  */
 Shader::~Shader()
 {
-    this->free();
-}
-
-/**
- * Delete shader program if it's set.
- */
-void Shader::free()
-{
-}
-
-/**
- * Fetch, compile and link the shader program.
- */
-void Shader::initialise()
-{
-    //Free an existing shader referenced by this object.
-    this->free();
-
-    //Compile shaders.
-    this->compile_shaders();
-
-    //Create buffer space for matrix uniforms.
-    this->create_uniform_buffer();
 }
 
 /**
  * Compile shaders.
  */
-void Shader::compile_shaders()
+void Shader::upload()
 {
     //Create shaders
     //GLuint frag_id, vert_id;
@@ -93,7 +75,7 @@ void Shader::compile_shaders()
     glDeleteShader(frag_id);
     glDeleteShader(vert_id);
     */
-    std::cout << "Created Shader: " << this->program_id << std::endl;
+    std::cout << "Created Shader" << std::endl;
 }
 
 /**
@@ -124,7 +106,7 @@ void Shader::create_uniform_buffer()
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     */
 
-    std::cout << "Uniform buffer: " << this->uniform_buffer_id << std::endl;
+    std::cout << "Uniform buffer" << std::endl;
 }
 
 /**
@@ -242,47 +224,4 @@ void Shader::use()
  */
 GLuint Shader::get_id() const
 {
-    return this->program_id;
-}
-
-/**
- * Print shader debug info.
- */
-void Shader::printShaderInfoLog(GLuint obj) {
-    /*
-    int info_log_length = 0;
-    int chars_written  = 0;
-    char *info_log;
-
-    glGetShaderiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
-
-    if (info_log_length > 0)
-    {
-        info_log = (char *)malloc(info_log_length);
-        glGetProgramInfoLog(obj, info_log_length, &chars_written, info_log);
-        std::cerr << info_log << std::endl;
-        std::free(info_log);
-    }
-    */
-}
-
-/**
- * Print program debug info.
- */
-void Shader::printProgramInfoLog(GLuint obj) {
-    /*
-    int info_log_length = 0;
-    int chars_written  = 0;
-    char *info_log;
-
-    glGetProgramiv(obj, GL_INFO_LOG_LENGTH,&info_log_length);
-
-    if (info_log_length > 0)
-    {
-        info_log = (char *)malloc(info_log_length);
-        glGetProgramInfoLog(obj, info_log_length, &chars_written, info_log);
-        std::cerr << info_log << std::endl;
-        std::free(info_log);
-    }
-    */
 }

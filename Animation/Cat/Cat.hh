@@ -20,7 +20,7 @@ namespace Animate::Animation::Cat
     class Cat : public Animation
     {
         public:
-            Cat(Context *context);
+            Cat(std::weak_ptr<AppContext> context);
 
             bool on_render() override;
             void on_load() override;

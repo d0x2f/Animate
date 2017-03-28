@@ -1,9 +1,9 @@
 #include "Textures.hh"
-#include "../Context.hh"
+#include "../AppContext.hh"
 
 using namespace Animate::VK;
 
-Textures::Textures(std::shared_ptr<Context> context) : context(context)
+Textures::Textures(std::shared_ptr<AppContext> context) : context(context)
 {
     this->context.lock()->set_textures(this);
 }

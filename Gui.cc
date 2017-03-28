@@ -19,7 +19,7 @@ Gui::Gui()
 {
     this->init_context();
     this->init_glfw();
-    this->init_vulkan();
+    this->init_graphics();
     this->init_animations();
 }
 
@@ -65,10 +65,11 @@ void Gui::init_glfw()
     );
 }
 
-void Gui::init_vulkan()
+void Gui::init_graphics()
 {
-    VulkanContext *vulkan_context;
-    vulkan_context = new VulkanContext(this->context);
+    VK::Initialiser initialiser(this->context);
+    VK::Context context = initialiser.create_context();
+    this->context->set_graphics_context(context);
 
     //Now that we have a context, provide it to the window.
     glfwMakeContextCurrent(this->context->get_window());
@@ -77,7 +78,7 @@ void Gui::init_vulkan()
 void Gui::init_context()
 {
     //Create context object
-    this->context = std::shared_ptr<Context>( new Context() );
+    this->context = std::shared_ptr<AppContext>( new AppContext() );
 
     //Create a texture manager
     new Textures(this->context);
@@ -86,15 +87,15 @@ void Gui::init_context()
 void Gui::init_animations()
 {
     //Create animation and connect it up
-    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context.get()));
+    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context));
     noise_animation->initialise();
 
-    Animation::Animation *animation = new Animation::Cat::Cat(this->context.get());
+    Animation::Animation *animation = new Animation::Cat::Cat(this->context);
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
-    animation = new Animation::Modulo::Modulo(this->context.get());
+    animation = new Animation::Modulo::Modulo(this->context);
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));

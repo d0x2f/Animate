@@ -1,4 +1,4 @@
-#include "Context.hh"
+#include "AppContext.hh"
 
 using namespace Animate;
 
@@ -7,7 +7,7 @@ using namespace Animate;
 *
 * @param window A GLFW window reference.
 */
-void Context::set_window(GLFWwindow *window)
+void AppContext::set_window(GLFWwindow *window)
 {
     this->window = window;
 }
@@ -17,19 +17,19 @@ void Context::set_window(GLFWwindow *window)
 *
 * @param surface A surface reference.
 */
-void Context::set_surface(vk::SurfaceKHR *surface)
+void AppContext::set_surface(vk::SurfaceKHR *surface)
 {
     this->surface = std::shared_ptr<vk::SurfaceKHR>(surface);
 }
 
 /**
-* Set the vulkan manager reference.
+* Set the graphics context.
 *
-* @param vulkan A vulkan manager reference.
+* @param graphics_context A graphics context.
 */
-void Context::set_vulkan(VK::VulkanContext *vulkan)
+void AppContext::set_graphics_context(VK::Context graphics_context)
 {
-    this->vulkan = std::shared_ptr<VK::VulkanContext>(vulkan);
+    this->graphics_context = graphics_context;
 }
 
 /**
@@ -37,7 +37,7 @@ void Context::set_vulkan(VK::VulkanContext *vulkan)
  *
  * @param textures A textures manager
  */
-void Context::set_textures(VK::Textures *textures)
+void AppContext::set_textures(VK::Textures *textures)
 {
     this->textures = std::shared_ptr<VK::Textures>(textures);
 }
@@ -45,7 +45,7 @@ void Context::set_textures(VK::Textures *textures)
 /**
  * Retrieves the app window.
  */
-GLFWwindow *Context::get_window()
+GLFWwindow *AppContext::get_window()
 {
     if (!this->window) {
         throw std::runtime_error("Attemped to get window before initialised.");
@@ -57,7 +57,7 @@ GLFWwindow *Context::get_window()
 /**
  * Retrieves the tracked surface object.
  */
-std::shared_ptr<vk::SurfaceKHR> const Context::get_surface()
+std::shared_ptr<vk::SurfaceKHR> const AppContext::get_surface()
 {
     if (!this->surface) {
         throw std::runtime_error("Attemped to get surface object before initialised.");
@@ -67,21 +67,17 @@ std::shared_ptr<vk::SurfaceKHR> const Context::get_surface()
 }
 
 /**
- * Retrieves the tracked vulkan object.
+ * Retrieves the tracked graphcis context object.
  */
-std::shared_ptr<VK::VulkanContext> const Context::get_vulkan()
+VK::Context const AppContext::get_graphics_context()
 {
-    if (!this->vulkan) {
-        throw std::runtime_error("Attemped to get vulkan context before initialised.");
-    }
-
-    return this->vulkan;
+    return this->graphics_context;
 }
 
 /**
  * Retrieves the tracked textures object.
  */
-std::shared_ptr<VK::Textures> const Context::get_textures()
+std::shared_ptr<VK::Textures> const AppContext::get_textures()
 {
     if (!this->textures) {
         throw std::runtime_error("Attemped to get texture manager before initialised.");

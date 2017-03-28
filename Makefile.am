@@ -1,7 +1,8 @@
 bin_PROGRAMS = animate
 
 animatedir = .
-animate_SOURCES =   VK/VulkanContext.cc \
+animate_SOURCES =   VK/Initialiser.cc \
+                    VK/Context.cc \
                     VK/Quad.cc \
                     VK/Circle.cc \
                     VK/Line.cc \
@@ -26,11 +27,12 @@ animate_SOURCES =   VK/VulkanContext.cc \
                     Animation/Noise/Noise.cc \
                     \
                     Gui.cc \
-                    Context.cc \
+                    AppContext.cc \
                     resources.c \
                     Utilities.cc \
                     main.cc
-animate_HEADERS =   VK/VulkanContext.hh \
+animate_HEADERS =   VK/Initialiser.hh \
+                    VK/Context.hh \
                     VK/Quad.hh \
                     VK/Circle.hh \
                     VK/Line.hh \
@@ -56,7 +58,7 @@ animate_HEADERS =   VK/VulkanContext.hh \
                     Animation/Noise/Noise.hh \
                     \
                     Gui.hh \
-                    Context.hh \
+                    AppContext.hh \
                     resources.h \
                     Utilities.hh
 

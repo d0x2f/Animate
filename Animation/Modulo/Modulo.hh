@@ -14,7 +14,7 @@ namespace Animate::Animation::Modulo
     class Modulo : public Animation
     {
         public:
-            Modulo(Context *context);
+            Modulo(std::weak_ptr<AppContext> context);
 
             bool on_render();
             void on_tick(GLuint64 time_delta);

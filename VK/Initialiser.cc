@@ -2,31 +2,32 @@
 #include <set>
 #include <algorithm>
 
-#include "VulkanContext.hh"
-#include "../Context.hh"
+#include "Initialiser.hh"
+#include "../AppContext.hh"
 
 using namespace Animate::VK;
 
-VulkanContext::VulkanContext(std::shared_ptr<Animate::Context> context)
+Initialiser::Initialiser(std::shared_ptr<Animate::AppContext> context)
 {
-    this->context = std::weak_ptr<Animate::Context>(context);
-
-    this->create_instance();
-    this->bind_debug_callback();
-    this->create_surface();
-    this->pick_physical_device();
-    this->create_logical_device();
-    this->create_swap_chain();
-    this->create_image_views();
-
-    this->context.lock()->set_vulkan(this);
+    this->context = std::weak_ptr<Animate::AppContext>(context);
 }
 
-VulkanContext::~VulkanContext()
+Context const Initialiser::create_context()
 {
+    Context vulkan_context;
+
+    this->create_instance(vulkan_context);
+    this->bind_debug_callback(vulkan_context);
+    this->create_surface(vulkan_context);
+    this->pick_physical_device(vulkan_context);
+    this->create_logical_device(vulkan_context);
+    this->create_swap_chain(vulkan_context);
+    this->create_image_views(vulkan_context);
+
+    return vulkan_context;
 }
 
-void VulkanContext::create_instance()
+void Initialiser::create_instance(Context& context)
 {
     //Check that the required extensions are available
     if (!this->check_instance_extensions()) {
@@ -58,63 +59,63 @@ void VulkanContext::create_instance()
         .setEnabledLayerCount(layers.size())
         .setPpEnabledLayerNames(layers.data());
 
-    vk::createInstance(&create_info, nullptr, &this->instance);
+    vk::createInstance(&create_info, nullptr, &context.instance);
 }
 
-void VulkanContext::bind_debug_callback()
+void Initialiser::bind_debug_callback(Context& context)
 {
     //Set the debug callback
     vk::DebugReportCallbackCreateInfoEXT debug_create_info = vk::DebugReportCallbackCreateInfoEXT()
     .setFlags(vk::DebugReportFlagBitsEXT::eInformation | vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug)
     .setPfnCallback((PFN_vkDebugReportCallbackEXT)debug_callback);
 
-    auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)this->instance.getProcAddr("vkCreateDebugReportCallbackEXT");
+    auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)context.instance.getProcAddr("vkCreateDebugReportCallbackEXT");
     if (CreateDebugReportCallback != nullptr) {
         VkDebugReportCallbackEXT callback;
         const VkDebugReportCallbackCreateInfoEXT tmp(debug_create_info);
-        CreateDebugReportCallback(this->instance, &tmp, nullptr, &callback);
+        CreateDebugReportCallback(context.instance, &tmp, nullptr, &callback);
     } else {
         throw std::runtime_error("Cannot find required vkCreateDebugReportCallbackEXT function.");
     }
 }
 
-void VulkanContext::create_surface()
+void Initialiser::create_surface(Context& context)
 {
     VkSurfaceKHR surface;
-    VkResult result = glfwCreateWindowSurface(this->instance, this->context.lock()->get_window(), NULL, &surface);
+    VkResult result = glfwCreateWindowSurface(context.instance, this->context.lock()->get_window(), NULL, &surface);
     if (result != VK_SUCCESS) {
         throw std::runtime_error("Couldn't create window surface.");
     }
     this->context.lock()->set_surface(new vk::SurfaceKHR(surface));
 }
 
-void VulkanContext::pick_physical_device()
+void Initialiser::pick_physical_device(Context& context)
 {
     uint32_t device_count = 0;
-    this->instance.enumeratePhysicalDevices(&device_count, nullptr);
+    context.instance.enumeratePhysicalDevices(&device_count, nullptr);
     if (device_count == 0) {
         throw std::runtime_error("No suitable GPU device found.");
     }
 
     std::vector<vk::PhysicalDevice> devices(device_count);
-    this->instance.enumeratePhysicalDevices(&device_count, devices.data());
+    context.instance.enumeratePhysicalDevices(&device_count, devices.data());
 
     //Just pick the first device for now
     for (auto const& device : devices) {
         if (this->is_device_suitable(device)) {
-            this->physical_device = device;
+            context.physical_device = device;
             break;
         }
     }
 
-    if (!this->physical_device) {
+    if (!context.physical_device) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
 }
 
-void VulkanContext::create_logical_device()
+void Initialiser::create_logical_device(Context& context)
 {
-    QueueFamilyIndices indices = this->get_device_queue_families(this->physical_device);
+    QueueFamilyIndices indices = this->get_device_queue_families(context.physical_device);
 
     float const priority = 1.0f;
     std::vector<vk::DeviceQueueCreateInfo> queue_create_infos;
@@ -146,15 +147,15 @@ void VulkanContext::create_logical_device()
         .setEnabledExtensionCount(extensions.size())
         .setPpEnabledExtensionNames(extensions.data());
 
-    this->physical_device.createDevice(&device_create_info, nullptr, &this->logical_device);
+    context.physical_device.createDevice(&device_create_info, nullptr, &context.logical_device);
 
-    this->graphics_queue = this->logical_device.getQueue(indices.graphics_family, 0);
-    this->present_queue = this->logical_device.getQueue(indices.present_family, 0);
+    context.graphics_queue = context.logical_device.getQueue(indices.graphics_family, 0);
+    context.present_queue = context.logical_device.getQueue(indices.present_family, 0);
 }
 
-void VulkanContext::create_swap_chain()
+void Initialiser::create_swap_chain(Context& context)
 {
-    SwapChainSupportDetails swap_chain_support = get_swap_chain_support(this->physical_device);
+    SwapChainSupportDetails swap_chain_support = get_swap_chain_support(context.physical_device);
 
     vk::SurfaceFormatKHR surface_format = this->choose_swap_surface_format(swap_chain_support.formats);
     vk::PresentModeKHR present_mode = this->choose_swap_present_mode(swap_chain_support.present_modes);
@@ -178,7 +179,7 @@ void VulkanContext::create_swap_chain()
         .setPresentMode(present_mode)
         .setClipped(VK_TRUE);
 
-    QueueFamilyIndices indices = get_device_queue_families(this->physical_device);
+    QueueFamilyIndices indices = get_device_queue_families(context.physical_device);
     uint32_t indices_arr[] = {(uint32_t) indices.graphics_family, (uint32_t) indices.present_family};
 
     if (indices.graphics_family != indices.present_family) {
@@ -189,38 +190,38 @@ void VulkanContext::create_swap_chain()
         create_info.setImageSharingMode(vk::SharingMode::eExclusive);
     }
 
-    if (this->logical_device.createSwapchainKHR(&create_info, nullptr, &this->swap_chain) != vk::Result::eSuccess) {
+    if (context.logical_device.createSwapchainKHR(&create_info, nullptr, &context.swap_chain) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create swap chain.");
     }
 
-    this->logical_device.getSwapchainImagesKHR(this->swap_chain, &image_count, nullptr);
+    context.logical_device.getSwapchainImagesKHR(context.swap_chain, &image_count, nullptr);
 
-    this->swap_chain_images.resize(image_count);
-    this->logical_device.getSwapchainImagesKHR(this->swap_chain, &image_count, this->swap_chain_images.data());
+    context.swap_chain_images.resize(image_count);
+    context.logical_device.getSwapchainImagesKHR(context.swap_chain, &image_count, context.swap_chain_images.data());
 
-    this->swap_chain_image_format = surface_format.format;
-    this->swap_chain_extent = extent;
+    context.swap_chain_image_format = surface_format.format;
+    context.swap_chain_extent = extent;
 }
 
-void VulkanContext::create_image_views()
+void Initialiser::create_image_views(Context& context)
 {
-    this->swap_chain_image_views.resize(this->swap_chain_images.size());
+    context.swap_chain_image_views.resize(context.swap_chain_images.size());
 
-    for (uint32_t i = 0; i < this->swap_chain_images.size(); i++) {
+    for (uint32_t i = 0; i < context.swap_chain_images.size(); i++) {
         vk::ImageViewCreateInfo create_info = vk::ImageViewCreateInfo()
-            .setImage(this->swap_chain_images.at(i))
+            .setImage(context.swap_chain_images.at(i))
             .setViewType(vk::ImageViewType::e2D)
-            .setFormat(this->swap_chain_image_format)
+            .setFormat(context.swap_chain_image_format)
             .setComponents(vk::ComponentMapping())
             .setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 
-        if (this->logical_device.createImageView(&create_info, nullptr, &this->swap_chain_image_views.at(i)) != vk::Result::eSuccess) {
+        if (context.logical_device.createImageView(&create_info, nullptr, &context.swap_chain_image_views.at(i)) != vk::Result::eSuccess) {
             throw std::runtime_error("Couldn't create image view.");
         }
     }
 }
 
-bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
+bool Initialiser::is_device_suitable(vk::PhysicalDevice const & device)
 {
     QueueFamilyIndices queue_families = this->get_device_queue_families(device);
     bool extensions_suported = this->check_device_extensions(device);
@@ -237,7 +238,7 @@ bool VulkanContext::is_device_suitable(vk::PhysicalDevice device)
     return features.geometryShader && queue_families.is_complete() && swap_chain_adequate;
 }
 
-QueueFamilyIndices VulkanContext::get_device_queue_families(vk::PhysicalDevice device)
+QueueFamilyIndices Initialiser::get_device_queue_families(vk::PhysicalDevice const & device)
 {
     uint32_t property_count = 0;
     device.getQueueFamilyProperties(&property_count, nullptr);
@@ -271,7 +272,7 @@ QueueFamilyIndices VulkanContext::get_device_queue_families(vk::PhysicalDevice d
     return indices;
 }
 
-SwapChainSupportDetails VulkanContext::get_swap_chain_support(vk::PhysicalDevice device)
+SwapChainSupportDetails Initialiser::get_swap_chain_support(vk::PhysicalDevice const & device)
 {
     SwapChainSupportDetails details;
 
@@ -298,7 +299,7 @@ SwapChainSupportDetails VulkanContext::get_swap_chain_support(vk::PhysicalDevice
     return details;
 }
 
-std::vector<const char*> VulkanContext::get_required_instance_extensions() const
+std::vector<const char*> Initialiser::get_required_instance_extensions() const
 {
     std::vector<const char*> extensions;
 
@@ -314,7 +315,7 @@ std::vector<const char*> VulkanContext::get_required_instance_extensions() const
     return extensions;
 }
 
-std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_instance_extensions() const
+std::vector<vk::ExtensionProperties> Initialiser::get_avalable_instance_extensions() const
 {
     uint32_t extension_count = 0;
     vk::enumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -325,14 +326,14 @@ std::vector<vk::ExtensionProperties> VulkanContext::get_avalable_instance_extens
     return extensions;
 }
 
-std::vector<const char*> VulkanContext::get_required_instance_layers() const
+std::vector<const char*> Initialiser::get_required_instance_layers() const
 {
     return {
         "VK_LAYER_LUNARG_standard_validation"
     };
 }
 
-std::vector<vk::LayerProperties> VulkanContext::get_available_instance_layers() const
+std::vector<vk::LayerProperties> Initialiser::get_available_instance_layers() const
 {
     uint32_t layer_count;
     vk::enumerateInstanceLayerProperties(&layer_count, nullptr);
@@ -343,14 +344,14 @@ std::vector<vk::LayerProperties> VulkanContext::get_available_instance_layers() 
     return layers;
 }
 
-std::vector<const char*> VulkanContext::get_required_device_extensions() const
+std::vector<const char*> Initialiser::get_required_device_extensions() const
 {
     return {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 }
 
-std::vector<vk::ExtensionProperties> VulkanContext::get_available_device_extensions(vk::PhysicalDevice device) const
+std::vector<vk::ExtensionProperties> Initialiser::get_available_device_extensions(vk::PhysicalDevice const & device) const
 {
     uint32_t extension_count;
     device.enumerateDeviceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -361,7 +362,7 @@ std::vector<vk::ExtensionProperties> VulkanContext::get_available_device_extensi
     return extensions;
 }
 
-bool VulkanContext::check_instance_extensions()
+bool Initialiser::check_instance_extensions()
 {
     //Get extensions required by glfw
     std::vector<const char*> const required_extensions = this->get_required_instance_extensions();
@@ -386,7 +387,7 @@ bool VulkanContext::check_instance_extensions()
     return true;
 }
 
-bool VulkanContext::check_instance_layers()
+bool Initialiser::check_instance_layers()
 {
     std::vector<const char*> const required_layers = this->get_required_instance_layers();
     std::vector<vk::LayerProperties> const available_layers = this->get_available_instance_layers();
@@ -410,7 +411,7 @@ bool VulkanContext::check_instance_layers()
     return true;
 }
 
-bool VulkanContext::check_device_extensions(vk::PhysicalDevice device)
+bool Initialiser::check_device_extensions(vk::PhysicalDevice const & device)
 {
     std::vector<vk::ExtensionProperties> available_extensions = this->get_available_device_extensions(device);
     std::vector<const char *> required_extensions_cstr = this->get_required_device_extensions();
@@ -424,7 +425,7 @@ bool VulkanContext::check_device_extensions(vk::PhysicalDevice device)
     return required_extensions.empty();
 }
 
-vk::SurfaceFormatKHR VulkanContext::choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
+vk::SurfaceFormatKHR Initialiser::choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
 {
     if (available_formats.size() == 1 && available_formats.front().format == vk::Format::eUndefined) {
         return {vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear};
@@ -439,7 +440,7 @@ vk::SurfaceFormatKHR VulkanContext::choose_swap_surface_format(const std::vector
     return available_formats.front();
 }
 
-vk::PresentModeKHR VulkanContext::choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& available_present_modes) const
+vk::PresentModeKHR Initialiser::choose_swap_present_mode(std::vector<vk::PresentModeKHR> const & available_present_modes) const
 {
     vk::PresentModeKHR chosen_mode = vk::PresentModeKHR::eFifo;
 
@@ -454,7 +455,7 @@ vk::PresentModeKHR VulkanContext::choose_swap_present_mode(const std::vector<vk:
     return chosen_mode;
 }
 
-vk::Extent2D VulkanContext::choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities) const
+vk::Extent2D Initialiser::choose_swap_extent(vk::SurfaceCapabilitiesKHR const & capabilities) const
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         return capabilities.currentExtent;
@@ -471,7 +472,7 @@ vk::Extent2D VulkanContext::choose_swap_extent(const vk::SurfaceCapabilitiesKHR&
     }
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debug_callback(
+VKAPI_ATTR VkBool32 VKAPI_CALL Initialiser::debug_callback(
     VkDebugReportFlagsEXT flags,
     VkDebugReportObjectTypeEXT object_type,
     uint64_t object,
