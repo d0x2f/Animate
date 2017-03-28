@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/Animate">
-        <file>data/Cat/shader.frag</file>
-        <file>data/Cat/shader.vert</file>
         <file preprocess="to-pixdata" >data/Cat/0.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/1.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/2.jpg</file>
@@ -11,10 +9,19 @@
         <file preprocess="to-pixdata" >data/Cat/5.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/6.jpg</file>
 
+        <file>data/Cat/shader.frag</file>
+        <file>data/Cat/shader.vert</file>
+        <file>data/Cat/shader.frag.spv</file>
+        <file>data/Cat/shader.vert.spv</file>
+
         <file>data/Modulo/shader.frag</file>
         <file>data/Modulo/shader.vert</file>
+        <file>data/Modulo/shader.frag.spv</file>
+        <file>data/Modulo/shader.vert.spv</file>
 
         <file>data/Noise/shader.frag</file>
         <file>data/Noise/shader.vert</file>
+        <file>data/Noise/shader.frag.spv</file>
+        <file>data/Noise/shader.vert.spv</file>
     </gresource>
 </gresources>
