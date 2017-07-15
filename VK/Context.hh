@@ -4,12 +4,15 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
+#include <string>
 
 namespace Animate
 {
     namespace VK
     {
-        struct Context
+        class Shader;
+
+        class Context
         {
             public:
                 vk::Instance instance;
@@ -26,6 +29,11 @@ namespace Animate
                 vk::RenderPass render_pass;
                 vk::PipelineCache pipeline_cache;
                 vk::Pipeline pipeline;
+
+                std::vector<vk::ShaderModule> shader_modules;
+                std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
+
+                void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
         };
 
     }

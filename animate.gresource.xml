@@ -9,6 +9,9 @@
         <file preprocess="to-pixdata" >data/Cat/5.jpg</file>
         <file preprocess="to-pixdata" >data/Cat/6.jpg</file>
 
+        <file>data/Default/shader.frag.spv</file>
+        <file>data/Default/shader.vert.spv</file>
+
         <file>data/Cat/shader.frag.spv</file>
         <file>data/Cat/shader.vert.spv</file>
 

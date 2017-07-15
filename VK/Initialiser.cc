@@ -4,6 +4,7 @@
 
 #include "Initialiser.hh"
 #include "../AppContext.hh"
+#include "Shader.hh"
 
 using namespace Animate::VK;
 
@@ -302,9 +303,12 @@ void Initialiser::create_pipeline(Context& context)
         throw std::runtime_error("Couldn't create pipeline layout.");
     }
 
+    context.add_shader_stage(vk::ShaderStageFlagBits::eFragment, "/Animate/data/Default/shader.frag.spv");
+    context.add_shader_stage(vk::ShaderStageFlagBits::eVertex, "/Animate/data/Default/shader.vert.spv");
+
     vk::GraphicsPipelineCreateInfo pipeline_create_info = vk::GraphicsPipelineCreateInfo()
         .setStageCount(2)
-        //.setPStages(/*FECK*/)
+        .setPStages(context.shader_stages.data())
         .setPVertexInputState(&vertex_input_info)
         .setPInputAssemblyState(&input_assembly_info)
         .setPViewportState(&viewport_info)
