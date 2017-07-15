@@ -36,7 +36,7 @@ Modulo::Modulo(std::weak_ptr<AppContext> context) : Animation::Animation(context
 void Modulo::initialise()
 {
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag", "/Animate/data/Modulo/shader.vert"));
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv"));
 
     //Add a circle
     Ring *ring = new Ring(Point(0.5,0.5), Scale(.8,.8));

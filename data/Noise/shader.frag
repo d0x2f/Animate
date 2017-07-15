@@ -4,7 +4,7 @@ layout (std140) uniform variables {
     float random_seed;
 };
 
-out vec4 output_colour;
+layout (location = 2) out vec4 output_colour;
 
 // 2D Random
 float random (in vec2 st) {

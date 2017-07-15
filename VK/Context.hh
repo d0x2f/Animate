@@ -22,6 +22,10 @@ namespace Animate
                 vk::Format swap_chain_image_format;
                 vk::Extent2D swap_chain_extent;
                 std::vector<vk::ImageView> swap_chain_image_views;
+                vk::PipelineLayout pipeline_layout;
+                vk::RenderPass render_pass;
+                vk::PipelineCache pipeline_cache;
+                vk::Pipeline pipeline;
         };
 
     }

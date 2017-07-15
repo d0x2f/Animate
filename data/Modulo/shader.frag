@@ -1,9 +1,9 @@
 #version 450
 
-in vec3 _vertex;
-in vec4 _colour;
+layout (location = 0) in vec3 _vertex;
+layout (location = 2) in vec4 _colour;
 
-out vec4 output_colour;
+layout (location = 2) out vec4 output_colour;
 
 void main() {
     output_colour = _colour;

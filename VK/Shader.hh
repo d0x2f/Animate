@@ -31,6 +31,9 @@ namespace Animate::VK
             std::weak_ptr<Animate::AppContext> context;
             std::string fragment_code_id;
             std::string vertex_code_id;
+            vk::ShaderModule fragment_shader_module,
+                             vertex_shader_module;
+            vk::PipelineShaderStageCreateInfo shader_stages[2];
 
             void upload();
             void create_uniform_buffer();

@@ -46,6 +46,8 @@ namespace Animate
                 void create_surface(Context& context);
                 void create_swap_chain(Context& context);
                 void create_image_views(Context& context);
+                void create_render_pass(Context& context);
+                void create_pipeline(Context& context);
 
                 bool is_device_suitable(vk::PhysicalDevice const & device);
 

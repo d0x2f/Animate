@@ -35,7 +35,7 @@ Cat::Cat(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 void Cat::initialise()
 {
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag.spv", "/Animate/data/Cat/shader.vert.spv"));
 }
 
 /**

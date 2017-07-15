@@ -7,11 +7,14 @@
 
 using namespace Animate;
 
-gconstpointer Utilities::get_resource_as_bytes(std::string key)
+gconstpointer Utilities::get_resource_as_bytes(std::string key, size_t *size)
 {
     Glib::RefPtr< const Glib::Bytes > bytes = Gio::Resource::lookup_data_global(key);
-    gsize size = bytes->get_size();
-    return bytes->get_data(size);
+    size_t resource_size = bytes->get_size();
+    if (size != nullptr) {
+        (*size) = resource_size;
+    }
+    return bytes->get_data(resource_size);
 }
 
 GLuint64 Utilities::get_micro_time()

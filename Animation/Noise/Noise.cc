@@ -34,7 +34,7 @@ Noise::Noise(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 void Noise::initialise()
 {
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag", "/Animate/data/Noise/shader.vert"));
+    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv"));
 
     //Add a Quad
     Object::Object *object = new Object::Object();

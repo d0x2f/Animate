@@ -33,49 +33,39 @@ Shader::~Shader()
  */
 void Shader::upload()
 {
-    //Create shaders
-    //GLuint frag_id, vert_id;
-    //frag_id = glCreateShader(GL_FRAGMENT_SHADER);
-    //vert_id = glCreateShader(GL_VERTEX_SHADER);
-
     //Load shader code
-    const char *f = (const char *)Utilities::get_resource_as_bytes(fragment_code_id);
-    const char *v = (const char *)Utilities::get_resource_as_bytes(vertex_code_id);
+    size_t f_size, v_size;
 
-    /*glShaderSource(frag_id, 1, &f, NULL);
-    glShaderSource(vert_id, 1, &v, NULL);
+    const uint32_t *f = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(fragment_code_id, &f_size));
+    const uint32_t *v = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(vertex_code_id, &v_size));
 
-    //Compile
-    glCompileShader(frag_id);
-    glCompileShader(vert_id);
+    vk::ShaderModuleCreateInfo fragment_shader_module_create_info = vk::ShaderModuleCreateInfo()
+        .setCodeSize(f_size)
+        .setPCode(f);
 
-    //Print shader debug info
-    printShaderInfoLog(frag_id);
-    printShaderInfoLog(vert_id);
+    vk::ShaderModuleCreateInfo vertex_shader_module_create_info = vk::ShaderModuleCreateInfo()
+        .setCodeSize(v_size)
+        .setPCode(v);
 
-    //Link shaders into program
-    this->program_id = glCreateProgram();
-    glAttachShader(this->program_id, frag_id);
-    glAttachShader(this->program_id, vert_id);
+    Context context = this->context.lock()->get_graphics_context();
+    if (context.logical_device.createShaderModule(&fragment_shader_module_create_info, nullptr, &this->fragment_shader_module)!= vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create fragment shader module.");
+    }
+    if (context.logical_device.createShaderModule(&vertex_shader_module_create_info, nullptr, &this->vertex_shader_module)!= vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create vertex shader module.");
+    }
 
-    glBindAttribLocation(this->program_id, 0, "_vertex");
-    glBindAttribLocation(this->program_id, 1, "_normal");
-    glBindAttribLocation(this->program_id, 2, "_colour");
-    glBindAttribLocation(this->program_id, 3, "_tex_coords");
+    //Create shader stage
 
-    glLinkProgram(this->program_id);
+    this->shader_stages[0] = vk::PipelineShaderStageCreateInfo()
+        .setStage(vk::ShaderStageFlagBits::eFragment)
+        .setModule(this->fragment_shader_module)
+        .setPName(fragment_code_id.c_str());
 
-    //Print program debug info
-    printProgramInfoLog(this->program_id);
-
-    //Shaders can be detached and deleted after linking
-    glDetachShader(this->program_id, frag_id);
-    glDetachShader(this->program_id, vert_id);
-
-    glDeleteShader(frag_id);
-    glDeleteShader(vert_id);
-    */
-    std::cout << "Created Shader" << std::endl;
+    this->shader_stages[1] = vk::PipelineShaderStageCreateInfo()
+        .setStage(vk::ShaderStageFlagBits::eVertex)
+        .setModule(this->vertex_shader_module)
+        .setPName(vertex_code_id.c_str());
 }
 
 /**
@@ -105,8 +95,6 @@ void Shader::create_uniform_buffer()
     //Unbind
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     */
-
-    std::cout << "Uniform buffer" << std::endl;
 }
 
 /**

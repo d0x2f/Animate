@@ -2,8 +2,8 @@
 
 layout (location = 0) in vec3 vertex;
 
-out vec3 _vertex;
-out vec4 _colour;
+layout (location = 0) out vec3 _vertex;
+layout (location = 2) out vec4 _colour;
 
 layout (std140) uniform variables {
     vec4 colour;

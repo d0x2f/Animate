@@ -23,6 +23,8 @@ Context const Initialiser::create_context()
     this->create_logical_device(vulkan_context);
     this->create_swap_chain(vulkan_context);
     this->create_image_views(vulkan_context);
+    this->create_render_pass(vulkan_context);
+    this->create_pipeline(vulkan_context);
 
     return vulkan_context;
 }
@@ -219,6 +221,111 @@ void Initialiser::create_image_views(Context& context)
             throw std::runtime_error("Couldn't create image view.");
         }
     }
+}
+
+void Initialiser::create_render_pass(Context& context)
+{
+    vk::AttachmentDescription colour_attachment = vk::AttachmentDescription()
+        .setFormat(context.swap_chain_image_format)
+        .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+    vk::AttachmentReference colour_attachment_reference = vk::AttachmentReference()
+        .setAttachment(0)
+        .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+    vk::SubpassDescription subpass = vk::SubpassDescription()
+        .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+        .setColorAttachmentCount(1)
+        .setPColorAttachments(&colour_attachment_reference);
+
+    vk::RenderPassCreateInfo render_pass_create_info = vk::RenderPassCreateInfo()
+        .setAttachmentCount(1)
+        .setPAttachments(&colour_attachment)
+        .setSubpassCount(1)
+        .setPSubpasses(&subpass);
+
+    if (context.logical_device.createRenderPass(&render_pass_create_info, nullptr, &context.render_pass) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create render pass.");
+    }
+}
+
+void Initialiser::create_pipeline(Context& context)
+{
+    vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo();
+
+    vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = vk::PipelineInputAssemblyStateCreateInfo()
+        .setTopology(vk::PrimitiveTopology::eTriangleStrip);
+
+    vk::Viewport viewport = vk::Viewport()
+        .setWidth(context.swap_chain_extent.width)
+        .setHeight(context.swap_chain_extent.height)
+        .setMaxDepth(1.0f);
+
+    vk::Rect2D scissor = vk::Rect2D(
+        {0,0},
+        context.swap_chain_extent
+    );
+
+    vk::PipelineViewportStateCreateInfo viewport_info = vk::PipelineViewportStateCreateInfo()
+        .setViewportCount(1)
+        .setPViewports(&viewport)
+        .setScissorCount(1)
+        .setPScissors(&scissor);
+
+    vk::PipelineRasterizationStateCreateInfo rasteriser_info = vk::PipelineRasterizationStateCreateInfo()
+        .setLineWidth(1.0f)
+        .setCullMode(vk::CullModeFlagBits::eBack)
+        .setFrontFace(vk::FrontFace::eClockwise);
+
+    vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo();
+
+    vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
+        .setBlendEnable(true)
+        .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
+        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
+        .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
+        .setDstAlphaBlendFactor(vk::BlendFactor::eZero);
+
+    vk::PipelineColorBlendStateCreateInfo colour_blend_info = vk::PipelineColorBlendStateCreateInfo()
+        .setAttachmentCount(1)
+        .setPAttachments(&colour_blend_attachment_info);
+
+    vk::DynamicState dynamic_states[] = { vk::DynamicState::eViewport };
+
+    vk::PipelineDynamicStateCreateInfo dynamic_state_info = vk::PipelineDynamicStateCreateInfo()
+        .setDynamicStateCount(1)
+        .setPDynamicStates(dynamic_states);
+
+    vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo();
+
+    if (context.logical_device.createPipelineLayout(&layout_info, nullptr, &context.pipeline_layout) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create pipeline layout.");
+    }
+
+    vk::GraphicsPipelineCreateInfo pipeline_create_info = vk::GraphicsPipelineCreateInfo()
+        .setStageCount(2)
+        //.setPStages(/*FECK*/)
+        .setPVertexInputState(&vertex_input_info)
+        .setPInputAssemblyState(&input_assembly_info)
+        .setPViewportState(&viewport_info)
+        .setPRasterizationState(&rasteriser_info)
+        .setPMultisampleState(&multisampling_state_info)
+        .setPColorBlendState(&colour_blend_info)
+        .setPDynamicState(&dynamic_state_info)
+        .setLayout(context.pipeline_layout)
+        .setRenderPass(context.render_pass)
+        .setSubpass(0);
+
+    vk::PipelineCacheCreateInfo pipeline_cache_create_info = vk::PipelineCacheCreateInfo();
+
+    if (context.logical_device.createPipelineCache(&pipeline_cache_create_info, nullptr, &context.pipeline_cache) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create pipeline cache.");
+    }
+
+    if (context.logical_device.createGraphicsPipelines(context.pipeline_cache, 1, &pipeline_create_info, nullptr, &context.pipeline) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create graphics pipeline.");
+    }
+
 }
 
 bool Initialiser::is_device_suitable(vk::PhysicalDevice const & device)
