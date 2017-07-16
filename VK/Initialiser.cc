@@ -267,11 +267,11 @@ void Initialiser::create_pipeline(Context& context)
     vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo();
 
     vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = vk::PipelineInputAssemblyStateCreateInfo()
-        .setTopology(vk::PrimitiveTopology::eTriangleStrip);
+        .setTopology(vk::PrimitiveTopology::eTriangleList);
 
     vk::Viewport viewport = vk::Viewport()
-        .setWidth(context.swap_chain_extent.width)
-        .setHeight(context.swap_chain_extent.height)
+        .setWidth((float)context.swap_chain_extent.width)
+        .setHeight((float)context.swap_chain_extent.height)
         .setMaxDepth(1.0f);
 
     vk::Rect2D scissor = vk::Rect2D(
@@ -287,12 +287,13 @@ void Initialiser::create_pipeline(Context& context)
 
     vk::PipelineRasterizationStateCreateInfo rasteriser_info = vk::PipelineRasterizationStateCreateInfo()
         .setLineWidth(1.0f)
-        .setCullMode(vk::CullModeFlagBits::eBack)
+        .setCullMode(vk::CullModeFlagBits::eNone)
         .setFrontFace(vk::FrontFace::eClockwise);
 
     vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo();
 
     vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
+        .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
         .setBlendEnable(true)
         .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
         .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
@@ -380,7 +381,8 @@ void Initialiser::create_command_buffers(Context& context)
 
     vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
         .setCommandPool(context.command_pool)
-        .setCommandBufferCount((uint32_t) context.command_buffers.size());
+        .setCommandBufferCount((uint32_t) context.command_buffers.size())
+        .setLevel(vk::CommandBufferLevel::ePrimary);
 
     if (context.logical_device.allocateCommandBuffers(&command_buffer_allocate_info, context.command_buffers.data()) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create command buffers.");
@@ -392,7 +394,7 @@ void Initialiser::create_command_buffers(Context& context)
     );
 
     vk::ClearValue clear_colour = vk::ClearValue()
-        .setColor(vk::ClearColorValue().setFloat32({0.0f, 1.0f, 0.0f, 1.0f}));
+        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
 
     vk::Viewport viewport = vk::Viewport()
         .setWidth(context.swap_chain_extent.width)
@@ -404,6 +406,7 @@ void Initialiser::create_command_buffers(Context& context)
 
     vk::RenderPassBeginInfo render_pass_begin_info = vk::RenderPassBeginInfo()
         .setRenderPass(context.render_pass)
+        .setRenderArea(render_area)
         .setClearValueCount(1)
         .setPClearValues(&clear_colour);
 
