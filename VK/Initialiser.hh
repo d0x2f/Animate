@@ -48,6 +48,9 @@ namespace Animate
                 void create_image_views(Context& context);
                 void create_render_pass(Context& context);
                 void create_pipeline(Context& context);
+                void create_framebuffers(Context& context);
+                void create_command_pool(Context& context);
+                void create_command_buffers(Context& context);
 
                 bool is_device_suitable(vk::PhysicalDevice const & device);
 

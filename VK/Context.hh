@@ -29,6 +29,9 @@ namespace Animate
                 vk::RenderPass render_pass;
                 vk::PipelineCache pipeline_cache;
                 vk::Pipeline pipeline;
+                std::vector<vk::Framebuffer> swap_chain_framebuffers;
+                vk::CommandPool command_pool;
+                std::vector<vk::CommandBuffer> command_buffers;
 
                 std::vector<vk::ShaderModule> shader_modules;
                 std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;

@@ -26,6 +26,9 @@ Context const Initialiser::create_context()
     this->create_image_views(vulkan_context);
     this->create_render_pass(vulkan_context);
     this->create_pipeline(vulkan_context);
+    this->create_framebuffers(vulkan_context);
+    this->create_command_pool(vulkan_context);
+    this->create_command_buffers(vulkan_context);
 
     return vulkan_context;
 }
@@ -45,7 +48,6 @@ void Initialiser::create_instance(Context& context)
     //Get the required extensions and layers
     std::vector<const char*> extensions = this->get_required_instance_extensions();
     std::vector<const char*> layers = this->get_required_instance_layers();
-    std::vector<const char*>::iterator it = extensions.begin();
 
     //Create a vulkan instance
     vk::ApplicationInfo app_info = vk::ApplicationInfo()
@@ -329,7 +331,83 @@ void Initialiser::create_pipeline(Context& context)
     if (context.logical_device.createGraphicsPipelines(context.pipeline_cache, 1, &pipeline_create_info, nullptr, &context.pipeline) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create graphics pipeline.");
     }
+}
 
+void Initialiser::create_framebuffers(Context& context)
+{
+    context.swap_chain_framebuffers.resize(context.swap_chain_image_views.size());
+
+    for (size_t i = 0; i < context.swap_chain_image_views.size(); i++) {
+        vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
+            .setRenderPass(context.render_pass)
+            .setAttachmentCount(1)
+            .setPAttachments(&context.swap_chain_image_views[i])
+            .setWidth(context.swap_chain_extent.width)
+            .setHeight(context.swap_chain_extent.height)
+            .setLayers(1);
+
+        if (context.logical_device.createFramebuffer(&framebuffer_create_info, nullptr, &context.swap_chain_framebuffers[i]) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create framebuffer.");
+        }
+    }
+}
+
+void Initialiser::create_command_pool(Context& context)
+{
+    QueueFamilyIndices indices = this->get_device_queue_families(context.physical_device);
+
+    vk::CommandPoolCreateInfo command_pool_create_info = vk::CommandPoolCreateInfo()
+        .setQueueFamilyIndex(indices.graphics_family);
+
+    if (context.logical_device.createCommandPool(&command_pool_create_info, nullptr, &context.command_pool) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create command pool.");
+    }
+}
+
+void Initialiser::create_command_buffers(Context& context)
+{
+    context.command_buffers.resize(context.swap_chain_framebuffers.size());
+
+    vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
+        .setCommandPool(context.command_pool)
+        .setCommandBufferCount((uint32_t) context.command_buffers.size());
+
+    if (context.logical_device.allocateCommandBuffers(&command_buffer_allocate_info, context.command_buffers.data()) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create command buffers.");
+    }
+
+    vk::Rect2D render_area = vk::Rect2D(
+        {0,0},
+        context.swap_chain_extent
+    );
+
+    vk::ClearValue clear_colour = vk::ClearValue()
+        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+
+    vk::Viewport viewport = vk::Viewport()
+        .setWidth(context.swap_chain_extent.width)
+        .setHeight(context.swap_chain_extent.height)
+        .setMaxDepth(1.0f);
+
+    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
+        .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+
+    vk::RenderPassBeginInfo render_pass_begin_info = vk::RenderPassBeginInfo()
+        .setRenderPass(context.render_pass)
+        .setClearValueCount(1)
+        .setPClearValues(&clear_colour);
+
+    for (size_t i = 0; i < context.command_buffers.size(); i++) {
+        render_pass_begin_info.setFramebuffer(context.swap_chain_framebuffers[i]);
+
+        context.command_buffers[i].begin(&begin_info);
+        context.command_buffers[i].setViewport(0, 1, &viewport);
+        context.command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
+        context.command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, context.pipeline);
+        context.command_buffers[i].draw(3, 1, 0, 0);
+        context.command_buffers[i].endRenderPass();
+        context.command_buffers[i].end();
+    }
 }
 
 bool Initialiser::is_device_suitable(vk::PhysicalDevice const & device)
