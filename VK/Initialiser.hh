@@ -51,6 +51,7 @@ namespace Animate
                 void create_framebuffers(Context& context);
                 void create_command_pool(Context& context);
                 void create_command_buffers(Context& context);
+                void create_semaphores(Context& context);
 
                 bool is_device_suitable(vk::PhysicalDevice const & device);
 

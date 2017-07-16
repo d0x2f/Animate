@@ -29,6 +29,7 @@ Context const Initialiser::create_context()
     this->create_framebuffers(vulkan_context);
     this->create_command_pool(vulkan_context);
     this->create_command_buffers(vulkan_context);
+    this->create_semaphores(vulkan_context);
 
     return vulkan_context;
 }
@@ -230,7 +231,8 @@ void Initialiser::create_render_pass(Context& context)
 {
     vk::AttachmentDescription colour_attachment = vk::AttachmentDescription()
         .setFormat(context.swap_chain_image_format)
-        .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+        .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
+        .setLoadOp(vk::AttachmentLoadOp::eClear);
 
     vk::AttachmentReference colour_attachment_reference = vk::AttachmentReference()
         .setAttachment(0)
@@ -241,11 +243,19 @@ void Initialiser::create_render_pass(Context& context)
         .setColorAttachmentCount(1)
         .setPColorAttachments(&colour_attachment_reference);
 
+    vk::SubpassDependency subpass_dependency = vk::SubpassDependency()
+        .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
+
     vk::RenderPassCreateInfo render_pass_create_info = vk::RenderPassCreateInfo()
         .setAttachmentCount(1)
         .setPAttachments(&colour_attachment)
         .setSubpassCount(1)
-        .setPSubpasses(&subpass);
+        .setPSubpasses(&subpass)
+        .setDependencyCount(1)
+        .setPDependencies(&subpass_dependency);
 
     if (context.logical_device.createRenderPass(&render_pass_create_info, nullptr, &context.render_pass) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create render pass.");
@@ -382,7 +392,7 @@ void Initialiser::create_command_buffers(Context& context)
     );
 
     vk::ClearValue clear_colour = vk::ClearValue()
-        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+        .setColor(vk::ClearColorValue().setFloat32({0.0f, 1.0f, 0.0f, 1.0f}));
 
     vk::Viewport viewport = vk::Viewport()
         .setWidth(context.swap_chain_extent.width)
@@ -407,6 +417,17 @@ void Initialiser::create_command_buffers(Context& context)
         context.command_buffers[i].draw(3, 1, 0, 0);
         context.command_buffers[i].endRenderPass();
         context.command_buffers[i].end();
+    }
+}
+
+void Initialiser::create_semaphores(Context& context)
+{
+    vk::SemaphoreCreateInfo create_info = vk::SemaphoreCreateInfo();
+
+    if (context.logical_device.createSemaphore(&create_info, nullptr, &context.image_available_semaphore) != vk::Result::eSuccess ||
+        context.logical_device.createSemaphore(&create_info, nullptr, &context.render_finished_semaphore) != vk::Result::eSuccess
+    ) {
+        throw std::runtime_error("Couldn't create semaphores.");
     }
 }
 

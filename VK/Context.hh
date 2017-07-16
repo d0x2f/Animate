@@ -32,6 +32,8 @@ namespace Animate
                 std::vector<vk::Framebuffer> swap_chain_framebuffers;
                 vk::CommandPool command_pool;
                 std::vector<vk::CommandBuffer> command_buffers;
+                vk::Semaphore image_available_semaphore,
+                              render_finished_semaphore;
 
                 std::vector<vk::ShaderModule> shader_modules;
                 std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;

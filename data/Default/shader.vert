@@ -1,23 +1,25 @@
 #version 450
+#extension GL_ARB_separate_shader_objects : enable
 
-layout (location = 0) in vec3 vertex;
-
-layout (location = 0) out vec3 _vertex;
-layout (location = 2) out vec4 _colour;
-
-layout (std140) uniform variables {
-    vec4 colour;
+out gl_PerVertex {
+    vec4 gl_Position;
 };
 
-layout (std140) uniform matrices {
-    mat4 model;
-    mat4 projection;
-    mat4 view;
-};
+layout(location = 0) out vec3 fragColor;
+
+vec2 positions[3] = vec2[](
+    vec2(0.0, -0.5),
+    vec2(0.5, 0.5),
+    vec2(-0.5, 0.5)
+);
+
+vec3 colors[3] = vec3[](
+    vec3(1.0, 0.0, 0.0),
+    vec3(0.0, 1.0, 0.0),
+    vec3(0.0, 0.0, 1.0)
+);
 
 void main() {
-    _vertex = vertex;
-    _colour = colour;
-
-    gl_Position = projection * view * model * vec4(vertex, 1.0);
+    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    fragColor = colors[gl_VertexIndex];
 }
