@@ -20,6 +20,7 @@ namespace Animate
             void start_loop();
 
             void on_key(int key, int scancode, int action, int mods);
+            void on_window_resize(int width, int height);
 
         private:
             std::shared_ptr<AppContext> context;

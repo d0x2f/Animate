@@ -60,10 +60,13 @@ namespace Animate
 
                 void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
 
-                void recreate_swapchain();
+                void recreate_swap_chain();
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
+                bool is_complete = false;
+
+                void cleanup_swap_chain_dependancies();
 
                 void create_instance();
                 void bind_debug_callback();

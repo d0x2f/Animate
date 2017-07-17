@@ -43,7 +43,7 @@ void Gui::init_glfw()
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
 
     GLFWwindow *window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
@@ -61,6 +61,13 @@ void Gui::init_glfw()
         this->context->get_window(),
         [](GLFWwindow* w, int key, int scancode, int action, int mods) {
             static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
+        }
+    );
+
+    glfwSetWindowSizeCallback(
+        this->context->get_window(),
+        [](GLFWwindow* w, int width, int height) {
+            static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_window_resize(width, height);
         }
     );
 }
@@ -113,6 +120,11 @@ void Gui::on_key(int key, int scancode, int action, int mods)
     }
 }
 
+void Gui::on_window_resize(int width, int height)
+{
+    this->context->get_graphics_context()->recreate_swap_chain();
+}
+
 /**
  * Start the gui loop.
  */
@@ -133,7 +145,22 @@ void Gui::start_loop()
         std::shared_ptr<VK::Context> context = this->context->get_graphics_context();
 
         uint32_t image_index;
-        context->logical_device.acquireNextImageKHR(context->swap_chain, std::numeric_limits<uint64_t>::max(), context->image_available_semaphore, nullptr, &image_index);
+        vk::Result result = context->logical_device.acquireNextImageKHR(context->swap_chain, std::numeric_limits<uint64_t>::max(), context->image_available_semaphore, nullptr, &image_index);
+        switch (result) {
+            //Success
+            case vk::Result::eSuccess:
+            case vk::Result::eSuboptimalKHR:
+                break;
+
+            //Invalid swapchain
+            case vk::Result::eErrorOutOfDateKHR:
+                context->recreate_swap_chain();
+                break;
+
+            //Other unhandled error
+            default:
+                throw std::runtime_error("Couldn't acquire swap chain image.");
+        }
 
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 

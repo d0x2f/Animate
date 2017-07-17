@@ -48,18 +48,44 @@ Context::Context(std::shared_ptr<Animate::AppContext> context)
     this->create_command_pool();
     this->create_command_buffers();
     this->create_semaphores();
+
+    this->is_complete = true;
 }
 
-void Context::recreate_swapchain()
+void Context::recreate_swap_chain()
 {
     this->logical_device.waitIdle();
 
+    this->cleanup_swap_chain_dependancies();
+
+    vk::SwapchainKHR tmp_swap_chain = this->swap_chain;
+
     this->create_swap_chain();
+
+    this->logical_device.destroySwapchainKHR(tmp_swap_chain, nullptr);
+    
     this->create_image_views();
     this->create_render_pass();
     this->create_pipeline();
     this->create_framebuffers();
     this->create_command_buffers();
+}
+
+void Context::cleanup_swap_chain_dependancies()
+{
+    for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
+        this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
+    }
+
+    this->logical_device.freeCommandBuffers(this->command_pool, static_cast<uint32_t>(this->command_buffers.size()), this->command_buffers.data());
+
+    this->logical_device.destroyPipeline(this->pipeline, nullptr);
+    this->logical_device.destroyPipelineLayout(this->pipeline_layout, nullptr);
+    this->logical_device.destroyRenderPass(this->render_pass, nullptr);
+
+    for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
+        this->logical_device.destroyImageView(this->swap_chain_image_views[i], nullptr);
+    }
 }
 
 void Context::create_instance()
@@ -212,6 +238,10 @@ void Context::create_swap_chain()
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
         .setPresentMode(present_mode)
         .setClipped(VK_TRUE);
+
+    if (is_complete) {
+        create_info.setOldSwapchain(this->swap_chain);
+    }
 
     QueueFamilyIndices indices = get_device_queue_families(this->physical_device);
     uint32_t indices_arr[] = {(uint32_t) indices.graphics_family, (uint32_t) indices.present_family};
