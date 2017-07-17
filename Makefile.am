@@ -1,8 +1,7 @@
 bin_PROGRAMS = animate
 
 animatedir = .
-animate_SOURCES =   VK/Initialiser.cc \
-                    VK/Context.cc \
+animate_SOURCES =   VK/Context.cc \
                     VK/Quad.cc \
                     VK/Circle.cc \
                     VK/Line.cc \
@@ -31,8 +30,7 @@ animate_SOURCES =   VK/Initialiser.cc \
                     resources.c \
                     Utilities.cc \
                     main.cc
-animate_HEADERS =   VK/Initialiser.hh \
-                    VK/Context.hh \
+animate_HEADERS =   VK/Context.hh \
                     VK/Quad.hh \
                     VK/Circle.hh \
                     VK/Line.hh \

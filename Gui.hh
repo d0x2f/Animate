@@ -4,8 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 
-#include "VK/Initialiser.hh"
-#include "VK/Context.hh"
 #include "Animation/Animation.hh"
 #include "AppContext.hh"
 

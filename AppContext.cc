@@ -27,9 +27,9 @@ void AppContext::set_surface(vk::SurfaceKHR *surface)
 *
 * @param graphics_context A graphics context.
 */
-void AppContext::set_graphics_context(VK::Context graphics_context)
+void AppContext::set_graphics_context(VK::Context  *graphics_context)
 {
-    this->graphics_context = graphics_context;
+    this->graphics_context = std::shared_ptr<VK::Context>(graphics_context);
 }
 
 /**
@@ -69,7 +69,7 @@ std::shared_ptr<vk::SurfaceKHR> const AppContext::get_surface()
 /**
  * Retrieves the tracked graphcis context object.
  */
-VK::Context const AppContext::get_graphics_context()
+std::shared_ptr<VK::Context> const AppContext::get_graphics_context()
 {
     return this->graphics_context;
 }

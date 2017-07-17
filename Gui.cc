@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include "Gui.hh"
+#include "VK/Context.hh"
 #include "Animation/Cat/Cat.hh"
 #include "Animation/Modulo/Modulo.hh"
 #include "Animation/Noise/Noise.hh"
@@ -66,9 +67,7 @@ void Gui::init_glfw()
 
 void Gui::init_graphics()
 {
-    VK::Initialiser initialiser(this->context);
-    VK::Context context = initialiser.create_context();
-    this->context->set_graphics_context(context);
+    this->context->set_graphics_context(new VK::Context(this->context));
 }
 
 void Gui::init_context()
@@ -131,43 +130,43 @@ void Gui::start_loop()
         }*/
 
         //Temporary code to draw something
-        VK::Context context = this->context->get_graphics_context();
+        std::shared_ptr<VK::Context> context = this->context->get_graphics_context();
 
         uint32_t image_index;
-        context.logical_device.acquireNextImageKHR(context.swap_chain, std::numeric_limits<uint64_t>::max(), context.image_available_semaphore, nullptr, &image_index);
+        context->logical_device.acquireNextImageKHR(context->swap_chain, std::numeric_limits<uint64_t>::max(), context->image_available_semaphore, nullptr, &image_index);
 
         vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
         vk::SubmitInfo submit_info = vk::SubmitInfo()
             .setWaitSemaphoreCount(1)
-            .setPWaitSemaphores(&context.image_available_semaphore)
+            .setPWaitSemaphores(&context->image_available_semaphore)
             .setPWaitDstStageMask(wait_stages)
             .setCommandBufferCount(1)
-            .setPCommandBuffers(&context.command_buffers[image_index])
+            .setPCommandBuffers(&context->command_buffers[image_index])
             .setSignalSemaphoreCount(1)
-            .setPSignalSemaphores(&context.render_finished_semaphore);
+            .setPSignalSemaphores(&context->render_finished_semaphore);
 
-        if (context.graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+        if (context->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
             throw std::runtime_error("Couldn't submit to graphics queue.");
         }
 
         vk::PresentInfoKHR present_info = vk::PresentInfoKHR()
             .setWaitSemaphoreCount(1)
-            .setPWaitSemaphores(&context.render_finished_semaphore)
+            .setPWaitSemaphores(&context->render_finished_semaphore)
             .setSwapchainCount(1)
-            .setPSwapchains(&context.swap_chain)
+            .setPSwapchains(&context->swap_chain)
             .setPImageIndices(&image_index);
 
-        if (context.present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
+        if (context->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
             throw std::runtime_error("Couldn't submit to present queue.");
         }
 
-        context.present_queue.waitIdle();
+        context->present_queue.waitIdle();
 
         //Poll events
         glfwPollEvents();
     }
 
-    VK::Context context = this->context->get_graphics_context();
-    context.logical_device.waitIdle();
+    std::shared_ptr<VK::Context> context = this->context->get_graphics_context();
+    context->logical_device.waitIdle();
 }

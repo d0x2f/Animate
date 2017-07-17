@@ -33,39 +33,6 @@ Shader::~Shader()
  */
 void Shader::upload()
 {
-    //Load shader code
-    size_t f_size, v_size;
-
-    const uint32_t *f = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(fragment_code_id, &f_size));
-    const uint32_t *v = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(vertex_code_id, &v_size));
-
-    vk::ShaderModuleCreateInfo fragment_shader_module_create_info = vk::ShaderModuleCreateInfo()
-        .setCodeSize(f_size)
-        .setPCode(f);
-
-    vk::ShaderModuleCreateInfo vertex_shader_module_create_info = vk::ShaderModuleCreateInfo()
-        .setCodeSize(v_size)
-        .setPCode(v);
-
-    Context context = this->context.lock()->get_graphics_context();
-    if (context.logical_device.createShaderModule(&fragment_shader_module_create_info, nullptr, &this->fragment_shader_module)!= vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create fragment shader module.");
-    }
-    if (context.logical_device.createShaderModule(&vertex_shader_module_create_info, nullptr, &this->vertex_shader_module)!= vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create vertex shader module.");
-    }
-
-    //Create shader stage
-
-    this->shader_stages[0] = vk::PipelineShaderStageCreateInfo()
-        .setStage(vk::ShaderStageFlagBits::eFragment)
-        .setModule(this->fragment_shader_module)
-        .setPName(fragment_code_id.c_str());
-
-    this->shader_stages[1] = vk::PipelineShaderStageCreateInfo()
-        .setStage(vk::ShaderStageFlagBits::eVertex)
-        .setModule(this->vertex_shader_module)
-        .setPName(vertex_code_id.c_str());
 }
 
 /**
