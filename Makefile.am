@@ -47,6 +47,7 @@ animate_HEADERS =   VK/Context.hh \
                     \
                     Geometry/Matrix.hh \
                     Geometry/Definitions.hh \
+                    Geometry/Vertex.hh \
                     \
                     Animation/Animation.hh \
                     Animation/Cat/Cat.hh \

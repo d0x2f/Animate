@@ -4,6 +4,7 @@
 #include "AppContext.hh"
 #include "Context.hh"
 #include "Utilities.hh"
+#include "../Geometry/Vertex.hh"
 
 using namespace Animate::VK;
 
@@ -322,7 +323,14 @@ void Context::create_render_pass()
 
 void Context::create_pipeline()
 {
-    vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo();
+    auto binding_description = Geometry::Vertex::get_binding_description();
+    auto attribute_descriptions = Geometry::Vertex::get_attribute_descriptions();
+
+    vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo()
+        .setVertexBindingDescriptionCount(1)
+        .setVertexAttributeDescriptionCount(attribute_descriptions.size())
+        .setPVertexBindingDescriptions(&binding_description)
+        .setPVertexAttributeDescriptions(attribute_descriptions.data());
 
     vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = vk::PipelineInputAssemblyStateCreateInfo()
         .setTopology(vk::PrimitiveTopology::eTriangleList);
@@ -391,13 +399,7 @@ void Context::create_pipeline()
         .setRenderPass(this->render_pass)
         .setSubpass(0);
 
-    vk::PipelineCacheCreateInfo pipeline_cache_create_info = vk::PipelineCacheCreateInfo();
-
-    if (this->logical_device.createPipelineCache(&pipeline_cache_create_info, nullptr, &this->pipeline_cache) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create pipeline cache.");
-    }
-
-    if (this->logical_device.createGraphicsPipelines(this->pipeline_cache, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
+    if (this->logical_device.createGraphicsPipelines(nullptr, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create graphics pipeline.");
     }
 }

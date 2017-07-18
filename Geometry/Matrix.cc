@@ -2,7 +2,6 @@
 #include <iomanip>
 
 #include "Matrix.hh"
-#include "Definitions.hh"
 
 using namespace Animate::Geometry;
 

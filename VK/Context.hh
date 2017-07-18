@@ -55,9 +55,11 @@ namespace Animate
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
 
+                //std::vector< std::shared_ptr<Drawable> > drawables;
                 std::vector<vk::ShaderModule> shader_modules;
                 std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
 
+                //void add_to_scene(std::shared_ptr<Drawable> drawable);
                 void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
 
                 void recreate_swap_chain();
