@@ -52,7 +52,7 @@ void Object::initialise_buffers()
  *
  * @param model_matrix Transformation context.
  */
-void Object::draw(Matrix model_matrix)
+void Object::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -62,7 +62,7 @@ void Object::draw(Matrix model_matrix)
         it != this->components.end();
         ++it
     ) {
-        (*it)->draw(model_matrix);
+        (*it)->draw(model_matrix, context);
     }
 }
 

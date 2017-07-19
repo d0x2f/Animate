@@ -5,32 +5,9 @@
 #include "Context.hh"
 #include "Utilities.hh"
 #include "../Geometry/Vertex.hh"
+#include "../Object/Property/Drawable.hh"
 
 using namespace Animate::VK;
-
-void Context::add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id)
-{
-    size_t code_size;
-
-    const uint32_t *code = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(resource_id, &code_size));
-
-    vk::ShaderModuleCreateInfo shader_module_create_info = vk::ShaderModuleCreateInfo()
-        .setCodeSize(code_size)
-        .setPCode(code);
-
-    vk::ShaderModule shader_module;
-
-    if (this->logical_device.createShaderModule(&shader_module_create_info, nullptr, &shader_module)!= vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create fragment shader module.");
-    }
-
-    vk::PipelineShaderStageCreateInfo shader_stage_info = vk::PipelineShaderStageCreateInfo()
-        .setStage(type)
-        .setModule(shader_module)
-        .setPName("main");
-
-    this->shader_stages.push_back(shader_stage_info);
-}
 
 Context::Context(std::shared_ptr<Animate::AppContext> context)
 {
@@ -87,6 +64,93 @@ void Context::cleanup_swap_chain_dependancies()
     for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
         this->logical_device.destroyImageView(this->swap_chain_image_views[i], nullptr);
     }
+}
+
+void Context::add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id)
+{
+    size_t code_size;
+
+    const uint32_t *code = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(resource_id, &code_size));
+
+    vk::ShaderModuleCreateInfo shader_module_create_info = vk::ShaderModuleCreateInfo()
+        .setCodeSize(code_size)
+        .setPCode(code);
+
+    vk::ShaderModule shader_module;
+
+    if (this->logical_device.createShaderModule(&shader_module_create_info, nullptr, &shader_module)!= vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create fragment shader module.");
+    }
+
+    vk::PipelineShaderStageCreateInfo shader_stage_info = vk::PipelineShaderStageCreateInfo()
+        .setStage(type)
+        .setModule(shader_module)
+        .setPName("main");
+
+    this->shader_stages.push_back(shader_stage_info);
+}
+
+void Context::add_to_scene(Drawable *drawable)
+{
+    this->scene.insert(drawable);
+}
+
+void Context::render_scene()
+{
+    uint32_t image_index;
+    vk::Result result = this->logical_device.acquireNextImageKHR(
+        this->swap_chain,
+        std::numeric_limits<uint64_t>::max(),
+        this->image_available_semaphore,
+        nullptr,
+        &image_index
+    );
+
+    switch (result) {
+        //Success
+        case vk::Result::eSuccess:
+        case vk::Result::eSuboptimalKHR:
+            break;
+
+        //Invalid swapchain
+        case vk::Result::eErrorOutOfDateKHR:
+            this->recreate_swap_chain();
+            break;
+
+        //Other unhandled error
+        default:
+            throw std::runtime_error("Couldn't acquire swap chain image.");
+    }
+
+    vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+
+    vk::SubmitInfo submit_info = vk::SubmitInfo()
+        .setWaitSemaphoreCount(1)
+        .setPWaitSemaphores(&this->image_available_semaphore)
+        .setPWaitDstStageMask(wait_stages)
+        .setCommandBufferCount(1)
+        .setPCommandBuffers(&this->command_buffers[image_index])
+        .setSignalSemaphoreCount(1)
+        .setPSignalSemaphores(&this->render_finished_semaphore);
+
+    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't submit to graphics queue.");
+    }
+
+    vk::PresentInfoKHR present_info = vk::PresentInfoKHR()
+        .setWaitSemaphoreCount(1)
+        .setPWaitSemaphores(&this->render_finished_semaphore)
+        .setSwapchainCount(1)
+        .setPSwapchains(&this->swap_chain)
+        .setPImageIndices(&image_index);
+
+    this->present_queue.waitIdle();
+
+    if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't submit to present queue.");
+    }
+
+    this->scene.clear();
 }
 
 void Context::create_instance()

@@ -78,13 +78,15 @@ bool Noise::on_render()
 
         this->shader->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
+        std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
         //Draw every object
         for (
             std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix);
+            it->second->draw(model_matrix, graphics_context);
         }
     }
 }

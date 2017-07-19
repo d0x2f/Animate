@@ -47,9 +47,9 @@ void Ring::initialise(Shader *shader)
  *
  * @param model_matrix Transformation context.
  */
-void Ring::draw(Matrix model_matrix)
+void Ring::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
 {
-    Object::draw(model_matrix);
+    Object::draw(model_matrix, context);
 
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -63,7 +63,7 @@ void Ring::draw(Matrix model_matrix)
         this->line->set_position((*it).from);
         this->line->set_scale(Scale(1., (*it).length));
         this->line->set_rotation(Vector3(0., 0., (*it).z_rotation));
-        this->line->draw(model_matrix);
+        this->line->draw(model_matrix, context);
     }
 }
 

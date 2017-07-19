@@ -6,10 +6,19 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <iostream>
+#include <set>
 
 namespace Animate
 {
     class AppContext;
+
+    namespace Object::Property
+    {
+        class Drawable;
+    }
+
+    typedef Animate::Object::Property::Drawable Drawable;
 
     namespace VK
     {
@@ -28,6 +37,15 @@ namespace Animate
             vk::SurfaceCapabilitiesKHR capabilities;
             std::vector<vk::SurfaceFormatKHR> formats;
             std::vector<vk::PresentModeKHR> present_modes;
+        };
+
+        struct DrawableComparator {
+            bool operator() (
+                const Drawable *lhs, 
+                const Drawable *rhs
+            ) const {
+                return lhs < rhs;
+            }
         };
 
         class Context
@@ -55,11 +73,13 @@ namespace Animate
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
 
-                //std::vector< std::shared_ptr<Drawable> > drawables;
                 std::vector<vk::ShaderModule> shader_modules;
                 std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
 
-                //void add_to_scene(std::shared_ptr<Drawable> drawable);
+                std::multiset<Drawable *, DrawableComparator> scene;
+
+                void add_to_scene(Drawable *drawable);
+                void render_scene();
                 void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
 
                 void recreate_swap_chain();

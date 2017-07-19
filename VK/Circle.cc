@@ -75,7 +75,7 @@ void Circle::initialise_buffers()
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Circle::draw(Matrix model_matrix)
+void Circle::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -110,4 +110,6 @@ void Circle::draw(Matrix model_matrix)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
     */
+
+    Drawable::draw(model_matrix, context);
 }

@@ -26,7 +26,7 @@ namespace Animate::Animation::Modulo::Object
             Ring(Point position, Scale size);
 
             void initialise(Shader *shader);
-            void draw(Matrix model_matrix) override;
+            void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context) override;
             void on_tick(GLuint64 time_delta) override;
 
         private:

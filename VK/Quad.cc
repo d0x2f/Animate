@@ -50,7 +50,7 @@ void Quad::initialise_buffers()
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Quad::draw(Matrix model_matrix)
+void Quad::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -63,4 +63,6 @@ void Quad::draw(Matrix model_matrix)
 
     //Set the shader
     this->shader->use();
+    
+    Drawable::draw(model_matrix, context);
 }

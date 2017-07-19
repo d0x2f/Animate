@@ -10,6 +10,7 @@
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
 #include "../../VK/Shader.hh"
+#include "../../VK/Context.hh"
 
 using namespace Animate::Animation::Cat;
 using namespace Animate::Animation::Cat::Object;
@@ -102,6 +103,8 @@ bool Cat::on_render()
 
     this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
+    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
@@ -112,7 +115,7 @@ bool Cat::on_render()
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix);
+            it->second->draw(model_matrix, graphics_context);
         }
     }
 }

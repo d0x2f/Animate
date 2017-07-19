@@ -2,6 +2,7 @@
 
 #include "../../VK/Shader.hh"
 #include "../../VK/Texture.hh"
+#include "../../VK/Context.hh"
 #include "../Geometry/Matrix.hh"
 
 using namespace Animate::Geometry;
@@ -15,7 +16,8 @@ namespace Animate::Object::Property
             void initialise(Shader *shader, Texture *texture);
             void set_shader(Shader *shader);
             void set_texture(Texture *texture);
-            virtual void draw(Matrix model_matrix) = 0;
+
+            virtual void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context);
 
         protected:
             bool initialised = false;

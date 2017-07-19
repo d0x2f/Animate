@@ -23,7 +23,7 @@ namespace Animate::VK
 
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
 
-            void draw(Matrix model_matrix) override;
+            void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context) override;
 
         protected:
             GLuint  vao_id = 0,
