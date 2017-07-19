@@ -54,6 +54,8 @@ void Cat::reset_puzzle()
     std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 7;
 
+    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Initialise cat tiles
     Tile *tile;
     for (int i = 0; i < this->grid_size * this->grid_size; i++) {
@@ -61,7 +63,7 @@ void Cat::reset_puzzle()
             this->zero_position = i;
             continue;
         }
-        tile = new Tile(Point(), Scale(1., 1., 1.));
+        tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
         tile->initialise(
             this->shader.get(),
             this->context.lock()->get_textures()->get_texture(texture_name),
@@ -103,8 +105,6 @@ bool Cat::on_render()
 
     this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
-    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
-
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
@@ -115,7 +115,7 @@ bool Cat::on_render()
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix, graphics_context);
+            it->second->draw(model_matrix);
         }
     }
 }

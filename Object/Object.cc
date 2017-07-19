@@ -3,8 +3,8 @@
 
 using namespace Animate::Object;
 
-Object::Object(Point position, Scale size)
-    : Movable(position), Scalable(size)
+Object::Object(std::shared_ptr<VK::Context> context, Point position, Scale size)
+    : Drawable(context), Movable(position), Scalable(size)
 {}
 
 Object::~Object()
@@ -52,7 +52,7 @@ void Object::initialise_buffers()
  *
  * @param model_matrix Transformation context.
  */
-void Object::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Object::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -62,7 +62,7 @@ void Object::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
         it != this->components.end();
         ++it
     ) {
-        (*it)->draw(model_matrix, context);
+        (*it)->draw(model_matrix);
     }
 }
 

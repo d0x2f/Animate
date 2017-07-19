@@ -13,13 +13,16 @@ namespace Animate::Object::Property
     class Drawable
     {
         public:
+            Drawable(std::shared_ptr<VK::Context> context) : context(context) {};
+
             void initialise(Shader *shader, Texture *texture);
             void set_shader(Shader *shader);
             void set_texture(Texture *texture);
 
-            virtual void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context);
+            virtual void draw(Matrix model_matrix);
 
         protected:
+            std::shared_ptr<VK::Context> context;
             bool initialised = false;
             Shader *shader;
             Texture *texture;

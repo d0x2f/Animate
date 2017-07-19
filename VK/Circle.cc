@@ -8,8 +8,8 @@
 /**
  * Constructor
  */
-Circle::Circle(Point position, Scale size, Colour colour, GLfloat thickness)
-    : Movable(position), Scalable(size), Coloured(colour)
+Circle::Circle(std::shared_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness)
+    : Drawable(context), Movable(position), Scalable(size), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1
     //this->thickness = std::clamp(thickness, 0., 1.);
@@ -75,7 +75,7 @@ void Circle::initialise_buffers()
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Circle::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Circle::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -111,5 +111,5 @@ void Circle::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
     glUseProgram(0);
     */
 
-    Drawable::draw(model_matrix, context);
+    Drawable::draw(model_matrix);
 }

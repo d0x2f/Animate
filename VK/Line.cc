@@ -10,8 +10,8 @@ GLuint Line::instance_count = 0;
 /**
  * Constructor
  */
-Line::Line(Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
-    : Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
+Line::Line(std::shared_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
+    : Drawable(context), Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1
     //this->thickness = std::clamp(thickness, 0., 1.);
@@ -86,7 +86,7 @@ void Line::initialise_buffers()
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Line::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Line::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).rotate(this->rotation).translate(this->position);
@@ -123,6 +123,6 @@ void Line::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
     */
-    
-    Drawable::draw(model_matrix, context);
+
+    Drawable::draw(model_matrix);
 }

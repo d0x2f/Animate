@@ -36,9 +36,11 @@ void Noise::initialise()
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv"));
 
+    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Add a Quad
-    Object::Object *object = new Object::Object();
-    Quad *quad = new Quad();
+    Object::Object *object = new Object::Object(graphics_context);
+    Quad *quad = new Quad(graphics_context);
     quad->initialise(
         this->shader.get(),
         new Texture()
@@ -78,15 +80,13 @@ bool Noise::on_render()
 
         this->shader->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
-        std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
-
         //Draw every object
         for (
             std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix, graphics_context);
+            it->second->draw(model_matrix);
         }
     }
 }

@@ -18,10 +18,10 @@ namespace Animate::VK
     class Circle : public Drawable, public Movable, public Scalable, public Coloured
     {
         public:
-            Circle(Point position, Scale size, Colour colour, GLfloat thickness);
+            Circle(std::shared_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness);
             ~Circle();
 
-            void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context) override;
+            void draw(Matrix model_matrix) override;
 
         protected:
             GLuint  vao_id = 0,

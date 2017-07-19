@@ -5,8 +5,8 @@
 using namespace Animate::Animation::Cat::Object;
 using namespace Animate::Geometry;
 
-Tile::Tile(Point position, Scale size)
-    : Object(position, size)
+Tile::Tile(std::shared_ptr<VK::Context> context, Point position, Scale size)
+    : Object(context, position, size)
 {
 }
 
@@ -44,7 +44,7 @@ void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint 
         1./grid_size_float
     );
 
-    Quad *quad = new Quad(Point(), Scale(1., 1., 1.));
+    Quad *quad = new Quad(this->context, Point(), Scale(1., 1., 1.));
     quad->set_texture_position(texture_position, texture_size);
     quad->initialise(shader, texture);
     this->add_component(quad);

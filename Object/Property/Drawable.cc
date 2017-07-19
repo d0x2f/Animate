@@ -49,7 +49,7 @@ void Drawable::set_texture(Texture *texture)
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  * @param context the graphics context to add this drawable to
  */
-void Drawable::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Drawable::draw(Matrix model_matrix)
 {
-    context->add_to_scene(this);
+    this->context->add_to_scene(this);
 }

@@ -9,8 +9,8 @@ using namespace Animate::Geometry;
 /**
  * Constructor
  */
-Quad::Quad(Point position, Scale size)
-    : Movable(position), Scalable(size)
+Quad::Quad(std::shared_ptr<VK::Context> context, Point position, Scale size)
+    : Drawable(context), Movable(position), Scalable(size)
 {}
 
 /**
@@ -50,7 +50,7 @@ void Quad::initialise_buffers()
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Quad::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Quad::draw(Matrix model_matrix)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -63,6 +63,6 @@ void Quad::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
 
     //Set the shader
     this->shader->use();
-    
-    Drawable::draw(model_matrix, context);
+
+    Drawable::draw(model_matrix);
 }

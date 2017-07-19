@@ -18,12 +18,12 @@ namespace Animate::VK
     class Quad : public Drawable, public Movable, public Scalable
     {
         public:
-            Quad(Point position = Point(), Scale size = Scale(1.,1.,1.));
+            Quad(std::shared_ptr<VK::Context> context, Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Quad();
 
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
 
-            void draw(Matrix model_matrix, std::shared_ptr<VK::Context> context) override;
+            void draw(Matrix model_matrix) override;
 
         protected:
             GLuint  vao_id = 0,

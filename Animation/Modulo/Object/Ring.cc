@@ -9,8 +9,8 @@
 using namespace Animate::Animation::Modulo::Object;
 using namespace Animate::Geometry;
 
-Ring::Ring(Point position, Scale size)
-    : Object(position, size), Coloured(Colour(1,1,1,1))
+Ring::Ring(std::shared_ptr<VK::Context> context, Point position, Scale size)
+    : Object(context, position, size), Coloured(Colour(1,1,1,1))
 {
 }
 
@@ -25,7 +25,7 @@ void Ring::initialise(Shader *shader)
     }
 
     //Add the main circle
-    Circle *circle = new Circle(Point(), Scale(0.5,0.5), Colour(0.,0.,0.,1.), .005);
+    Circle *circle = new Circle(this->context, Point(), Scale(0.5,0.5), Colour(0.,0.,0.,1.), .005);
     circle->initialise(
         shader,
         new Texture()
@@ -33,7 +33,7 @@ void Ring::initialise(Shader *shader)
     this->add_component(circle);
 
     //Create a line
-    this->line = std::shared_ptr<Line>(new Line(Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
+    this->line = std::shared_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
     line->initialise(
         shader,
         new Texture()
@@ -47,9 +47,9 @@ void Ring::initialise(Shader *shader)
  *
  * @param model_matrix Transformation context.
  */
-void Ring::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
+void Ring::draw(Matrix model_matrix)
 {
-    Object::draw(model_matrix, context);
+    Object::draw(model_matrix);
 
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
@@ -63,7 +63,7 @@ void Ring::draw(Matrix model_matrix, std::shared_ptr<VK::Context> context)
         this->line->set_position((*it).from);
         this->line->set_scale(Scale(1., (*it).length));
         this->line->set_rotation(Vector3(0., 0., (*it).z_rotation));
-        this->line->draw(model_matrix, context);
+        this->line->draw(model_matrix);
     }
 }
 

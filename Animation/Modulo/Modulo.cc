@@ -38,8 +38,11 @@ void Modulo::initialise()
     //Set shaders
     this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv"));
 
+
+    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Add a circle
-    Ring *ring = new Ring(Point(0.5,0.5), Scale(.8,.8));
+    Ring *ring = new Ring(graphics_context, Point(0.5,0.5), Scale(.8,.8));
     ring->initialise(
         this->shader.get()
     );
@@ -71,8 +74,6 @@ bool Modulo::on_render()
 
     this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
 
-    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
-
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
@@ -83,7 +84,7 @@ bool Modulo::on_render()
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix, graphics_context);
+            it->second->draw(model_matrix);
         }
     }
 }
