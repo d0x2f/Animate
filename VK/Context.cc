@@ -153,6 +153,23 @@ void Context::render_scene()
     this->scene.clear();
 }
 
+uint32_t Context::find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags properties)
+{
+    vk::PhysicalDeviceMemoryProperties memory_properties;
+    this->physical_device.getMemoryProperties(&memory_properties);
+    
+    for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
+        if (
+            type_filter & (1 << i) &&
+            (memory_properties.memoryTypes[i].propertyFlags & properties) == properties
+        ) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("Unable to find suitable memory type.");
+}
+
 void Context::create_instance()
 {
     //Check that the required extensions are available

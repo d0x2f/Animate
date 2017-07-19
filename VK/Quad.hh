@@ -22,12 +22,13 @@ namespace Animate::VK
             ~Quad();
 
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
+            VK::BufferInfo const get_buffer_info() override;
 
             void draw(Matrix model_matrix) override;
+            
+            static BufferInfo buffer_info;
 
         protected:
-            GLuint  vao_id = 0,
-                    buffer_id = 0;
             Position texture_position;
             Position texture_size = Position(1., 1.);
 

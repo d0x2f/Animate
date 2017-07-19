@@ -42,6 +42,10 @@ void Drawable::set_texture(Texture *texture)
     this->texture = texture;
 }
 
+BufferInfo const Drawable::get_buffer_info()
+{
+    return BufferInfo();
+}
 
 /**
  * Add this drawable to the scene

@@ -18,6 +18,7 @@ namespace Animate::Object::Property
             void initialise(Shader *shader, Texture *texture);
             void set_shader(Shader *shader);
             void set_texture(Texture *texture);
+            virtual BufferInfo const get_buffer_info();
 
             virtual void draw(Matrix model_matrix);
 

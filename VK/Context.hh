@@ -23,6 +23,13 @@ namespace Animate
     namespace VK
     {
         class Shader;
+
+        struct BufferInfo {
+            vk::Buffer ident;
+            vk::DeviceMemory memory;
+
+            BufferInfo(vk::Buffer i = vk::Buffer(), vk::DeviceMemory m = vk::DeviceMemory()) : ident(i), memory(m) {}
+        };
         
         struct QueueFamilyIndices {
             int graphics_family = -1;
@@ -83,6 +90,8 @@ namespace Animate
                 void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
 
                 void recreate_swap_chain();
+
+                uint32_t find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags properties);
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
