@@ -80,7 +80,7 @@ bool Modulo::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

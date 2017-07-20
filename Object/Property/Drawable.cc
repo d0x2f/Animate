@@ -42,9 +42,9 @@ void Drawable::set_texture(Texture *texture)
     this->texture = texture;
 }
 
-BufferInfo const Drawable::get_buffer_info()
+std::weak_ptr<Buffer> const Drawable::get_buffer()
 {
-    return BufferInfo();
+    return std::weak_ptr<Buffer>();
 }
 
 /**
@@ -55,5 +55,5 @@ BufferInfo const Drawable::get_buffer_info()
  */
 void Drawable::draw(Matrix model_matrix)
 {
-    this->context->add_to_scene(this);
+    this->context.lock()->add_to_scene(this);
 }

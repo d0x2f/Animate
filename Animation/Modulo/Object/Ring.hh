@@ -23,7 +23,7 @@ namespace Animate::Animation::Modulo::Object
     class Ring : public Object, public Animate::Object::Property::Coloured
     {
         public:
-            Ring(std::shared_ptr<VK::Context> context, Point position, Scale size);
+            Ring(std::weak_ptr<VK::Context> context, Point position, Scale size);
 
             void initialise(Shader *shader);
             void draw(Matrix model_matrix) override;

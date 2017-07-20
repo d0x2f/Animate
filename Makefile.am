@@ -8,6 +8,7 @@ animate_SOURCES =   VK/Context.cc \
                     VK/Shader.cc \
                     VK/Textures.cc \
                     VK/Texture.cc \
+                    VK/Buffer.cc \
                     \
                     Object/Object.cc \
                     Object/Property/Drawable.cc \
@@ -37,6 +38,7 @@ animate_HEADERS =   VK/Context.hh \
                     VK/Shader.hh \
                     VK/Textures.hh \
                     VK/Texture.hh \
+                    VK/Buffer.hh \
                     \
                     Object/Object.hh \
                     Object/Property/Drawable.hh \

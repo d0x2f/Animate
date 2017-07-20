@@ -9,7 +9,7 @@
 using namespace Animate::Animation::Modulo::Object;
 using namespace Animate::Geometry;
 
-Ring::Ring(std::shared_ptr<VK::Context> context, Point position, Scale size)
+Ring::Ring(std::weak_ptr<VK::Context> context, Point position, Scale size)
     : Object(context, position, size), Coloured(Colour(1,1,1,1))
 {
 }
@@ -95,7 +95,7 @@ void Ring::on_tick(GLuint64 time_delta)
 
     //Set the calculated colour for all components.
     for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
+        std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();
         ++it
     ) {

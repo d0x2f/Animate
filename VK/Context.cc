@@ -9,10 +9,8 @@
 
 using namespace Animate::VK;
 
-Context::Context(std::shared_ptr<Animate::AppContext> context)
+Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 {
-    this->context = std::weak_ptr<Animate::AppContext>(context);
-
     this->create_instance();
     this->bind_debug_callback();
     this->create_surface();
@@ -28,6 +26,28 @@ Context::Context(std::shared_ptr<Animate::AppContext> context)
     this->create_semaphores();
 
     this->is_complete = true;
+}
+
+Context::~Context()
+{
+    cleanup_swap_chain_dependancies();
+
+    for (
+        std::vector<vk::ShaderModule>::iterator it = this->shader_modules.begin();
+        it != this->shader_modules.end();
+        it++
+    ) {
+        this->logical_device.destroyShaderModule(*it, nullptr);
+    }
+
+    this->logical_device.destroySwapchainKHR(this->swap_chain, nullptr);
+
+    this->logical_device.destroySemaphore(this->image_available_semaphore);
+    this->logical_device.destroySemaphore(this->render_finished_semaphore);
+    this->logical_device.destroyCommandPool(this->command_pool);
+
+    this->logical_device.destroy();
+    this->instance.destroy();
 }
 
 void Context::recreate_swap_chain()
@@ -87,6 +107,7 @@ void Context::add_shader_stage(vk::ShaderStageFlagBits type, std::string resourc
         .setModule(shader_module)
         .setPName("main");
 
+    this->shader_modules.push_back(shader_module);
     this->shader_stages.push_back(shader_stage_info);
 }
 

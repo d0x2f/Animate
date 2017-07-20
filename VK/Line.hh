@@ -19,7 +19,7 @@ namespace Animate::VK
     class Line : public Drawable, public Movable, public Scalable, public Rotatable, public Coloured
     {
         public:
-            Line(std::shared_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness);
+            Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness);
             ~Line();
 
             void draw(Matrix model_matrix) override;

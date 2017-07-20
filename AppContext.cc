@@ -2,6 +2,10 @@
 
 using namespace Animate;
 
+AppContext::~AppContext()
+{
+}
+
 /**
 * Set the window.
 *

@@ -15,7 +15,7 @@ namespace Animate::Object
     class Object : public Movable, public Scalable, public Drawable
     {
         public:
-            Object(std::shared_ptr<VK::Context> context, Point position = Point(), Scale size = Scale(1.,1.,1.));
+            Object(std::weak_ptr<VK::Context> context, Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Object();
 
             void initialise();
@@ -26,7 +26,7 @@ namespace Animate::Object
             virtual void on_tick(GLuint64 time_delta);
 
         protected:
-            std::vector< std::shared_ptr<Drawable> > components;
+            std::vector< std::unique_ptr<Drawable> > components;
 
             void initialise_buffers();
     };

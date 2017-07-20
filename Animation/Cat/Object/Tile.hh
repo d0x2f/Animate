@@ -9,7 +9,7 @@ namespace Animate::Animation::Cat::Object
     class Tile : public Animate::Object::Object
     {
         public:
-            Tile(std::shared_ptr<VK::Context> context, Point position, Scale size);
+            Tile(std::weak_ptr<VK::Context> context, Point position, Scale size);
 
             void initialise(Shader *shader, Texture *texture, GLuint position, GLuint grid_size);
             void on_tick(GLuint64 time_delta) override;

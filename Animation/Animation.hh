@@ -35,7 +35,7 @@ namespace Animate::Animation
             int tick_rate = 60;
             GLuint64 last_frame_time = 0;
             int frame_count = 0;
-            std::map< std::string, std::shared_ptr<Object::Object> > objects;
+            std::map< std::string, std::unique_ptr<Object::Object> > objects;
             std::atomic_bool loaded;
 
             void add_object(std::string name, Object::Object *object);

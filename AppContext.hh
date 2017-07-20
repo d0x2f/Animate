@@ -12,6 +12,8 @@ namespace Animate
     class AppContext
     {
         public:
+            ~AppContext();
+
             void set_window(GLFWwindow *window);
             void set_graphics_context(VK::Context  *graphics_context);
             void set_surface(vk::SurfaceKHR *surface);

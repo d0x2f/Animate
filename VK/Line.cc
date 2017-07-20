@@ -10,7 +10,7 @@ GLuint Line::instance_count = 0;
 /**
  * Constructor
  */
-Line::Line(std::shared_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
+Line::Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
     : Drawable(context), Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1

@@ -8,7 +8,7 @@
 /**
  * Constructor
  */
-Circle::Circle(std::shared_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness)
+Circle::Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness)
     : Drawable(context), Movable(position), Scalable(size), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1

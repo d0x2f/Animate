@@ -24,13 +24,6 @@ namespace Animate
     {
         class Shader;
 
-        struct BufferInfo {
-            vk::Buffer ident;
-            vk::DeviceMemory memory;
-
-            BufferInfo(vk::Buffer i = vk::Buffer(), vk::DeviceMemory m = vk::DeviceMemory()) : ident(i), memory(m) {}
-        };
-        
         struct QueueFamilyIndices {
             int graphics_family = -1;
             int present_family = -1;
@@ -58,7 +51,8 @@ namespace Animate
         class Context
         {
             public:
-                Context(std::shared_ptr<Animate::AppContext> context);
+                Context(std::weak_ptr<Animate::AppContext> context);
+                ~Context();
             
                 vk::Instance instance;
                 vk::PhysicalDevice physical_device;

@@ -6,21 +6,19 @@
 using namespace Animate::VK;
 using namespace Animate::Geometry;
 
-BufferInfo Quad::buffer_info = BufferInfo();
-
 /**
  * Constructor
  */
-Quad::Quad(std::shared_ptr<VK::Context> context, Point position, Scale size)
+Quad::Quad(std::weak_ptr<VK::Context> context, Point position, Scale size)
     : Drawable(context), Movable(position), Scalable(size)
 {}
 
 /**
  * Destructor.
- * Delete buffers.
  */
 Quad::~Quad()
 {
+    this->buffer.reset();
 }
 
 void Quad::set_texture_position(Position texture_position, Position texture_size)
@@ -35,7 +33,7 @@ void Quad::set_texture_position(Position texture_position, Position texture_size
 void Quad::initialise_buffers()
 {
     //Check if the buffer is already initialised
-    if (Quad::buffer_info.ident) {
+    if (this->buffer) {
         return;
     }
 
@@ -51,43 +49,32 @@ void Quad::initialise_buffers()
         Vertex(Vector3(1., 1., 0.), Vector2(u.x, t.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
-    vk::BufferCreateInfo buffer_create_info = vk::BufferCreateInfo()
-        .setSize(16 * sizeof(Vertex))
-        .setUsage(vk::BufferUsageFlagBits::eVertexBuffer)
-        .setSharingMode(vk::SharingMode::eExclusive);
+    vk::DeviceSize size = 16 * sizeof(Vertex);
 
-    if(this->context->logical_device.createBuffer(&buffer_create_info, nullptr, &Quad::buffer_info.ident) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create buffer.");
-    }
+    VK::Buffer staging_buffer(
+        this->context.lock(),
+        size,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
 
-    vk::MemoryRequirements memory_requirements;
-    this->context->logical_device.getBufferMemoryRequirements(Quad::buffer_info.ident, &memory_requirements);
+    void *data = staging_buffer.map();
+    memcpy(data, vertices, (size_t) size);
+    staging_buffer.unmap();
+    
+    this->buffer = std::shared_ptr<Buffer>(new Buffer(
+        this->context.lock(),
+        size,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    ));
 
-    vk::MemoryAllocateInfo allocation_info = vk::MemoryAllocateInfo()
-        .setAllocationSize(memory_requirements.size)
-        .setMemoryTypeIndex(
-            this->context->find_memory_type(
-                memory_requirements.memoryTypeBits,
-                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-            )
-        );
-
-    if(this->context->logical_device.allocateMemory(&allocation_info, nullptr, &Quad::buffer_info.memory) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't allocate buffer memory.");
-    }
-
-    this->context->logical_device.bindBufferMemory(Quad::buffer_info.ident, Quad::buffer_info.memory, 0);
-
-    void *data;
-
-    this->context->logical_device.mapMemory(Quad::buffer_info.memory, 0, buffer_create_info.size, vk::MemoryMapFlags(), &data);
-    memcpy(data, vertices, (size_t) buffer_create_info.size);
-    this->context->logical_device.unmapMemory(Quad::buffer_info.memory);
+    this->buffer->copy_buffer_data(staging_buffer);
 }
 
-BufferInfo const Quad::get_buffer_info()
+std::weak_ptr<Buffer> const Quad::get_buffer()
 {
-    return Quad::buffer_info;
+    return this->buffer;
 }
 
 /**

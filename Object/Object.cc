@@ -3,12 +3,13 @@
 
 using namespace Animate::Object;
 
-Object::Object(std::shared_ptr<VK::Context> context, Point position, Scale size)
+Object::Object(std::weak_ptr<VK::Context> context, Point position, Scale size)
     : Drawable(context), Movable(position), Scalable(size)
 {}
 
 Object::~Object()
 {
+    std::cout << "~Object" << std::endl;
     this->clear_components();
 }
 
@@ -19,7 +20,7 @@ Object::~Object()
  */
 void Object::add_component(Drawable *component)
 {
-    this->components.push_back(std::shared_ptr<Drawable>(component));
+    this->components.push_back(std::unique_ptr<Drawable>(component));
 }
 
 /**
@@ -58,7 +59,7 @@ void Object::draw(Matrix model_matrix)
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
     for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
+        std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();
         ++it
     ) {

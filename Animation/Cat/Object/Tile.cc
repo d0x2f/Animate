@@ -5,7 +5,7 @@
 using namespace Animate::Animation::Cat::Object;
 using namespace Animate::Geometry;
 
-Tile::Tile(std::shared_ptr<VK::Context> context, Point position, Scale size)
+Tile::Tile(std::weak_ptr<VK::Context> context, Point position, Scale size)
     : Object(context, position, size)
 {
 }

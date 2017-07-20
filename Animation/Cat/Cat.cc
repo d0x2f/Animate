@@ -111,7 +111,7 @@ bool Cat::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
@@ -149,7 +149,7 @@ void Cat::on_tick(GLuint64 time_delta)
         //Check if any tiles are moving
         bool in_motion = false;
         for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
