@@ -11,6 +11,8 @@ using namespace Animate::VK;
 
 Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 {
+    this->context.lock()->set_graphics_context(this);
+
     this->create_instance();
     this->bind_debug_callback();
     this->create_surface();
@@ -19,7 +21,12 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_swap_chain();
     this->create_image_views();
     this->create_render_pass();
-    this->create_pipeline();
+    
+    this->pipeline = this->create_pipeline(
+        "/Animate/data/Default/shader.frag.spv",
+        "/Animate/data/Default/shader.vert.spv"
+    );
+
     this->create_framebuffers();
     this->create_command_pool();
     this->create_command_buffers();
@@ -31,14 +38,6 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 Context::~Context()
 {
     cleanup_swap_chain_dependancies();
-
-    for (
-        std::vector<vk::ShaderModule>::iterator it = this->shader_modules.begin();
-        it != this->shader_modules.end();
-        it++
-    ) {
-        this->logical_device.destroyShaderModule(*it, nullptr);
-    }
 
     this->logical_device.destroySwapchainKHR(this->swap_chain, nullptr);
 
@@ -64,51 +63,31 @@ void Context::recreate_swap_chain()
     
     this->create_image_views();
     this->create_render_pass();
-    this->create_pipeline();
+    
+    this->pipeline = this->create_pipeline(
+        "/Animate/data/Default/shader.frag.spv",
+        "/Animate/data/Default/shader.vert.spv"
+    );
+
     this->create_framebuffers();
     this->create_command_buffers();
 }
 
 void Context::cleanup_swap_chain_dependancies()
 {
+    this->pipelines.clear();
+
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
         this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
     }
 
     this->logical_device.freeCommandBuffers(this->command_pool, static_cast<uint32_t>(this->command_buffers.size()), this->command_buffers.data());
 
-    this->logical_device.destroyPipeline(this->pipeline, nullptr);
-    this->logical_device.destroyPipelineLayout(this->pipeline_layout, nullptr);
     this->logical_device.destroyRenderPass(this->render_pass, nullptr);
 
     for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
         this->logical_device.destroyImageView(this->swap_chain_image_views[i], nullptr);
     }
-}
-
-void Context::add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id)
-{
-    size_t code_size;
-
-    const uint32_t *code = reinterpret_cast<const uint32_t*>(Utilities::get_resource_as_bytes(resource_id, &code_size));
-
-    vk::ShaderModuleCreateInfo shader_module_create_info = vk::ShaderModuleCreateInfo()
-        .setCodeSize(code_size)
-        .setPCode(code);
-
-    vk::ShaderModule shader_module;
-
-    if (this->logical_device.createShaderModule(&shader_module_create_info, nullptr, &shader_module)!= vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create fragment shader module.");
-    }
-
-    vk::PipelineShaderStageCreateInfo shader_stage_info = vk::PipelineShaderStageCreateInfo()
-        .setStage(type)
-        .setModule(shader_module)
-        .setPName("main");
-
-    this->shader_modules.push_back(shader_module);
-    this->shader_stages.push_back(shader_stage_info);
 }
 
 void Context::add_to_scene(Drawable *drawable)
@@ -330,7 +309,7 @@ void Context::create_swap_chain()
     }
 
     vk::SwapchainCreateInfoKHR create_info = vk::SwapchainCreateInfoKHR()
-        .setSurface(*this->context.lock()->get_surface().get())
+        .setSurface(*this->context.lock()->get_surface().lock().get())
         .setMinImageCount(image_count)
         .setImageFormat(surface_format.format)
         .setImageColorSpace(surface_format.colorSpace)
@@ -423,87 +402,17 @@ void Context::create_render_pass()
     }
 }
 
-void Context::create_pipeline()
+std::weak_ptr<Pipeline> Context::create_pipeline(std::string fragment_code_id, std::string vertex_code_id)
 {
-    auto binding_description = Geometry::Vertex::get_binding_description();
-    auto attribute_descriptions = Geometry::Vertex::get_attribute_descriptions();
-
-    vk::PipelineVertexInputStateCreateInfo vertex_input_info = vk::PipelineVertexInputStateCreateInfo()
-        .setVertexBindingDescriptionCount(1)
-        .setVertexAttributeDescriptionCount(attribute_descriptions.size())
-        .setPVertexBindingDescriptions(&binding_description)
-        .setPVertexAttributeDescriptions(attribute_descriptions.data());
-
-    vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = vk::PipelineInputAssemblyStateCreateInfo()
-        .setTopology(vk::PrimitiveTopology::eTriangleList);
-
-    vk::Viewport viewport = vk::Viewport()
-        .setWidth((float)this->swap_chain_extent.width)
-        .setHeight((float)this->swap_chain_extent.height)
-        .setMaxDepth(1.0f);
-
-    vk::Rect2D scissor = vk::Rect2D(
-        {0,0},
-        this->swap_chain_extent
+    std::shared_ptr<Pipeline> pipeline(
+        new Pipeline(
+            this->shared_from_this(),
+            "/Animate/data/Default/shader.frag.spv",
+            "/Animate/data/Default/shader.vert.spv"
+        )
     );
-
-    vk::PipelineViewportStateCreateInfo viewport_info = vk::PipelineViewportStateCreateInfo()
-        .setViewportCount(1)
-        .setPViewports(&viewport)
-        .setScissorCount(1)
-        .setPScissors(&scissor);
-
-    vk::PipelineRasterizationStateCreateInfo rasteriser_info = vk::PipelineRasterizationStateCreateInfo()
-        .setLineWidth(1.0f)
-        .setCullMode(vk::CullModeFlagBits::eNone)
-        .setFrontFace(vk::FrontFace::eClockwise);
-
-    vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo();
-
-    vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
-        .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
-        .setBlendEnable(true)
-        .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
-        .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
-        .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
-        .setDstAlphaBlendFactor(vk::BlendFactor::eZero);
-
-    vk::PipelineColorBlendStateCreateInfo colour_blend_info = vk::PipelineColorBlendStateCreateInfo()
-        .setAttachmentCount(1)
-        .setPAttachments(&colour_blend_attachment_info);
-
-    vk::DynamicState dynamic_states[] = { vk::DynamicState::eViewport };
-
-    vk::PipelineDynamicStateCreateInfo dynamic_state_info = vk::PipelineDynamicStateCreateInfo()
-        .setDynamicStateCount(1)
-        .setPDynamicStates(dynamic_states);
-
-    vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo();
-
-    if (this->logical_device.createPipelineLayout(&layout_info, nullptr, &this->pipeline_layout) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create pipeline layout.");
-    }
-
-    this->add_shader_stage(vk::ShaderStageFlagBits::eFragment, "/Animate/data/Default/shader.frag.spv");
-    this->add_shader_stage(vk::ShaderStageFlagBits::eVertex, "/Animate/data/Default/shader.vert.spv");
-
-    vk::GraphicsPipelineCreateInfo pipeline_create_info = vk::GraphicsPipelineCreateInfo()
-        .setStageCount(2)
-        .setPStages(this->shader_stages.data())
-        .setPVertexInputState(&vertex_input_info)
-        .setPInputAssemblyState(&input_assembly_info)
-        .setPViewportState(&viewport_info)
-        .setPRasterizationState(&rasteriser_info)
-        .setPMultisampleState(&multisampling_state_info)
-        .setPColorBlendState(&colour_blend_info)
-        .setPDynamicState(&dynamic_state_info)
-        .setLayout(this->pipeline_layout)
-        .setRenderPass(this->render_pass)
-        .setSubpass(0);
-
-    if (this->logical_device.createGraphicsPipelines(nullptr, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create graphics pipeline.");
-    }
+    this->pipelines.push_back(pipeline);
+    return pipeline;
 }
 
 void Context::create_framebuffers()
@@ -572,13 +481,15 @@ void Context::create_command_buffers()
         .setClearValueCount(1)
         .setPClearValues(&clear_colour);
 
+    std::shared_ptr<Pipeline> pipeline = this->pipeline.lock();
+
     for (size_t i = 0; i < this->command_buffers.size(); i++) {
         render_pass_begin_info.setFramebuffer(this->swap_chain_framebuffers[i]);
 
         this->command_buffers[i].begin(&begin_info);
         this->command_buffers[i].setViewport(0, 1, &viewport);
         this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
-        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, this->pipeline);
+        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
         this->command_buffers[i].draw(3, 1, 0, 0);
         this->command_buffers[i].endRenderPass();
         this->command_buffers[i].end();
@@ -626,7 +537,7 @@ QueueFamilyIndices Context::get_device_queue_families(vk::PhysicalDevice const &
     for (const auto& property : properties) {
         //Check whether our surface can be drawn to with this device
         vk::Bool32 present_supported = false;
-        device.getSurfaceSupportKHR(i, *this->context.lock()->get_surface().get(), &present_supported);
+        device.getSurfaceSupportKHR(i, *this->context.lock()->get_surface().lock().get(), &present_supported);
 
         if (property.queueCount > 0) {
             if (property.queueFlags & vk::QueueFlagBits::eGraphics) {
@@ -651,7 +562,7 @@ SwapChainSupportDetails Context::get_swap_chain_support(vk::PhysicalDevice const
 {
     SwapChainSupportDetails details;
 
-    vk::SurfaceKHR surface = *this->context.lock()->get_surface().get();
+    vk::SurfaceKHR surface = *this->context.lock()->get_surface().lock().get();
 
     device.getSurfaceCapabilitiesKHR(surface, &details.capabilities);
 

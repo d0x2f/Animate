@@ -53,21 +53,6 @@ void Circle::initialise_buffers()
         vertices[(i*6)+4] = sin((((GLfloat)i)*PI)/180.) * (1. - this->thickness);   //y
         vertices[(i*6)+5] = 0.;                                                     //z
     }
-
-    /*
-    //Generate vertex array
-    glGenVertexArrays(1, &this->vao_id);
-    glBindVertexArray(this->vao_id);
-
-    //Upload vertex data
-    glGenBuffers(1, &this->buffer_id);
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    //Unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    */
 }
 
 /**
@@ -81,35 +66,11 @@ void Circle::draw(Matrix model_matrix)
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
     //Upload the matrix to the shader
-    this->shader->set_model_matrix(model_matrix);
+    this->shader.lock()->set_model_matrix(model_matrix);
 
     //Set the colour
-    this->shader->set_uniform("colour", this->colour);
+    this->shader.lock()->set_uniform("colour", this->colour);
 
-    /*
-    //Bind
-    glBindBuffer(GL_ARRAY_BUFFER, this->buffer_id);
-    glBindVertexArray(this->vao_id);
-
-    //Enable and set vertex attributes
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void*)0);
-    */
-    //Set the shader
-    this->shader->use();
-
-    /*
-    //Perform the draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 361*2);
-    //Disable attribute pointers
-    glDisableVertexAttribArray(0);
-
-    //Unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUseProgram(0);
-    */
 
     Drawable::draw(model_matrix);
 }

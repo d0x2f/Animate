@@ -92,37 +92,10 @@ void Line::draw(Matrix model_matrix)
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).rotate(this->rotation).translate(this->position);
 
     //Upload the matrix to the shader
-    this->shader->set_model_matrix(model_matrix);
+    this->shader.lock()->set_model_matrix(model_matrix);
 
     //Set the colour
-    this->shader->set_uniform("colour", this->colour);
-
-    /*
-    //Bind
-    glBindBuffer(GL_ARRAY_BUFFER, Line::buffer_id);
-    glBindVertexArray(Line::vao_id);
-
-    //Enable and set vertex attributes
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat)*3, (const void*)0);
-    */
-
-    //Set the shader
-    this->shader->use();
-
-    /*
-    //Perform the draw
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    //Disable attribute pointers
-    glDisableVertexAttribArray(0);
-
-    //Unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUseProgram(0);
-    */
+    this->shader.lock()->set_uniform("colour", this->colour);
 
     Drawable::draw(model_matrix);
 }

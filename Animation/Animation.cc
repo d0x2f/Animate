@@ -34,7 +34,7 @@ void Animation::start()
 
     this->running = true;
 
-    this->tick_thread = std::shared_ptr<std::thread>( new std::thread(Animation::tick_loop, this) );
+    this->tick_thread = std::unique_ptr<std::thread>( new std::thread(Animation::tick_loop, this) );
 }
 
 /**
@@ -104,7 +104,7 @@ void Animation::on_tick(GLuint64 time_delta)
 {
     //Tick all the objects
     for (
-        std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+        std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
         it != this->objects.end();
         ++it
     ) {
@@ -139,14 +139,14 @@ void Animation::tick_loop(Animation *animation)
  *
  * @return the object.
  */
-Object *Animation::get_object(std::string name)
+std::weak_ptr<Object> Animation::get_object(std::string name)
 {
-    std::map< std::string, std::unique_ptr<Object::Object> >::iterator it;
+    std::map< std::string, std::shared_ptr<Object::Object> >::iterator it;
     it = this->objects.find(name);
     if (it == this->objects.end()) {
         throw std::runtime_error("Requested non existant object.");
     }
-    return it->second.get();
+    return it->second;
 }
 
 /**
@@ -157,7 +157,7 @@ Object *Animation::get_object(std::string name)
  */
 void Animation::add_object(std::string name, Object::Object *object)
 {
-    this->objects.insert( std::pair<std::string, std::unique_ptr<Object::Object> >(name, object));
+    this->objects.insert( std::pair<std::string, std::shared_ptr<Object::Object> >(name, object));
 }
 
 /**

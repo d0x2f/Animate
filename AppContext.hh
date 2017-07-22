@@ -20,9 +20,9 @@ namespace Animate
             void set_textures(VK::Textures *textures);
 
             GLFWwindow *get_window();
-            std::shared_ptr<vk::SurfaceKHR> const get_surface();
-            std::shared_ptr<VK::Context> const get_graphics_context();
-            std::shared_ptr<VK::Textures> const get_textures();
+            std::weak_ptr<vk::SurfaceKHR> const get_surface();
+            std::weak_ptr<VK::Context> const get_graphics_context();
+            std::weak_ptr<VK::Textures> const get_textures();
 
         private:
             GLFWwindow *window;

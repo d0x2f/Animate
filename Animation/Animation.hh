@@ -35,15 +35,15 @@ namespace Animate::Animation
             int tick_rate = 60;
             GLuint64 last_frame_time = 0;
             int frame_count = 0;
-            std::map< std::string, std::unique_ptr<Object::Object> > objects;
+            std::map< std::string, std::shared_ptr<Object::Object> > objects;
             std::atomic_bool loaded;
 
             void add_object(std::string name, Object::Object *object);
-            Object::Object *get_object(std::string name);
+            std::weak_ptr<Object::Object> get_object(std::string name);
             void clear_objects();
 
         private:
-            std::shared_ptr<std::thread> tick_thread;
+            std::unique_ptr<std::thread> tick_thread;
             std::atomic_bool running;
 
             static void tick_loop(Animation *animation);

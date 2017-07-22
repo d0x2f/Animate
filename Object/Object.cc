@@ -9,7 +9,6 @@ Object::Object(std::weak_ptr<VK::Context> context, Point position, Scale size)
 
 Object::~Object()
 {
-    std::cout << "~Object" << std::endl;
     this->clear_components();
 }
 

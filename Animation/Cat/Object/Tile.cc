@@ -13,7 +13,7 @@ Tile::Tile(std::weak_ptr<VK::Context> context, Point position, Scale size)
 /**
  * Initialise the tile.
  */
-void Tile::initialise(Shader *shader, Texture *texture, GLuint position, GLuint grid_size)
+void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture, GLuint position, GLuint grid_size)
 {
     //Return if already initialised
     if (this->initialised) {

@@ -9,7 +9,6 @@
 #include "../../Utilities.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
-#include "../../VK/Shader.hh"
 #include "../../VK/Context.hh"
 
 using namespace Animate::Animation::Cat;
@@ -36,7 +35,7 @@ Cat::Cat(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 void Cat::initialise()
 {
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag.spv", "/Animate/data/Cat/shader.vert.spv"));
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Cat/shader.frag.spv", "/Animate/data/Cat/shader.vert.spv");
 }
 
 /**
@@ -54,7 +53,7 @@ void Cat::reset_puzzle()
     std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 7;
 
-    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+    std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
 
     //Initialise cat tiles
     Tile *tile;
@@ -65,8 +64,8 @@ void Cat::reset_puzzle()
         }
         tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
         tile->initialise(
-            this->shader.get(),
-            this->context.lock()->get_textures()->get_texture(texture_name),
+            this->shader.lock(),
+            this->context.lock()->get_textures().lock()->get_texture(texture_name),
             this->initial_position[i], //board position
             this->grid_size  //Grid size
         );
@@ -103,7 +102,7 @@ bool Cat::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
 
-    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
     //Scoped multex lock
     {
@@ -111,7 +110,7 @@ bool Cat::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
@@ -149,7 +148,7 @@ void Cat::on_tick(GLuint64 time_delta)
         //Check if any tiles are moving
         bool in_motion = false;
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

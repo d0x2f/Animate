@@ -10,7 +10,6 @@
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
 #include "../../VK/Circle.hh"
-#include "../../VK/Shader.hh"
 
 using namespace Animate::Animation::Noise;
 using namespace Animate::Geometry;
@@ -33,17 +32,16 @@ Noise::Noise(std::weak_ptr<AppContext> context) : Animation::Animation(context)
  */
 void Noise::initialise()
 {
-    //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv"));
+    std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
 
-    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+    //Set shaders
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv");
 
     //Add a Quad
     Object::Object *object = new Object::Object(graphics_context);
     Quad *quad = new Quad(graphics_context);
     quad->initialise(
-        this->shader.get(),
-        new Texture()
+        this->shader
     );
     object->add_component(quad);
     this->add_object("quad", object);
@@ -72,17 +70,17 @@ bool Noise::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
-    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-        this->shader->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+        this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

@@ -61,7 +61,7 @@ GLFWwindow *AppContext::get_window()
 /**
  * Retrieves the tracked surface object.
  */
-std::shared_ptr<vk::SurfaceKHR> const AppContext::get_surface()
+std::weak_ptr<vk::SurfaceKHR> const AppContext::get_surface()
 {
     if (!this->surface) {
         throw std::runtime_error("Attemped to get surface object before initialised.");
@@ -73,7 +73,7 @@ std::shared_ptr<vk::SurfaceKHR> const AppContext::get_surface()
 /**
  * Retrieves the tracked graphcis context object.
  */
-std::shared_ptr<VK::Context> const AppContext::get_graphics_context()
+std::weak_ptr<VK::Context> const AppContext::get_graphics_context()
 {
     return this->graphics_context;
 }
@@ -81,7 +81,7 @@ std::shared_ptr<VK::Context> const AppContext::get_graphics_context()
 /**
  * Retrieves the tracked textures object.
  */
-std::shared_ptr<VK::Textures> const AppContext::get_textures()
+std::weak_ptr<VK::Textures> const AppContext::get_textures()
 {
     if (!this->textures) {
         throw std::runtime_error("Attemped to get texture manager before initialised.");

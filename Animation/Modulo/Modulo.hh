@@ -2,7 +2,7 @@
 
 #include "../Animation.hh"
 #include "../../VK/Quad.hh"
-#include "../../VK/Shader.hh"
+#include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 
@@ -21,6 +21,6 @@ namespace Animate::Animation::Modulo
             void initialise();
 
         protected:
-            std::shared_ptr<VK::Shader> shader;
+            std::weak_ptr<VK::Pipeline> shader;
     };
 }

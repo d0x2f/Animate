@@ -23,6 +23,7 @@ namespace Animate
     namespace VK
     {
         class Shader;
+        class Pipeline;
 
         struct QueueFamilyIndices {
             int graphics_family = -1;
@@ -48,7 +49,7 @@ namespace Animate
             }
         };
 
-        class Context
+        class Context : public std::enable_shared_from_this<Context>
         {
             public:
                 Context(std::weak_ptr<Animate::AppContext> context);
@@ -64,24 +65,21 @@ namespace Animate
                 vk::Format swap_chain_image_format;
                 vk::Extent2D swap_chain_extent;
                 std::vector<vk::ImageView> swap_chain_image_views;
-                vk::PipelineLayout pipeline_layout;
                 vk::RenderPass render_pass;
-                vk::PipelineCache pipeline_cache;
-                vk::Pipeline pipeline;
                 std::vector<vk::Framebuffer> swap_chain_framebuffers;
                 vk::CommandPool command_pool;
                 std::vector<vk::CommandBuffer> command_buffers;
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
 
-                std::vector<vk::ShaderModule> shader_modules;
-                std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
+                std::weak_ptr<Pipeline> pipeline;
 
+                std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::multiset<Drawable *, DrawableComparator> scene;
 
                 void add_to_scene(Drawable *drawable);
+                std::weak_ptr<Pipeline> create_pipeline(std::string fragment_code_id, std::string vertex_code_id);
                 void render_scene();
-                void add_shader_stage(vk::ShaderStageFlagBits type, std::string resource_id);
 
                 void recreate_swap_chain();
 
@@ -101,7 +99,6 @@ namespace Animate
                 void create_swap_chain();
                 void create_image_views();
                 void create_render_pass();
-                void create_pipeline();
                 void create_framebuffers();
                 void create_command_pool();
                 void create_command_buffers();

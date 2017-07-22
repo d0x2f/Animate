@@ -74,7 +74,7 @@ void Gui::init_glfw()
 
 void Gui::init_graphics()
 {
-    this->context->set_graphics_context(new VK::Context(this->context));
+    new VK::Context(this->context);
 }
 
 void Gui::init_context()
@@ -89,18 +89,18 @@ void Gui::init_context()
 void Gui::init_animations()
 {
     //Create animation and connect it up
-    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context));
+    this->noise_animation = std::unique_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context));
     noise_animation->initialise();
 
     Animation::Animation *animation = new Animation::Cat::Cat(this->context);
     animation->initialise();
 
-    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
 
     animation = new Animation::Modulo::Modulo(this->context);
     animation->initialise();
 
-    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
 
     this->current_animation = this->animations.begin()+1;
     (*this->current_animation)->start();
@@ -122,7 +122,7 @@ void Gui::on_key(int key, int scancode, int action, int mods)
 
 void Gui::on_window_resize(int width, int height)
 {
-    this->context->get_graphics_context()->recreate_swap_chain();
+    this->context->get_graphics_context().lock()->recreate_swap_chain();
 }
 
 /**
@@ -142,13 +142,13 @@ void Gui::start_loop()
         }
 
         //Perform the render
-        std::shared_ptr<VK::Context> context = this->context->get_graphics_context();
-        context->render_scene();
+        std::weak_ptr<VK::Context> context = this->context->get_graphics_context();
+        context.lock()->render_scene();
 
         //Poll events
         glfwPollEvents();
     }
 
-    std::shared_ptr<VK::Context> context = this->context->get_graphics_context();
-    context->logical_device.waitIdle();
+    std::weak_ptr<VK::Context> context = this->context->get_graphics_context();
+    context.lock()->logical_device.waitIdle();
 }

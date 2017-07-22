@@ -15,9 +15,9 @@ namespace Animate
         class Textures
         {
             public:
-                Textures(std::shared_ptr<AppContext> context);
+                Textures(std::weak_ptr<AppContext> context);
 
-                Texture *get_texture(std::string resource_id);
+                std::weak_ptr<Texture> get_texture(std::string resource_id);
 
             protected:
                 std::weak_ptr<AppContext> context;

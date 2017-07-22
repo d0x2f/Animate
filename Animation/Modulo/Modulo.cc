@@ -11,7 +11,6 @@
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
 #include "../../VK/Circle.hh"
-#include "../../VK/Shader.hh"
 
 using namespace Animate::Animation::Modulo;
 using namespace Animate::Animation::Modulo::Object;
@@ -35,16 +34,16 @@ Modulo::Modulo(std::weak_ptr<AppContext> context) : Animation::Animation(context
  */
 void Modulo::initialise()
 {
+    std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv"));
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv");
 
-
-    std::shared_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
 
     //Add a circle
     Ring *ring = new Ring(graphics_context, Point(0.5,0.5), Scale(.8,.8));
     ring->initialise(
-        this->shader.get()
+        this->shader.lock()
     );
     this->add_object("ring", ring);
 }
@@ -72,7 +71,7 @@ bool Modulo::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
-    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(model_matrix, view_matrix, projection_matrix);
 
     //Scoped multex lock
     {
@@ -80,7 +79,7 @@ bool Modulo::on_render()
 
         //Draw every object
         for (
-            std::map< std::string, std::unique_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
+            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {

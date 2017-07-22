@@ -25,10 +25,10 @@ namespace Animate
         private:
             std::shared_ptr<AppContext> context;
 
-            std::shared_ptr<Animation::Animation> noise_animation;
-            std::vector< std::shared_ptr<Animation::Animation> >::iterator current_animation;
+            std::unique_ptr<Animation::Animation> noise_animation;
+            std::vector< std::unique_ptr<Animation::Animation> >::iterator current_animation;
 
-            std::vector< std::shared_ptr<Animation::Animation> > animations;
+            std::vector< std::unique_ptr<Animation::Animation> > animations;
 
             void init_glfw();
             void init_graphics();

@@ -88,13 +88,10 @@ void Quad::draw(Matrix model_matrix)
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
     //Upload the matrix to the shader
-    this->shader->set_model_matrix(model_matrix);
+    this->shader.lock()->set_model_matrix(model_matrix);
 
     //Set the texture
-    this->texture->use();
-
-    //Set the shader
-    this->shader->use();
+    this->texture.lock()->use();
 
     Drawable::draw(model_matrix);
 }

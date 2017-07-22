@@ -5,7 +5,7 @@ animate_SOURCES =   VK/Context.cc \
                     VK/Quad.cc \
                     VK/Circle.cc \
                     VK/Line.cc \
-                    VK/Shader.cc \
+                    VK/Pipeline.cc \
                     VK/Textures.cc \
                     VK/Texture.cc \
                     VK/Buffer.cc \
@@ -35,7 +35,7 @@ animate_HEADERS =   VK/Context.hh \
                     VK/Quad.hh \
                     VK/Circle.hh \
                     VK/Line.hh \
-                    VK/Shader.hh \
+                    VK/Pipeline.hh \
                     VK/Textures.hh \
                     VK/Texture.hh \
                     VK/Buffer.hh \

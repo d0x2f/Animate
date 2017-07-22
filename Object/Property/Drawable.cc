@@ -6,7 +6,26 @@ using namespace Animate::VK;
 /**
  * Initialise the drawable.
  */
-void Drawable::initialise(Shader *shader, Texture *texture)
+void Drawable::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture)
+{
+    //Return if already initialised
+    if (this->initialised) {
+        return;
+}
+
+    this->set_shader(shader);
+    this->set_texture(texture);
+
+    this->initialise_buffers();
+
+    //Set initialised
+    this->initialised = true;
+}
+
+/**
+ * Initialise the drawable.
+ */
+void Drawable::initialise(std::weak_ptr<Pipeline> shader)
 {
     //Return if already initialised
     if (this->initialised) {
@@ -14,7 +33,6 @@ void Drawable::initialise(Shader *shader, Texture *texture)
     }
 
     this->set_shader(shader);
-    this->set_texture(texture);
 
     this->initialise_buffers();
 
@@ -27,7 +45,7 @@ void Drawable::initialise(Shader *shader, Texture *texture)
  *
  * @param shader A new shader to use when drawing.
  */
-void Drawable::set_shader(Shader *shader)
+void Drawable::set_shader(std::weak_ptr<Pipeline> shader)
 {
     this->shader = shader;
 }
@@ -37,14 +55,19 @@ void Drawable::set_shader(Shader *shader)
  *
  * @param shader A new texture to use when drawing.
  */
-void Drawable::set_texture(Texture *texture)
+void Drawable::set_texture(std::weak_ptr<Texture> texture)
 {
     this->texture = texture;
 }
 
+/**
+ * return nullptr for drawables that don't use a buffer.
+ *
+ * @return A pointer to this items buffer.
+ **/
 std::weak_ptr<Buffer> const Drawable::get_buffer()
 {
-    return std::weak_ptr<Buffer>();
+    return std::shared_ptr<Buffer>();
 }
 
 /**

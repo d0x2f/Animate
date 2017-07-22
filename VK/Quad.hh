@@ -5,7 +5,6 @@
 
 #include "../Geometry/Definitions.hh"
 #include "../Geometry/Matrix.hh"
-#include "Shader.hh"
 #include "../Object/Property/Drawable.hh"
 #include "../Object/Property/Movable.hh"
 #include "../Object/Property/Scalable.hh"
@@ -26,11 +25,11 @@ namespace Animate::VK
 
             void draw(Matrix model_matrix) override;
 
-            std::shared_ptr<Buffer> buffer;
-
         protected:
             Position texture_position;
             Position texture_size = Position(1., 1.);
+
+            std::shared_ptr<Buffer> buffer;
 
             void initialise_buffers() override;
     };

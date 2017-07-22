@@ -6,7 +6,7 @@
 
 #include "../Animation.hh"
 #include "../../VK/Quad.hh"
-#include "../../VK/Shader.hh"
+#include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 #include "Object/Tile.hh"
@@ -28,7 +28,7 @@ namespace Animate::Animation::Cat
             void initialise() override;
 
         protected:
-            std::shared_ptr<VK::Shader> shader;
+            std::weak_ptr<VK::Pipeline> shader;
             std::vector<uint8_t> initial_position;
             std::queue<TaquinSolve::Moves> move_sequence;
             std::map<int, Tile *> tile_position_map;

@@ -17,7 +17,7 @@ Ring::Ring(std::weak_ptr<VK::Context> context, Point position, Scale size)
 /**
  * Initialise the ring.
  */
-void Ring::initialise(Shader *shader)
+void Ring::initialise(std::weak_ptr<Pipeline> shader)
 {
     //Return if already initialised
     if (this->initialised) {
@@ -27,16 +27,14 @@ void Ring::initialise(Shader *shader)
     //Add the main circle
     Circle *circle = new Circle(this->context, Point(), Scale(0.5,0.5), Colour(0.,0.,0.,1.), .005);
     circle->initialise(
-        shader,
-        new Texture()
+        shader
     );
     this->add_component(circle);
 
     //Create a line
-    this->line = std::shared_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
+    this->line = std::unique_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
     line->initialise(
-        shader,
-        new Texture()
+        shader
     );
 
     this->initialised = true;
