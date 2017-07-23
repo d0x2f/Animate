@@ -63,11 +63,11 @@ void Drawable::set_texture(std::weak_ptr<Texture> texture)
 /**
  * return nullptr for drawables that don't use a buffer.
  *
- * @return A pointer to this items buffer.
+ * @return An empty vector
  **/
-std::weak_ptr<Buffer> const Drawable::get_buffer()
+std::vector< std::weak_ptr<Buffer> > const Drawable::get_buffers()
 {
-    return std::shared_ptr<Buffer>();
+    return {};
 }
 
 /**

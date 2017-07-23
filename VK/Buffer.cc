@@ -8,6 +8,8 @@ Buffer::Buffer(
     vk::BufferUsageFlags usage,
     vk::MemoryPropertyFlags properties
 ) : context(context), size(size) {
+    this->logical_device = context.lock()->logical_device;
+
     vk::BufferCreateInfo buffer_create_info = vk::BufferCreateInfo()
         .setSize(size)
         .setUsage(usage)
@@ -38,8 +40,8 @@ Buffer::Buffer(
 
 Buffer::~Buffer()
 {
-    this->context.lock()->logical_device.destroyBuffer(this->ident);
-    this->context.lock()->logical_device.freeMemory(this->memory);
+    this->logical_device.destroyBuffer(this->ident);
+    this->logical_device.freeMemory(this->memory);
 }
 
 void Buffer::copy_buffer_data(Buffer& source)

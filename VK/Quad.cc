@@ -18,7 +18,6 @@ Quad::Quad(std::weak_ptr<VK::Context> context, Point position, Scale size)
  */
 Quad::~Quad()
 {
-    this->buffer.reset();
 }
 
 void Quad::set_texture_position(Position texture_position, Position texture_size)
@@ -32,8 +31,14 @@ void Quad::set_texture_position(Position texture_position, Position texture_size
  */
 void Quad::initialise_buffers()
 {
+    this->create_vertex_buffer();
+    this->create_index_buffer();
+}
+
+void Quad::create_vertex_buffer()
+{
     //Check if the buffer is already initialised
-    if (this->buffer) {
+    if (this->vertex_buffer.lock()) {
         return;
     }
 
@@ -62,19 +67,51 @@ void Quad::initialise_buffers()
     memcpy(data, vertices, (size_t) size);
     staging_buffer.unmap();
     
-    this->buffer = std::shared_ptr<Buffer>(new Buffer(
-        this->context.lock(),
+    this->vertex_buffer = this->context.lock()->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-    ));
+        vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
 
-    this->buffer->copy_buffer_data(staging_buffer);
+    this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
 }
 
-std::weak_ptr<Buffer> const Quad::get_buffer()
+void Quad::create_index_buffer()
 {
-    return this->buffer;
+    //Check if the buffer is already initialised
+    if (this->index_buffer.lock()) {
+        return;
+    }
+
+    const uint16_t indices[] = {
+        0, 1, 2, 2, 3, 0
+    };
+
+    vk::DeviceSize size = 6 * sizeof(uint16_t);
+
+    VK::Buffer staging_buffer(
+        this->context.lock(),
+        size,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
+
+    void *data = staging_buffer.map();
+    memcpy(data, indices, (size_t) size);
+    staging_buffer.unmap();
+    
+    this->index_buffer = this->context.lock()->create_buffer(
+        size,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
+
+    this->index_buffer.lock()->copy_buffer_data(staging_buffer);
+}
+
+std::vector< std::weak_ptr<Buffer> > const Quad::get_buffers()
+{
+    return {this->vertex_buffer, this->index_buffer};
 }
 
 /**

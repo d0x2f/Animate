@@ -36,12 +36,12 @@ namespace Animate::VK
 
         private:
             std::weak_ptr<VK::Context> context;
+            vk::Device logical_device;
+
             std::string fragment_code_id;
             std::string vertex_code_id;
             vk::Pipeline pipeline;
             vk::PipelineLayout pipeline_layout;
-
-            vk::Device logical_device;
 
             std::vector<vk::ShaderModule> shader_modules;
             std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;

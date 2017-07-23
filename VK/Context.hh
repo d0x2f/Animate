@@ -24,6 +24,7 @@ namespace Animate
     {
         class Shader;
         class Pipeline;
+        class Buffer;
 
         struct QueueFamilyIndices {
             int graphics_family = -1;
@@ -56,6 +57,7 @@ namespace Animate
                 ~Context();
             
                 vk::Instance instance;
+                VkDebugReportCallbackEXT debug_callback_obj;
                 vk::PhysicalDevice physical_device;
                 vk::Device logical_device;
                 vk::Queue   graphics_queue,
@@ -75,10 +77,16 @@ namespace Animate
                 std::weak_ptr<Pipeline> pipeline;
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
+                std::vector< std::shared_ptr<Buffer> > buffers;
                 std::multiset<Drawable *, DrawableComparator> scene;
 
                 void add_to_scene(Drawable *drawable);
                 std::weak_ptr<Pipeline> create_pipeline(std::string fragment_code_id, std::string vertex_code_id);
+                std::weak_ptr<Buffer> create_buffer(
+                    vk::DeviceSize size,
+                    vk::BufferUsageFlags usage,
+                    vk::MemoryPropertyFlags properties
+                );
                 void render_scene();
 
                 void recreate_swap_chain();

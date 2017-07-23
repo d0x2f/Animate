@@ -4,6 +4,8 @@
 #include "AppContext.hh"
 #include "Context.hh"
 #include "Utilities.hh"
+#include "Buffer.hh"
+#include "Pipeline.hh"
 #include "../Geometry/Vertex.hh"
 #include "../Object/Property/Drawable.hh"
 
@@ -39,6 +41,8 @@ Context::~Context()
 {
     cleanup_swap_chain_dependancies();
 
+    this->buffers.clear();
+
     this->logical_device.destroySwapchainKHR(this->swap_chain, nullptr);
 
     this->logical_device.destroySemaphore(this->image_available_semaphore);
@@ -46,6 +50,14 @@ Context::~Context()
     this->logical_device.destroyCommandPool(this->command_pool);
 
     this->logical_device.destroy();
+
+    auto DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)this->instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
+    if (DestroyDebugReportCallback != nullptr) {
+        DestroyDebugReportCallback(this->instance, this->debug_callback_obj, nullptr);
+    } else {
+        std::cerr << "Unable to desroy debug callback." << std::endl;
+    }
+
     this->instance.destroy();
 }
 
@@ -213,9 +225,8 @@ void Context::bind_debug_callback()
 
     auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)this->instance.getProcAddr("vkCreateDebugReportCallbackEXT");
     if (CreateDebugReportCallback != nullptr) {
-        VkDebugReportCallbackEXT callback;
         const VkDebugReportCallbackCreateInfoEXT tmp(debug_create_info);
-        CreateDebugReportCallback(this->instance, &tmp, nullptr, &callback);
+        CreateDebugReportCallback(this->instance, &tmp, nullptr, &this->debug_callback_obj);
     } else {
         throw std::runtime_error("Cannot find required vkCreateDebugReportCallbackEXT function.");
     }
@@ -413,6 +424,24 @@ std::weak_ptr<Pipeline> Context::create_pipeline(std::string fragment_code_id, s
     );
     this->pipelines.push_back(pipeline);
     return pipeline;
+}
+
+std::weak_ptr<Buffer> Context::create_buffer(
+    vk::DeviceSize size,
+    vk::BufferUsageFlags usage,
+    vk::MemoryPropertyFlags properties
+) {
+    std::shared_ptr<Buffer> buffer(
+        new Buffer(
+            this->shared_from_this(),
+            size,
+            usage,
+            properties
+        )
+    );
+
+    this->buffers.push_back(buffer);
+    return buffer;
 }
 
 void Context::create_framebuffers()

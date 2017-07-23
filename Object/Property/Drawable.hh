@@ -21,7 +21,7 @@ namespace Animate::Object::Property
             void initialise(std::weak_ptr<Pipeline> shader);
             void set_shader(std::weak_ptr<Pipeline> shader);
             void set_texture(std::weak_ptr<Texture> texture);
-            virtual std::weak_ptr<Buffer> const get_buffer();
+            virtual std::vector< std::weak_ptr<Buffer> > const get_buffers();
 
             virtual void draw(Matrix model_matrix);
 
