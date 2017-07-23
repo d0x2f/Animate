@@ -24,15 +24,17 @@ namespace Animate::VK
                 return this->pipeline;
             }
 
-            void load_shader(vk::ShaderStageFlagBits type, std::string resource_id);
-            void create_pipeline();
-            void create_uniform_buffer();
+            static vk::PipelineLayout pipeline_layout;
+            
+            void recreate_pipeline();
 
             void set_matrices(Matrix model, Matrix view, Matrix projection);
             void set_model_matrix(Matrix model);
 
             void set_uniform(std::string name, GLfloat value);
             void set_uniform(std::string name, Vector4 value);
+
+            vk::Pipeline get_vk_pipeline();
 
         private:
             std::weak_ptr<VK::Context> context;
@@ -41,9 +43,12 @@ namespace Animate::VK
             std::string fragment_code_id;
             std::string vertex_code_id;
             vk::Pipeline pipeline;
-            vk::PipelineLayout pipeline_layout;
 
             std::vector<vk::ShaderModule> shader_modules;
             std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
+
+            void load_shader(vk::ShaderStageFlagBits type, std::string resource_id);
+            void create_pipeline();
+            void create_uniform_buffer();
     };
 }

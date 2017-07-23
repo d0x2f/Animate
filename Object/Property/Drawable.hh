@@ -25,8 +25,10 @@ namespace Animate::Object::Property
             virtual std::vector< std::weak_ptr<Buffer> > const get_buffers();
             std::weak_ptr<Pipeline> const get_shader();
             std::weak_ptr<Texture> const get_texture();
+            Matrix const get_model_matrix();
 
-            virtual void draw(Matrix model_matrix);
+            virtual void set_model_matrix(Matrix model_matrix);
+            virtual void add_to_scene();
 
             virtual void initialise_buffers() = 0;
 
@@ -35,5 +37,6 @@ namespace Animate::Object::Property
             bool initialised = false;
             std::weak_ptr<Pipeline> shader;
             std::weak_ptr<Texture> texture;
+            Matrix model_matrix;
     };
 }

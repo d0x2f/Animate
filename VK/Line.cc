@@ -82,20 +82,15 @@ void Line::initialise_buffers()
 }
 
 /**
- * Bind buffers and draw the line.
- *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Line::draw(Matrix model_matrix)
+void Line::set_model_matrix(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    model_matrix = model_matrix * Matrix::identity().scale(this->scale).rotate(this->rotation).translate(this->position);
-
-    //Upload the matrix to the shader
-    this->shader.lock()->set_model_matrix(model_matrix);
-
-    //Set the colour
-    this->shader.lock()->set_uniform("colour", this->colour);
-
-    Drawable::draw(model_matrix);
+    Drawable::set_model_matrix(
+        model_matrix *
+        Matrix::identity()
+            .scale(this->scale)
+            .translate(this->position)
+    );
 }

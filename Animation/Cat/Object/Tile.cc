@@ -44,7 +44,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> tex
         1./grid_size_float
     );
 
-    Quad *quad = new Quad(this->context, Point(), Scale(1., 1., 1.));
+    std::shared_ptr<Quad> quad(new Quad(this->context, Point(), Scale(1., 1., 1.)));
     quad->set_texture_position(texture_position, texture_size);
     quad->initialise(shader, texture);
     this->add_component(quad);

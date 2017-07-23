@@ -25,44 +25,41 @@ void Ring::initialise(std::weak_ptr<Pipeline> shader)
     }
 
     //Add the main circle
-    Circle *circle = new Circle(this->context, Point(), Scale(0.5,0.5), Colour(0.,0.,0.,1.), .005);
+    std::shared_ptr<Circle> circle(
+        new Circle(
+            this->context,
+            Point(),
+            Scale(0.5,0.5),
+            Colour(0.,0.,0.,1.),
+            .005
+        )
+    );
     circle->initialise(
         shader
     );
     this->add_component(circle);
 
-    //Create a line
-    this->line = std::shared_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
-    line->initialise(
-        shader
-    );
+    //Create lines
+    for (GLuint f=0; f < this->modulo; f++) {
+        std::shared_ptr<Line> line(
+            new Line(
+                this->context,
+                Point(),
+                Scale(1.,0.5),
+                Vector3(0.,0.,PI/2),
+                Colour(1.,0.,0.,1.),
+                0.001
+            )
+        );
+        line->initialise(
+            shader
+        );
+        this->add_component(line);
+        this->lines.push_back(line);
+    }
+
 
     this->initialised = true;
-}
-
-/**
- * Draw all the components in this object.
- *
- * @param model_matrix Transformation context.
- */
-void Ring::draw(Matrix model_matrix)
-{
-    Object::draw(model_matrix);
-
-    //Calculate the matrix transform
-    model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
-
-    //Draw all the lines
-    for (
-        std::vector<LineDescription>::iterator it = this->line_descriptions.begin();
-        it != this->line_descriptions.end();
-        it++
-    ) {
-        this->line->set_position((*it).from);
-        this->line->set_scale(Scale(1., (*it).length));
-        this->line->set_rotation(Vector3(0., 0., (*it).z_rotation));
-        this->line->draw(model_matrix);
-    }
 }
 
 /**
@@ -101,17 +98,14 @@ void Ring::on_tick(GLuint64 time_delta)
             component->set_colour(this->colour);
         }
     }
-    this->line->set_colour(this->colour);
-
-    //Clear last ticks lines
-    this->line_descriptions.clear();
 
     //Use the current modulo to determine the appropriate lines.
     GLfloat t;
     GLfloat f_rad, t_rad;
     GLfloat const m_float = static_cast<GLfloat>(this->modulo);
 
-    for (GLfloat f=0; f < m_float; f++) {
+    GLfloat f=0;
+    for (GLint i=0; i < this->modulo; f++, i++) {
         t = fmod( f * this->factor, m_float);
 
         f_rad = (f / m_float) * (2*PI);
@@ -122,6 +116,9 @@ void Ring::on_tick(GLuint64 time_delta)
         Vector3 difference = (to_point - from_point);
         GLfloat length = sqrt(difference.dot(difference));
 
-        this->line_descriptions.push_back(LineDescription(from_point, length, -(atan2(difference.y, difference.x)+(1.5*PI))));
+        this->lines[i]->set_position(from_point);
+        this->lines[i]->set_scale(Scale(1., length));
+        this->lines[i]->set_rotation(Vector3(0., 0., -(atan2(difference.y, difference.x)+(1.5*PI))));
+        this->lines[i]->set_colour(this->colour);
     }
 }

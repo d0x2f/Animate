@@ -80,13 +80,25 @@ std::weak_ptr<Texture> const Drawable::get_texture()
     return this->texture;
 }
 
+Matrix const Drawable::get_model_matrix()
+{
+    return this->model_matrix;
+}
+
 /**
- * Add this drawable to the scene
+ * Set the model matrix for this object.
  *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
- * @param context the graphics context to add this drawable to
  */
-void Drawable::draw(Matrix model_matrix)
+void Drawable::set_model_matrix(Matrix model_matrix)
+{
+    this->model_matrix = model_matrix;
+}
+
+/**
+ * Add this drawable to the scene to be rendered
+ */
+void Drawable::add_to_scene()
 {
     this->context.lock()->add_to_scene(this->shared_from_this());
 }

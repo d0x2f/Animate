@@ -108,13 +108,13 @@ bool Cat::on_render()
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-        //Draw every object
+        //Update all model matrices
         for (
             std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix);
+            it->second->set_model_matrix(model_matrix);
         }
     }
 }

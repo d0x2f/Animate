@@ -83,7 +83,7 @@ bool Modulo::on_render()
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix);
+            it->second->set_model_matrix(model_matrix);
         }
     }
 }

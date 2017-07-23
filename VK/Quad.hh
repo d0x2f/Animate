@@ -25,7 +25,7 @@ namespace Animate::VK
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
             std::vector< std::weak_ptr<Buffer> > const get_buffers() override;
 
-            void draw(Matrix model_matrix) override;
+            void set_model_matrix(Matrix model_matrix) override;
 
         protected:
             Position texture_position;

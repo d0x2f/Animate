@@ -15,7 +15,7 @@ namespace Animate::Geometry
             Vector4 r3;
             Vector4 r4;
 
-            Matrix(Vector4 r1, Vector4 r2, Vector4 r3, Vector4 r4);
+            Matrix(Vector4 r1 = Vector4(), Vector4 r2 = Vector4(), Vector4 r3 = Vector4(), Vector4 r4 = Vector4());
 
             GLfloat *get_raw_data();
 

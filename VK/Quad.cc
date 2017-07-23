@@ -115,20 +115,15 @@ std::vector< std::weak_ptr<Buffer> > const Quad::get_buffers()
 }
 
 /**
- * Bind buffers and draw the quad.
- *
  * @param model_matrix the current model_matrix to manipulate for sizing and positioning.
  */
-void Quad::draw(Matrix model_matrix)
+void Quad::set_model_matrix(Matrix model_matrix)
 {
     //Calculate the matrix transform
-    model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
-
-    //Upload the matrix to the shader
-    this->shader.lock()->set_model_matrix(model_matrix);
-
-    //Set the texture
-    this->texture.lock()->use();
-
-    Drawable::draw(model_matrix);
+    Drawable::set_model_matrix(
+        model_matrix *
+        Matrix::identity()
+            .scale(this->scale)
+            .translate(this->position)
+    );
 }

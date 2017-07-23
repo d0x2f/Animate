@@ -39,7 +39,7 @@ void Noise::initialise()
 
     //Add a Quad
     Object::Object *object = new Object::Object(graphics_context);
-    Quad *quad = new Quad(graphics_context);
+    std::shared_ptr<Quad> quad(new Quad(graphics_context));
     quad->initialise(
         this->shader
     );
@@ -84,7 +84,7 @@ bool Noise::on_render()
             it != this->objects.end();
             ++it
         ) {
-            it->second->draw(model_matrix);
+            it->second->set_model_matrix(model_matrix);
         }
     }
 }

@@ -114,6 +114,8 @@ namespace Animate
                 void create_command_buffers();
                 void create_semaphores();
 
+                void recreate_pipelines();
+
                 bool is_device_suitable(vk::PhysicalDevice const & device);
 
                 QueueFamilyIndices get_device_queue_families(vk::PhysicalDevice const & device);

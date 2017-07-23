@@ -19,9 +19,10 @@ namespace Animate::Object
             ~Object();
 
             void initialise();
-            void add_component(Drawable *component);
+            void add_component(std::shared_ptr<Drawable> component);
             void clear_components();
-            virtual void draw(Matrix model_matrix);
+            virtual void set_model_matrix(Matrix model_matrix);
+            virtual void add_to_scene();
 
             virtual void on_tick(GLuint64 time_delta);
 

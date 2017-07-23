@@ -22,7 +22,7 @@ namespace Animate::VK
             Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness);
             ~Line();
 
-            void draw(Matrix model_matrix) override;
+            void set_model_matrix(Matrix model_matrix) override;
 
         protected:
             static GLuint vao_id, buffer_id, instance_count;

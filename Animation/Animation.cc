@@ -158,6 +158,7 @@ std::weak_ptr<Object> Animation::get_object(std::string name)
 void Animation::add_object(std::string name, Object::Object *object)
 {
     this->objects.insert( std::pair<std::string, std::shared_ptr<Object::Object> >(name, object));
+    object->add_to_scene();
 }
 
 /**

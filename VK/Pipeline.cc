@@ -6,6 +6,8 @@
 
 using namespace Animate::VK;
 
+vk::PipelineLayout Pipeline::pipeline_layout = vk::PipelineLayout();
+
 /**
  * Constructor.
  */
@@ -18,6 +20,15 @@ Pipeline::Pipeline(
     this->logical_device = context.lock()->logical_device;
     this->load_shader(vk::ShaderStageFlagBits::eFragment, fragment_code_id);
     this->load_shader(vk::ShaderStageFlagBits::eVertex, vertex_code_id);
+
+    if (!Pipeline::pipeline_layout) {
+        vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo();
+
+        if (this->context.lock()->logical_device.createPipelineLayout(&layout_info, nullptr, &this->pipeline_layout) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create pipeline layout.");
+        }
+    }
+
     this->create_pipeline();
     this->create_uniform_buffer();
 }
@@ -36,7 +47,6 @@ Pipeline::~Pipeline()
     }
 
     this->logical_device.destroyPipeline(this->pipeline, nullptr);
-    this->logical_device.destroyPipelineLayout(this->pipeline_layout, nullptr);
 }
 
 void Pipeline::load_shader(vk::ShaderStageFlagBits type, std::string resource_id)
@@ -64,9 +74,17 @@ void Pipeline::load_shader(vk::ShaderStageFlagBits type, std::string resource_id
     this->shader_stages.push_back(shader_stage_info);
 }
 
+void Pipeline::recreate_pipeline()
+{
+    vk::Pipeline tmp = this->pipeline;
+    this->create_pipeline();
+    if (tmp) {
+        this->context.lock()->logical_device.destroyPipeline(tmp, nullptr);
+    }
+}
+
 void Pipeline::create_pipeline()
 {
-
     auto binding_description = Geometry::Vertex::get_binding_description();
     auto attribute_descriptions = Geometry::Vertex::get_attribute_descriptions();
 
@@ -120,12 +138,6 @@ void Pipeline::create_pipeline()
         .setDynamicStateCount(1)
         .setPDynamicStates(dynamic_states);
 
-    vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo();
-
-    if (this->context.lock()->logical_device.createPipelineLayout(&layout_info, nullptr, &this->pipeline_layout) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create pipeline layout.");
-    }
-
     vk::GraphicsPipelineCreateInfo pipeline_create_info = vk::GraphicsPipelineCreateInfo()
         .setStageCount(this->shader_stages.size())
         .setPStages(this->shader_stages.data())
@@ -138,7 +150,9 @@ void Pipeline::create_pipeline()
         .setPDynamicState(&dynamic_state_info)
         .setLayout(this->pipeline_layout)
         .setRenderPass(this->context.lock()->render_pass)
-        .setSubpass(0);
+        .setSubpass(0)
+        .setBasePipelineHandle(this->pipeline)
+        .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives);
 
     if (this->context.lock()->logical_device.createGraphicsPipelines(nullptr, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create graphics pipeline.");
@@ -180,4 +194,9 @@ void Pipeline::set_uniform(std::string name, GLfloat value)
 void Pipeline::set_uniform(std::string name, Vector4 value)
 {
     
+}
+
+vk::Pipeline Pipeline::get_vk_pipeline()
+{
+    return this->pipeline;
 }

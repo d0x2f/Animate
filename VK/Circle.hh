@@ -21,7 +21,7 @@ namespace Animate::VK
             Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness);
             ~Circle();
 
-            void draw(Matrix model_matrix) override;
+            void set_model_matrix(Matrix model_matrix) override;
 
         protected:
             GLuint  vao_id = 0,

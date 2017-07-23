@@ -26,15 +26,12 @@ namespace Animate::Animation::Modulo::Object
             Ring(std::weak_ptr<VK::Context> context, Point position, Scale size);
 
             void initialise(std::weak_ptr<Pipeline> shader);
-            void draw(Matrix model_matrix) override;
             void on_tick(GLuint64 time_delta) override;
 
         private:
             GLfloat hue = 0;
             GLuint modulo = 1000;
             GLfloat factor = 1;
-            std::vector<LineDescription> line_descriptions;
-
-            std::shared_ptr<Line> line;
+            std::vector<std::shared_ptr<Line> > lines;
     };
 }
