@@ -99,6 +99,63 @@ void Context::add_to_scene(std::weak_ptr<Drawable> drawable)
     this->scene.insert(drawable);
 }
 
+void Context::fill_command_buffer(int i)
+{
+    vk::Rect2D render_area = vk::Rect2D(
+        {0,0},
+        this->swap_chain_extent
+    );
+
+    vk::ClearValue clear_colour = vk::ClearValue()
+        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+
+    vk::Viewport viewport = vk::Viewport()
+        .setWidth(this->swap_chain_extent.width)
+        .setHeight(this->swap_chain_extent.height)
+        .setMaxDepth(1.0f);
+
+    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
+        .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+
+    vk::RenderPassBeginInfo render_pass_begin_info = vk::RenderPassBeginInfo()
+        .setRenderPass(this->render_pass)
+        .setRenderArea(render_area)
+        .setClearValueCount(1)
+        .setPClearValues(&clear_colour)
+        .setFramebuffer(this->swap_chain_framebuffers[i]);
+
+    this->command_buffers[i].reset(vk::CommandBufferResetFlags());
+    this->command_buffers[i].begin(&begin_info);
+    this->command_buffers[i].setViewport(0, 1, &viewport);
+    this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
+
+    std::weak_ptr<Pipeline> pipeline = this->quad->get_shader();
+    std::vector< std::weak_ptr<Buffer> > buffers = this->quad->get_buffers();
+    vk::DeviceSize indices_count = 0;
+    vk::DeviceSize offsets[] = {0};
+    for (
+        std::vector< std::weak_ptr<Buffer> >::iterator it = buffers.begin();
+        it != buffers.end();
+        it++
+    ) {
+        std::shared_ptr<Buffer> buffer = it->lock();
+        vk::BufferUsageFlags usage = buffer->get_usage();
+        vk::Buffer ident = buffer->get_ident();
+        if ((usage & vk::BufferUsageFlagBits::eVertexBuffer) == vk::BufferUsageFlagBits::eVertexBuffer) {
+            this->command_buffers[i].bindVertexBuffers(0, 1, &ident, offsets);
+        } else if ((usage & vk::BufferUsageFlagBits::eIndexBuffer) == vk::BufferUsageFlagBits::eIndexBuffer) {
+            this->command_buffers[i].bindIndexBuffer(ident, 0, vk::IndexType::eUint16);
+            indices_count = buffer->get_size() / sizeof(uint16_t);
+        }
+    }
+
+    this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.lock().get());
+    this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
+
+    this->command_buffers[i].endRenderPass();
+    this->command_buffers[i].end();
+}
+
 void Context::render_scene()
 {
     uint32_t image_index;
@@ -125,6 +182,8 @@ void Context::render_scene()
         default:
             throw std::runtime_error("Couldn't acquire swap chain image.");
     }
+
+    this->fill_command_buffer(image_index);
 
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
@@ -460,7 +519,8 @@ void Context::create_command_pool()
     QueueFamilyIndices indices = this->get_device_queue_families(this->physical_device);
 
     vk::CommandPoolCreateInfo command_pool_create_info = vk::CommandPoolCreateInfo()
-        .setQueueFamilyIndex(indices.graphics_family);
+        .setQueueFamilyIndex(indices.graphics_family)
+        .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
     if (this->logical_device.createCommandPool(&command_pool_create_info, nullptr, &this->command_pool) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create command pool.");
@@ -480,28 +540,6 @@ void Context::create_command_buffers()
         throw std::runtime_error("Couldn't create command buffers.");
     }
 
-    vk::Rect2D render_area = vk::Rect2D(
-        {0,0},
-        this->swap_chain_extent
-    );
-
-    vk::ClearValue clear_colour = vk::ClearValue()
-        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
-
-    vk::Viewport viewport = vk::Viewport()
-        .setWidth(this->swap_chain_extent.width)
-        .setHeight(this->swap_chain_extent.height)
-        .setMaxDepth(1.0f);
-
-    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
-        .setFlags(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
-
-    vk::RenderPassBeginInfo render_pass_begin_info = vk::RenderPassBeginInfo()
-        .setRenderPass(this->render_pass)
-        .setRenderArea(render_area)
-        .setClearValueCount(1)
-        .setPClearValues(&clear_colour);
-
     this->quad = std::shared_ptr<Quad>(
         new Quad(
             this->shared_from_this(),
@@ -516,37 +554,7 @@ void Context::create_command_buffers()
     ));
 
     for (size_t i = 0; i < this->command_buffers.size(); i++) {
-        render_pass_begin_info.setFramebuffer(this->swap_chain_framebuffers[i]);
-
-        this->command_buffers[i].begin(&begin_info);
-        this->command_buffers[i].setViewport(0, 1, &viewport);
-        this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
-
-        std::weak_ptr<Pipeline> pipeline = quad->get_shader();
-        std::vector< std::weak_ptr<Buffer> > buffers = quad->get_buffers();
-        vk::DeviceSize indices_count = 0;
-        vk::DeviceSize offsets[] = {0};
-        for (
-            std::vector< std::weak_ptr<Buffer> >::iterator it = buffers.begin();
-            it != buffers.end();
-            it++
-        ) {
-            std::shared_ptr<Buffer> buffer = it->lock();
-            vk::BufferUsageFlags usage = buffer->get_usage();
-            vk::Buffer ident = buffer->get_ident();
-            if ((usage & vk::BufferUsageFlagBits::eVertexBuffer) == vk::BufferUsageFlagBits::eVertexBuffer) {
-                this->command_buffers[i].bindVertexBuffers(0, 1, &ident, offsets);
-            } else if ((usage & vk::BufferUsageFlagBits::eIndexBuffer) == vk::BufferUsageFlagBits::eIndexBuffer) {
-                this->command_buffers[i].bindIndexBuffer(ident, 0, vk::IndexType::eUint16);
-                indices_count = buffer->get_size() / sizeof(uint16_t);
-            }
-        }
-
-        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.lock().get());
-        this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
-
-        this->command_buffers[i].endRenderPass();
-        this->command_buffers[i].end();
+        this->fill_command_buffer(i);
     }
 }
 
