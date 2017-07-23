@@ -77,7 +77,7 @@ void Pipeline::create_pipeline()
         .setPVertexAttributeDescriptions(attribute_descriptions.data());
 
     vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = vk::PipelineInputAssemblyStateCreateInfo()
-        .setTopology(vk::PrimitiveTopology::eTriangleList);
+        .setTopology(vk::PrimitiveTopology::eTriangleStrip);
 
     vk::Viewport viewport = vk::Viewport()
         .setWidth((float)this->context.lock()->swap_chain_extent.width)

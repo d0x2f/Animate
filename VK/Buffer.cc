@@ -7,7 +7,7 @@ Buffer::Buffer(
     vk::DeviceSize size,
     vk::BufferUsageFlags usage,
     vk::MemoryPropertyFlags properties
-) : context(context), size(size) {
+) : context(context), size(size), usage(usage) {
     this->logical_device = context.lock()->logical_device;
 
     vk::BufferCreateInfo buffer_create_info = vk::BufferCreateInfo()
@@ -97,4 +97,14 @@ void Buffer::unmap()
 vk::DeviceSize Buffer::get_size()
 {
     return this->size;
+}
+
+vk::BufferUsageFlags Buffer::get_usage()
+{
+    return this->usage;
+}
+
+vk::Buffer Buffer::get_ident()
+{
+    return this->ident;
 }

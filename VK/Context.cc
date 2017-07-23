@@ -1,7 +1,8 @@
 #include <set>
 #include <iostream>
 
-#include "AppContext.hh"
+#include "../AppContext.hh"
+#include "Quad.hh"
 #include "Context.hh"
 #include "Utilities.hh"
 #include "Buffer.hh"
@@ -23,12 +24,6 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_swap_chain();
     this->create_image_views();
     this->create_render_pass();
-    
-    this->pipeline = this->create_pipeline(
-        "/Animate/data/Default/shader.frag.spv",
-        "/Animate/data/Default/shader.vert.spv"
-    );
-
     this->create_framebuffers();
     this->create_command_pool();
     this->create_command_buffers();
@@ -39,6 +34,8 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 
 Context::~Context()
 {
+    this->quad.reset();
+
     cleanup_swap_chain_dependancies();
 
     this->buffers.clear();
@@ -75,11 +72,6 @@ void Context::recreate_swap_chain()
     
     this->create_image_views();
     this->create_render_pass();
-    
-    this->pipeline = this->create_pipeline(
-        "/Animate/data/Default/shader.frag.spv",
-        "/Animate/data/Default/shader.vert.spv"
-    );
 
     this->create_framebuffers();
     this->create_command_buffers();
@@ -102,7 +94,7 @@ void Context::cleanup_swap_chain_dependancies()
     }
 }
 
-void Context::add_to_scene(Drawable *drawable)
+void Context::add_to_scene(std::weak_ptr<Drawable> drawable)
 {
     this->scene.insert(drawable);
 }
@@ -418,8 +410,8 @@ std::weak_ptr<Pipeline> Context::create_pipeline(std::string fragment_code_id, s
     std::shared_ptr<Pipeline> pipeline(
         new Pipeline(
             this->shared_from_this(),
-            "/Animate/data/Default/shader.frag.spv",
-            "/Animate/data/Default/shader.vert.spv"
+            fragment_code_id,
+            vertex_code_id
         )
     );
     this->pipelines.push_back(pipeline);
@@ -510,7 +502,18 @@ void Context::create_command_buffers()
         .setClearValueCount(1)
         .setPClearValues(&clear_colour);
 
-    std::shared_ptr<Pipeline> pipeline = this->pipeline.lock();
+    this->quad = std::shared_ptr<Quad>(
+        new Quad(
+            this->shared_from_this(),
+            Point(0., 0.),
+            Scale(1., 1.)
+        )
+    );
+    quad->initialise_buffers();
+    quad->set_shader(this->create_pipeline(
+        "/Animate/data/Default/shader.frag.spv",
+        "/Animate/data/Default/shader.vert.spv"
+    ));
 
     for (size_t i = 0; i < this->command_buffers.size(); i++) {
         render_pass_begin_info.setFramebuffer(this->swap_chain_framebuffers[i]);
@@ -518,8 +521,30 @@ void Context::create_command_buffers()
         this->command_buffers[i].begin(&begin_info);
         this->command_buffers[i].setViewport(0, 1, &viewport);
         this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
-        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
-        this->command_buffers[i].draw(3, 1, 0, 0);
+
+        std::weak_ptr<Pipeline> pipeline = quad->get_shader();
+        std::vector< std::weak_ptr<Buffer> > buffers = quad->get_buffers();
+        vk::DeviceSize indices_count = 0;
+        vk::DeviceSize offsets[] = {0};
+        for (
+            std::vector< std::weak_ptr<Buffer> >::iterator it = buffers.begin();
+            it != buffers.end();
+            it++
+        ) {
+            std::shared_ptr<Buffer> buffer = it->lock();
+            vk::BufferUsageFlags usage = buffer->get_usage();
+            vk::Buffer ident = buffer->get_ident();
+            if ((usage & vk::BufferUsageFlagBits::eVertexBuffer) == vk::BufferUsageFlagBits::eVertexBuffer) {
+                this->command_buffers[i].bindVertexBuffers(0, 1, &ident, offsets);
+            } else if ((usage & vk::BufferUsageFlagBits::eIndexBuffer) == vk::BufferUsageFlagBits::eIndexBuffer) {
+                this->command_buffers[i].bindIndexBuffer(ident, 0, vk::IndexType::eUint16);
+                indices_count = buffer->get_size() / sizeof(uint16_t);
+            }
+        }
+
+        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.lock().get());
+        this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
+
         this->command_buffers[i].endRenderPass();
         this->command_buffers[i].end();
     }

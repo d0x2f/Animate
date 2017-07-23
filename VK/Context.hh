@@ -25,6 +25,7 @@ namespace Animate
         class Shader;
         class Pipeline;
         class Buffer;
+        class Quad;
 
         struct QueueFamilyIndices {
             int graphics_family = -1;
@@ -43,10 +44,10 @@ namespace Animate
 
         struct DrawableComparator {
             bool operator() (
-                const Drawable *lhs, 
-                const Drawable *rhs
+                const std::weak_ptr<Drawable> lhs, 
+                const std::weak_ptr<Drawable> rhs
             ) const {
-                return lhs < rhs;
+                return lhs.lock().get() < rhs.lock().get();
             }
         };
 
@@ -74,13 +75,13 @@ namespace Animate
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
 
-                std::weak_ptr<Pipeline> pipeline;
-
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::vector< std::shared_ptr<Buffer> > buffers;
-                std::multiset<Drawable *, DrawableComparator> scene;
+                std::multiset< std::weak_ptr<Drawable>, DrawableComparator> scene;
 
-                void add_to_scene(Drawable *drawable);
+                std::shared_ptr<Quad> quad;
+
+                void add_to_scene(std::weak_ptr<Drawable> drawable);
                 std::weak_ptr<Pipeline> create_pipeline(std::string fragment_code_id, std::string vertex_code_id);
                 std::weak_ptr<Buffer> create_buffer(
                     vk::DeviceSize size,

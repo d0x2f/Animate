@@ -20,6 +20,8 @@ namespace Animate::VK
             Quad(std::weak_ptr<VK::Context> context, Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Quad();
 
+            void initialise_buffers() override;
+            
             void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
             std::vector< std::weak_ptr<Buffer> > const get_buffers() override;
 
@@ -32,7 +34,6 @@ namespace Animate::VK
             std::weak_ptr<Buffer> vertex_buffer,
                                   index_buffer;
 
-            void initialise_buffers() override;
             void create_vertex_buffer();
             void create_index_buffer();
     };

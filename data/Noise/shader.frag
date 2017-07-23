@@ -4,7 +4,7 @@ layout (std140) uniform variables {
     float random_seed;
 };
 
-layout (location = 2) out vec4 output_colour;
+layout (location = 0) out vec4 out_colour;
 
 // 2D Random
 float random (in vec2 st) {
@@ -53,5 +53,5 @@ void main() {
     float g = noise(vec2(random(vec2(random_seed+pos+vec2(1)))));
     float b = noise(vec2(random(vec2(random_seed+pos-vec2(1)))));
 
-    output_colour = vec4(r, g, b, 1.0);
+    out_colour = vec4(r, g, b, 1.0);
 }

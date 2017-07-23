@@ -36,7 +36,9 @@ namespace Animate::VK
             void* map();
             void unmap();
 
+            vk::Buffer get_ident();
             vk::DeviceSize get_size();
+            vk::BufferUsageFlags get_usage();
 
         protected:
             std::weak_ptr<VK::Context> context;
@@ -45,5 +47,6 @@ namespace Animate::VK
             vk::Buffer ident;
             vk::DeviceMemory memory;
             vk::DeviceSize size;
+            vk::BufferUsageFlags usage;
     };
 }

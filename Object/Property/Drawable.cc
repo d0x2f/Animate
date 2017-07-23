@@ -70,6 +70,16 @@ std::vector< std::weak_ptr<Buffer> > const Drawable::get_buffers()
     return {};
 }
 
+std::weak_ptr<Pipeline> const Drawable::get_shader()
+{
+    return this->shader;
+}
+
+std::weak_ptr<Texture> const Drawable::get_texture()
+{
+    return this->texture;
+}
+
 /**
  * Add this drawable to the scene
  *
@@ -78,5 +88,5 @@ std::vector< std::weak_ptr<Buffer> > const Drawable::get_buffers()
  */
 void Drawable::draw(Matrix model_matrix)
 {
-    this->context.lock()->add_to_scene(this);
+    this->context.lock()->add_to_scene(this->shared_from_this());
 }

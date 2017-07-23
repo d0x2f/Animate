@@ -19,7 +19,7 @@ Object::~Object()
  */
 void Object::add_component(Drawable *component)
 {
-    this->components.push_back(std::unique_ptr<Drawable>(component));
+    this->components.push_back(std::shared_ptr<Drawable>(component));
 }
 
 /**
@@ -58,7 +58,7 @@ void Object::draw(Matrix model_matrix)
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
     for (
-        std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
+        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();
         ++it
     ) {

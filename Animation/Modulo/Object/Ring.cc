@@ -32,7 +32,7 @@ void Ring::initialise(std::weak_ptr<Pipeline> shader)
     this->add_component(circle);
 
     //Create a line
-    this->line = std::unique_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
+    this->line = std::shared_ptr<Line>(new Line(this->context, Point(), Scale(1.,0.5), Vector3(0.,0.,PI/2), Colour(1.,0.,0.,1.), 0.001));
     line->initialise(
         shader
     );
@@ -93,7 +93,7 @@ void Ring::on_tick(GLuint64 time_delta)
 
     //Set the calculated colour for all components.
     for (
-        std::vector< std::unique_ptr<Drawable> >::iterator it = this->components.begin();
+        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();
         ++it
     ) {

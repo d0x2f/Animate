@@ -134,9 +134,8 @@ void Gui::start_loop()
     while (!glfwWindowShouldClose(this->context->get_window()))
     {
         //Construct a frame for the current animation if it's loaded, otherwise noise.
-        Animation::Animation *animation = (*this->current_animation).get();
-        if (animation->check_loaded()) {
-            animation->on_render();
+        if ((*this->current_animation)->check_loaded()) {
+            (*this->current_animation)->on_render();
         } else {
             this->noise_animation->on_render();
         }

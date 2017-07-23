@@ -84,7 +84,7 @@ void Quad::create_index_buffer()
     }
 
     const uint16_t indices[] = {
-        0, 1, 2, 2, 3, 0
+        0, 1, 2, 2, 1, 3
     };
 
     vk::DeviceSize size = 6 * sizeof(uint16_t);
