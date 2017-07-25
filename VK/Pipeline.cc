@@ -6,8 +6,6 @@
 
 using namespace Animate::VK;
 
-vk::PipelineLayout Pipeline::pipeline_layout = vk::PipelineLayout();
-
 /**
  * Constructor.
  */
@@ -20,17 +18,7 @@ Pipeline::Pipeline(
     this->logical_device = context.lock()->logical_device;
     this->load_shader(vk::ShaderStageFlagBits::eFragment, fragment_code_id);
     this->load_shader(vk::ShaderStageFlagBits::eVertex, vertex_code_id);
-
-    if (!Pipeline::pipeline_layout) {
-        vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo();
-
-        if (this->context.lock()->logical_device.createPipelineLayout(&layout_info, nullptr, &this->pipeline_layout) != vk::Result::eSuccess) {
-            throw std::runtime_error("Couldn't create pipeline layout.");
-        }
-    }
-
     this->create_pipeline();
-    this->create_uniform_buffer();
 }
 
 /**
@@ -62,7 +50,7 @@ void Pipeline::load_shader(vk::ShaderStageFlagBits type, std::string resource_id
     vk::ShaderModule shader_module;
 
     if (this->context.lock()->logical_device.createShaderModule(&shader_module_create_info, nullptr, &shader_module)!= vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create fragment shader module.");
+        throw std::runtime_error("Couldn't create shader module.");
     }
 
     vk::PipelineShaderStageCreateInfo shader_stage_info = vk::PipelineShaderStageCreateInfo()
@@ -72,6 +60,8 @@ void Pipeline::load_shader(vk::ShaderStageFlagBits type, std::string resource_id
 
     this->shader_modules.push_back(shader_module);
     this->shader_stages.push_back(shader_stage_info);
+
+    std::cout << "Loaded shader: " << resource_id << std::endl;
 }
 
 void Pipeline::recreate_pipeline()
@@ -85,6 +75,7 @@ void Pipeline::recreate_pipeline()
 
 void Pipeline::create_pipeline()
 {
+    std::shared_ptr<Context> context = this->context.lock();
     auto binding_description = Geometry::Vertex::get_binding_description();
     auto attribute_descriptions = Geometry::Vertex::get_attribute_descriptions();
 
@@ -98,13 +89,13 @@ void Pipeline::create_pipeline()
         .setTopology(vk::PrimitiveTopology::eTriangleStrip);
 
     vk::Viewport viewport = vk::Viewport()
-        .setWidth((float)this->context.lock()->swap_chain_extent.width)
-        .setHeight((float)this->context.lock()->swap_chain_extent.height)
+        .setWidth((float)context->swap_chain_extent.width)
+        .setHeight((float)context->swap_chain_extent.height)
         .setMaxDepth(1.0f);
 
     vk::Rect2D scissor = vk::Rect2D(
         {0,0},
-        this->context.lock()->swap_chain_extent
+        context->swap_chain_extent
     );
 
     vk::PipelineViewportStateCreateInfo viewport_info = vk::PipelineViewportStateCreateInfo()
@@ -148,42 +139,31 @@ void Pipeline::create_pipeline()
         .setPMultisampleState(&multisampling_state_info)
         .setPColorBlendState(&colour_blend_info)
         .setPDynamicState(&dynamic_state_info)
-        .setLayout(this->pipeline_layout)
-        .setRenderPass(this->context.lock()->render_pass)
+        .setLayout(context->pipeline_layout)
+        .setRenderPass(context->render_pass)
         .setSubpass(0)
         .setBasePipelineHandle(this->pipeline)
         .setFlags(vk::PipelineCreateFlagBits::eAllowDerivatives);
 
-    if (this->context.lock()->logical_device.createGraphicsPipelines(nullptr, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
+    if (context->logical_device.createGraphicsPipelines(nullptr, 1, &pipeline_create_info, nullptr, &this->pipeline) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create graphics pipeline.");
     }
 }
 
 /**
- * Create buffer space for matrix uniforms.
- */
-void Pipeline::create_uniform_buffer()
-{
-}
-
-/**
- * Upload the given matrices to the uniform buffer.
+ * Save the given matrices.
  *
- * @param model The model matrix.
  * @param view The view matrix.
  * @param projection The projection matrix.
  */
-void Pipeline::set_matrices(Matrix model, Matrix view, Matrix projection)
+void Pipeline::set_matrices(Matrix view, Matrix projection)
 {
+    this->pv = projection * view;
 }
 
-/**
- * Upload the given model matrix to the uniform buffer.
- *
- * @param mode The model matrix.
- */
-void Pipeline::set_model_matrix(Matrix model)
+Matrix Pipeline::get_matrix()
 {
+    return this->pv;
 }
 
 void Pipeline::set_uniform(std::string name, GLfloat value)

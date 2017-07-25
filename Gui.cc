@@ -52,9 +52,6 @@ void Gui::init_glfw()
     }
     this->context->set_window(window);
 
-    //Disable VSync
-    //glfwSwapInterval(0);
-
     glfwSetWindowUserPointer(this->context->get_window(), this);
 
     glfwSetKeyCallback(
@@ -141,13 +138,15 @@ void Gui::start_loop()
         }
 
         //Perform the render
-        std::weak_ptr<VK::Context> context = this->context->get_graphics_context();
-        context.lock()->render_scene();
+        std::shared_ptr<VK::Context> context = this->context->get_graphics_context().lock();
+        context->render_scene();
+        context->flush_scene();
 
         //Poll events
         glfwPollEvents();
     }
 
-    std::weak_ptr<VK::Context> context = this->context->get_graphics_context();
-    context.lock()->logical_device.waitIdle();
+    //Get the graphics context again incase it's changed in the last.. millisecond?
+    std::shared_ptr<VK::Context> context = this->context->get_graphics_context().lock();
+    context->logical_device.waitIdle();
 }

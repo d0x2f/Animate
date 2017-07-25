@@ -22,12 +22,17 @@ namespace Animate::VK
             Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness);
             ~Line();
 
+            void initialise_buffers() override;
+            std::vector< std::weak_ptr<Buffer> > const get_buffers() override;
+
             void set_model_matrix(Matrix model_matrix) override;
 
         protected:
-            static GLuint vao_id, buffer_id, instance_count;
+            std::weak_ptr<Buffer> vertex_buffer,
+                                  index_buffer;
             GLfloat thickness;
 
-            void initialise_buffers() override;
+            void create_vertex_buffer();
+            void create_index_buffer();
     };
 }

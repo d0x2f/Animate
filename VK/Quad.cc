@@ -18,6 +18,10 @@ Quad::Quad(std::weak_ptr<VK::Context> context, Point position, Scale size)
  */
 Quad::~Quad()
 {
+    if (!this->context.expired()) {
+        this->context.lock()->release_buffer(this->vertex_buffer);
+        this->context.lock()->release_buffer(this->index_buffer);
+    }
 }
 
 void Quad::set_texture_position(Position texture_position, Position texture_size)
@@ -48,9 +52,9 @@ void Quad::create_vertex_buffer()
     //Vertex & colour Data:
     const Vertex vertices[] = {
     //  Point                       Texture            Normal               Colour
-        Vertex(Vector3(0., 0., 0.), Vector2(t.x, u.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 0., 0.), Vector2(u.x, u.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(0., 1., 0.), Vector2(t.x, t.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(0., 0., 0.), Vector2(t.x, u.y), Vector3(0., 0., 1.), Vector4(1., 0., 0., 1.)),
+        Vertex(Vector3(1., 0., 0.), Vector2(u.x, u.y), Vector3(0., 0., 1.), Vector4(0., 1., 0., 1.)),
+        Vertex(Vector3(0., 1., 0.), Vector2(t.x, t.y), Vector3(0., 0., 1.), Vector4(0., 0., 1., 1.)),
         Vertex(Vector3(1., 1., 0.), Vector2(u.x, t.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
@@ -84,10 +88,10 @@ void Quad::create_index_buffer()
     }
 
     const uint16_t indices[] = {
-        0, 1, 2, 2, 1, 3
+        0, 2, 1, 3
     };
 
-    vk::DeviceSize size = 6 * sizeof(uint16_t);
+    vk::DeviceSize size = 4 * sizeof(uint16_t);
 
     VK::Buffer staging_buffer(
         this->context.lock(),

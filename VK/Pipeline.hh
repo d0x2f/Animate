@@ -23,13 +23,11 @@ namespace Animate::VK
             {
                 return this->pipeline;
             }
-
-            static vk::PipelineLayout pipeline_layout;
             
             void recreate_pipeline();
 
-            void set_matrices(Matrix model, Matrix view, Matrix projection);
-            void set_model_matrix(Matrix model);
+            void set_matrices(Matrix view, Matrix projection);
+            Matrix get_matrix();
 
             void set_uniform(std::string name, GLfloat value);
             void set_uniform(std::string name, Vector4 value);
@@ -43,6 +41,7 @@ namespace Animate::VK
             std::string fragment_code_id;
             std::string vertex_code_id;
             vk::Pipeline pipeline;
+            Matrix pv;
 
             std::vector<vk::ShaderModule> shader_modules;
             std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;

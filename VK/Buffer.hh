@@ -30,6 +30,7 @@ namespace Animate::VK
                 return this->ident;
             }
 
+            uint64_t get_id();
 
             void copy_buffer_data(Buffer& source);
 
@@ -48,5 +49,8 @@ namespace Animate::VK
             vk::DeviceMemory memory;
             vk::DeviceSize size;
             vk::BufferUsageFlags usage;
+
+            static uint64_t id_counter;
+            uint64_t id;
     };
 }

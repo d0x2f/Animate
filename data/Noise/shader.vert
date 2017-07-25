@@ -2,22 +2,14 @@
 
 layout (location = 0) in vec3 vertex;
 
-layout (location = 0) out vec3 out_vertex;
-layout (location = 3) out vec4 out_colour;
+layout (push_constant,row_major) uniform matrices {
+    mat4 mvp;
+} push_constants;
 
-layout (std140) uniform variables {
-    vec4 colour;
-};
-
-layout (std140) uniform matrices {
-    mat4 model;
-    mat4 projection;
-    mat4 view;
+out gl_PerVertex {
+    vec4 gl_Position;
 };
 
 void main() {
-    out_vertex = vertex;
-    out_colour = colour;
-
-    gl_Position = projection * view * model * vec4(vertex, 1.0);
+    gl_Position = push_constants.mvp * vec4(vertex, 1.0);
 }

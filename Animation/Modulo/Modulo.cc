@@ -71,7 +71,7 @@ bool Modulo::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
-    this->shader.lock()->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
     //Scoped multex lock
     {
@@ -84,6 +84,7 @@ bool Modulo::on_render()
             ++it
         ) {
             it->second->set_model_matrix(model_matrix);
+            it->second->add_to_scene();
         }
     }
 }

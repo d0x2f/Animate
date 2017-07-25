@@ -2,10 +2,7 @@
 #include <iostream>
 
 #include "Line.hh"
-
-GLuint Line::vao_id = 0;
-GLuint Line::buffer_id = 0;
-GLuint Line::instance_count = 0;
+#include "../Geometry/Vertex.hh"
 
 /**
  * Constructor
@@ -21,7 +18,6 @@ Line::Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vect
         thickness = 0.;
 
     this->thickness = thickness;
-    Line::instance_count++;
 }
 
 /**
@@ -38,47 +34,84 @@ Line::~Line()
  */
 void Line::initialise_buffers()
 {
-    if (Line::vao_id != 0) {
+    this->create_vertex_buffer();
+    this->create_index_buffer();
+}
+
+void Line::create_vertex_buffer()
+{
+    //Check if the buffer is already initialised
+    if (this->vertex_buffer.lock()) {
         return;
     }
 
-    //2 triangles
-    GLuint buffer_size = 4*3;
+    //Vertex & colour Data:
+    const Vertex vertices[] = {
+    //  Point                                       Texture            Normal               Colour
+        Vertex(Vector3(-this->thickness/2, 0., 0.), Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(this->thickness/2, 0., 0.),  Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(-this->thickness/2, 1., 0.), Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(this->thickness/2, 1., 0.),  Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
+    };
 
-    //Vertex & colour Data.
-    GLfloat vertices[buffer_size];
+    vk::DeviceSize size = 16 * sizeof(Vertex);
 
-    //Fill vertices
-    vertices[0] = (this->thickness/2);      //x
-    vertices[1] = 0.;                       //y
-    vertices[2] = 0.;                       //z
+    VK::Buffer staging_buffer(
+        this->context.lock(),
+        size,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
 
-    vertices[3] = - (this->thickness/2);    //x
-    vertices[4] = 0.;                       //y
-    vertices[5] = 0.;                       //z
+    void *data = staging_buffer.map();
+    memcpy(data, vertices, (size_t) size);
+    staging_buffer.unmap();
+    
+    this->vertex_buffer = this->context.lock()->create_buffer(
+        size,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
 
-    vertices[6] = vertices[0];              //x
-    vertices[7] = 1.;                       //y
-    vertices[8] = 0.;                       //z
+    this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
+}
 
-    vertices[9]  = vertices[3];             //x
-    vertices[10] = 1.;                      //y
-    vertices[11] = 0.;                      //z
+void Line::create_index_buffer()
+{
+    //Check if the buffer is already initialised
+    if (this->index_buffer.lock()) {
+        return;
+    }
 
-    /*
-    //Generate vertex array
-    glGenVertexArrays(1, &Line::vao_id);
-    glBindVertexArray(Line::vao_id);
+    const uint16_t indices[] = {
+        0, 2, 1, 3
+    };
 
-    //Upload vertex data
-    glGenBuffers(1, &Line::buffer_id);
-    glBindBuffer(GL_ARRAY_BUFFER, Line::buffer_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    vk::DeviceSize size = 4 * sizeof(uint16_t);
 
-    //Unbind
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    */
+    VK::Buffer staging_buffer(
+        this->context.lock(),
+        size,
+        vk::BufferUsageFlagBits::eTransferSrc,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
+
+    void *data = staging_buffer.map();
+    memcpy(data, indices, (size_t) size);
+    staging_buffer.unmap();
+    
+    this->index_buffer = this->context.lock()->create_buffer(
+        size,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
+
+    this->index_buffer.lock()->copy_buffer_data(staging_buffer);
+}
+
+std::vector< std::weak_ptr<Buffer> > const Line::get_buffers()
+{
+    return {this->vertex_buffer, this->index_buffer};
 }
 
 /**
@@ -91,6 +124,7 @@ void Line::set_model_matrix(Matrix model_matrix)
         model_matrix *
         Matrix::identity()
             .scale(this->scale)
+            .rotate(this->rotation)
             .translate(this->position)
     );
 }

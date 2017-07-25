@@ -25,7 +25,11 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_image_views();
     this->create_render_pass();
     this->create_framebuffers();
+    this->create_pipeline_layout();
+    //this->create_uniform_buffer();
     this->create_command_pool();
+    this->create_descriptor_pool();
+    this->create_descriptor_set();
     this->create_command_buffers();
     this->create_semaphores();
 
@@ -36,6 +40,7 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
             Scale(1., 1.)
         )
     );
+    quad->set_model_matrix(Matrix::identity());
     quad->initialise_buffers();
     quad->set_shader(this->create_pipeline(
         "/Animate/data/Default/shader.frag.spv",
@@ -43,22 +48,22 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     ));
 
     this->add_to_scene(quad);
-
-    this->is_complete = true;
 }
 
 Context::~Context()
 {
     this->quad.reset();
 
-    this->logical_device.destroyPipelineLayout(Pipeline::pipeline_layout, nullptr);
+    this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout);
+    this->logical_device.destroyDescriptorPool(this->descriptor_pool);
+    this->logical_device.destroyPipelineLayout(this->pipeline_layout);
     this->pipelines.clear();
 
     cleanup_swap_chain_dependancies();
 
     this->buffers.clear();
 
-    this->logical_device.destroySwapchainKHR(this->swap_chain, nullptr);
+    this->logical_device.destroySwapchainKHR(this->swap_chain);
 
     this->logical_device.destroySemaphore(this->image_available_semaphore);
     this->logical_device.destroySemaphore(this->render_finished_semaphore);
@@ -202,14 +207,25 @@ void Context::fill_command_buffer(int i)
             }
         }
 
-        //Bind a new pipeline if it's different to the current one
-        if (!pipeline || (next_pipeline->get_vk_pipeline() != pipeline->get_vk_pipeline())) {
-            pipeline = next_pipeline;
-            this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
-        }
-
         //Draw the item if it has indices.
         if (indices_count > 0) {
+            Matrix mvp = next_pipeline->get_matrix() * drawable->get_model_matrix();
+
+            //Set push constants
+            this->command_buffers[i].pushConstants(
+                this->pipeline_layout,
+                vk::ShaderStageFlagBits::eVertex,
+                0,
+                sizeof(GLfloat)*16,
+                &mvp
+            );
+
+            //Bind a new pipeline if it's different to the current one
+            if (!pipeline || (next_pipeline->get_vk_pipeline() != pipeline->get_vk_pipeline())) {
+                pipeline = next_pipeline;
+                this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
+            }
+
             this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
         }
     }
@@ -274,6 +290,11 @@ void Context::render_scene()
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
     }
+}
+
+void Context::flush_scene()
+{
+    this->scene.clear();
 }
 
 uint32_t Context::find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags properties)
@@ -441,11 +462,8 @@ void Context::create_swap_chain()
         .setPreTransform(swap_chain_support.capabilities.currentTransform)
         .setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
         .setPresentMode(present_mode)
-        .setClipped(VK_TRUE);
-
-    if (is_complete) {
-        create_info.setOldSwapchain(this->swap_chain);
-    }
+        .setClipped(VK_TRUE)
+        .setOldSwapchain(this->swap_chain);
 
     QueueFamilyIndices indices = get_device_queue_families(this->physical_device);
     uint32_t indices_arr[] = {(uint32_t) indices.graphics_family, (uint32_t) indices.present_family};
@@ -551,8 +569,23 @@ std::weak_ptr<Buffer> Context::create_buffer(
         )
     );
 
-    this->buffers.push_back(buffer);
+    this->buffers.insert(
+        std::make_pair(
+            buffer->get_id(),
+            buffer
+        )
+    );
     return buffer;
+}
+
+void Context::release_buffer(std::weak_ptr<Buffer> buffer)
+{
+    uint64_t id = buffer.lock()->get_id();
+    std::map< uint64_t, std::shared_ptr<Buffer> >::const_iterator it;
+    it = this->buffers.find(id);
+    if (it != this->buffers.end()) {
+        this->buffers.erase(it);
+    }
 }
 
 void Context::create_framebuffers()
@@ -614,6 +647,131 @@ void Context::create_semaphores()
     ) {
         throw std::runtime_error("Couldn't create semaphores.");
     }
+}
+
+void Context::create_pipeline_layout()
+{
+    vk::DescriptorSetLayoutBinding set_layout_binding = vk::DescriptorSetLayoutBinding()
+        .setBinding(0)
+        .setDescriptorCount(1)
+        .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+        .setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
+    vk::DescriptorSetLayoutCreateInfo set_layout_create_info = vk::DescriptorSetLayoutCreateInfo();
+        //.setBindingCount(1)
+        //.setPBindings(&set_layout_binding);
+
+    if (this->logical_device.createDescriptorSetLayout(&set_layout_create_info, nullptr, &this->descriptor_set_layout) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create descriptor set layout.");
+    }
+
+    vk::PushConstantRange push_constant_range = vk::PushConstantRange()
+        .setStageFlags(vk::ShaderStageFlagBits::eVertex)
+        .setOffset(0)
+        .setSize(sizeof(GLfloat)*16);
+
+    vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo()
+        //.setSetLayoutCount(1)
+        //.setPSetLayouts(&this->descriptor_set_layout)
+        .setPushConstantRangeCount(1)
+        .setPPushConstantRanges(&push_constant_range);
+
+    if (this->logical_device.createPipelineLayout(&layout_info, nullptr, &this->pipeline_layout) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create pipeline layout.");
+    }
+}
+
+void Context::create_uniform_buffer()
+{
+    this->uniform_buffer = this->create_buffer(
+        sizeof(GLfloat)*16,
+        vk::BufferUsageFlagBits::eUniformBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
+
+    void *data = this->uniform_buffer.lock()->map();
+    Matrix i = Matrix::identity();
+    GLfloat *raw = i.get_raw_data();
+    memcpy(data, raw, sizeof(GLfloat)*16);
+    this->uniform_buffer.lock()->unmap();
+    std::free(raw);
+}
+
+void Context::create_descriptor_pool()
+{
+    vk::DescriptorPoolSize pool_size = vk::DescriptorPoolSize()
+        .setType(vk::DescriptorType::eUniformBuffer)
+        .setDescriptorCount(1);
+
+    vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
+        .setPoolSizeCount(1)
+        .setPPoolSizes(&pool_size)
+        .setMaxSets(1);
+
+    if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create descriptor pool.");
+    }
+}
+
+void Context::create_descriptor_set()
+{
+    vk::DescriptorSetAllocateInfo allocation_info = vk::DescriptorSetAllocateInfo()
+        .setDescriptorPool(this->descriptor_pool)
+        .setDescriptorSetCount(1)
+        .setPSetLayouts(&this->descriptor_set_layout);
+
+    if (this->logical_device.allocateDescriptorSets(&allocation_info, &this->descriptor_set) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create descriptor set.");
+    }
+
+    /*vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo()
+        .setBuffer(this->uniform_buffer.lock()->get_ident())
+        .setOffset(0)
+        .setRange(sizeof(GLfloat)*16);
+
+    vk::WriteDescriptorSet descriptor_write = vk::WriteDescriptorSet()
+        .setDstSet(this->descriptor_set)
+        .setDstBinding(0)
+        .setDstArrayElement(0)
+        .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+        .setDescriptorCount(1)
+        .setPBufferInfo(&buffer_info);
+
+    this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
+
+    vk::CommandBufferAllocateInfo command_buffer_allocation_info = vk::CommandBufferAllocateInfo()
+        .setLevel(vk::CommandBufferLevel::ePrimary)
+        .setCommandPool(this->command_pool)
+        .setCommandBufferCount(1);
+
+    vk::CommandBuffer command_buffer;
+    this->logical_device.allocateCommandBuffers(&command_buffer_allocation_info, &command_buffer);
+
+    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
+        .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+    command_buffer.begin(&begin_info);
+    command_buffer.bindDescriptorSets(
+        vk::PipelineBindPoint::eGraphics,
+        this->pipeline_layout,
+        0,
+        1,
+        &this->descriptor_set,
+        0,
+        nullptr
+    );
+    command_buffer.end();
+
+    vk::SubmitInfo submit_info = vk::SubmitInfo()
+        .setCommandBufferCount(1)
+        .setPCommandBuffers(&command_buffer);
+
+    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't submit to graphics queue.");
+    }
+
+    this->logical_device.waitIdle();
+    this->logical_device.freeCommandBuffers(this->command_pool, 1, &command_buffer);*/
 }
 
 bool Context::is_device_suitable(vk::PhysicalDevice const & device)

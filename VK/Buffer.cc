@@ -2,6 +2,8 @@
 
 using namespace Animate::VK;
 
+uint64_t Buffer::id_counter = 0;
+
 Buffer::Buffer(
     std::weak_ptr<VK::Context> context,
     vk::DeviceSize size,
@@ -35,6 +37,8 @@ Buffer::Buffer(
         throw std::runtime_error("Couldn't allocate buffer memory.");
     }
 
+    this->id = Buffer::id_counter++;
+
     this->context.lock()->logical_device.bindBufferMemory(this->ident, this->memory, 0);
 }
 
@@ -42,6 +46,11 @@ Buffer::~Buffer()
 {
     this->logical_device.destroyBuffer(this->ident);
     this->logical_device.freeMemory(this->memory);
+}
+
+uint64_t Buffer::get_id()
+{
+    return this->id;
 }
 
 void Buffer::copy_buffer_data(Buffer& source)

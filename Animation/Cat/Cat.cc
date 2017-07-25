@@ -102,19 +102,20 @@ bool Cat::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
 
-    this->shader.lock()->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
     //Scoped multex lock
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-        //Update all model matrices
+        //Update all model matrices and add all to the scene
         for (
             std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
             it != this->objects.end();
             ++it
         ) {
             it->second->set_model_matrix(model_matrix);
+            it->second->add_to_scene();
         }
     }
 }

@@ -3,11 +3,12 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
-#include <vector>
 #include <memory>
 #include <string>
 #include <iostream>
 #include <set>
+#include <vector>
+#include <map>
 
 namespace Animate
 {
@@ -47,7 +48,7 @@ namespace Animate
                 const std::weak_ptr<Drawable> lhs, 
                 const std::weak_ptr<Drawable> rhs
             ) const {
-                return lhs.lock().get() < rhs.lock().get();
+                return lhs.lock() < rhs.lock();
             }
         };
 
@@ -74,9 +75,13 @@ namespace Animate
                 std::vector<vk::CommandBuffer> command_buffers;
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
+                vk::DescriptorSetLayout descriptor_set_layout;
+                vk::PipelineLayout pipeline_layout;
+                vk::DescriptorPool descriptor_pool;
+                vk::DescriptorSet descriptor_set;
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
-                std::vector< std::shared_ptr<Buffer> > buffers;
+                std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
                 std::multiset< std::weak_ptr<Drawable>, DrawableComparator> scene;
 
                 std::shared_ptr<Quad> quad;
@@ -89,7 +94,9 @@ namespace Animate
                     vk::BufferUsageFlags usage,
                     vk::MemoryPropertyFlags properties
                 );
+                void release_buffer(std::weak_ptr<Buffer> buffer);
                 void render_scene();
+                void flush_scene();
 
                 void recreate_swap_chain();
 
@@ -97,7 +104,7 @@ namespace Animate
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
-                bool is_complete = false;
+                std::weak_ptr<Buffer> uniform_buffer;
 
                 void cleanup_swap_chain_dependancies();
 
@@ -113,6 +120,10 @@ namespace Animate
                 void create_command_pool();
                 void create_command_buffers();
                 void create_semaphores();
+                void create_pipeline_layout();
+                void create_uniform_buffer();
+                void create_descriptor_pool();
+                void create_descriptor_set();
 
                 void recreate_pipelines();
 
