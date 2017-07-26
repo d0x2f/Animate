@@ -101,12 +101,8 @@ void Context::cleanup_swap_chain_dependancies()
 
 void Context::recreate_pipelines()
 {
-    for (
-        std::vector< std::shared_ptr<Pipeline> >::iterator it = this->pipelines.begin();
-        it != this->pipelines.end();
-        it++
-    ) {
-        (*it)->recreate_pipeline();
+    for(auto const& pipeline: this->pipelines) {
+        pipeline->recreate_pipeline();
     }
 }
 

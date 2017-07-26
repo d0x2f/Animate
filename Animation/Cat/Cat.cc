@@ -110,13 +110,9 @@ bool Cat::on_render()
         std::lock_guard<std::mutex> guard(this->tick_mutex);
 
         //Update all model matrices and add all to the scene
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            it->second->set_model_matrix(model_matrix);
-            it->second->add_to_scene();
+        for(auto const& object: this->objects) {
+            object.second->set_model_matrix(model_matrix);
+            object.second->add_to_scene();
         }
     }
 }
@@ -149,12 +145,8 @@ void Cat::on_tick(GLuint64 time_delta)
 
         //Check if any tiles are moving
         bool in_motion = false;
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            in_motion |= ((Tile *)it->second.get())->is_moving();
+        for(auto const& object: this->objects) {
+            in_motion |= ((Tile *)object.second.get())->is_moving();
         }
 
         //If tiles are moving, skip

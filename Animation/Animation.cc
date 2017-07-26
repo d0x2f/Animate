@@ -103,12 +103,8 @@ void Animation::on_load()
 void Animation::on_tick(GLuint64 time_delta)
 {
     //Tick all the objects
-    for (
-        std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-        it != this->objects.end();
-        ++it
-    ) {
-        it->second->on_tick(time_delta);
+    for(auto const& object: this->objects) {
+        object.second->on_tick(time_delta);
     }
 }
 

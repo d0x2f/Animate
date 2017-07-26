@@ -58,12 +58,8 @@ void Object::set_model_matrix(Matrix model_matrix)
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
-    for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
-        it != this->components.end();
-        ++it
-    ) {
-        (*it)->set_model_matrix(model_matrix);
+    for(auto const& component: this->components) {
+        component->set_model_matrix(model_matrix);
     }
 }
 

@@ -27,12 +27,8 @@ Pipeline::Pipeline(
  */
 Pipeline::~Pipeline()
 {
-    for (
-        std::vector<vk::ShaderModule>::iterator it = this->shader_modules.begin();
-        it != this->shader_modules.end();
-        it++
-    ) {
-        this->logical_device.destroyShaderModule(*it, nullptr);
+    for(auto const& shader_module: this->shader_modules) {
+        this->logical_device.destroyShaderModule(shader_module, nullptr);
     }
 
     this->logical_device.destroyPipeline(this->pipeline, nullptr);

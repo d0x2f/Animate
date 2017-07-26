@@ -89,13 +89,9 @@ void Ring::on_tick(GLuint64 time_delta)
     }
 
     //Set the calculated colour for all components.
-    for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
-        it != this->components.end();
-        ++it
-    ) {
-        if(Coloured* component = dynamic_cast<Coloured*>((*it).get())) {
-            component->set_colour(this->colour);
+    for(auto const& component: this->components) {
+        if(Coloured *_component = dynamic_cast<Coloured*>(component.get())) {
+            _component->set_colour(this->colour);
         }
     }
 
