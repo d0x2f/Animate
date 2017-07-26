@@ -79,13 +79,9 @@ bool Noise::on_render()
         //this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
         //Draw every object
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            it->second->set_model_matrix(model_matrix);
-            it->second->add_to_scene();
+        for(auto const& object: this->objects) {
+            object.second->set_model_matrix(model_matrix);
+            object.second->add_to_scene();
         }
     }
 }
