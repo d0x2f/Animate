@@ -6,18 +6,12 @@
 #include <memory>
 #include <string>
 #include <iostream>
-#include <set>
 #include <vector>
 #include <map>
 
 namespace Animate
 {
     class AppContext;
-
-    namespace Object::Property
-    {
-        class Drawable;
-    }
 
     typedef Animate::Object::Property::Drawable Drawable;
 
@@ -42,16 +36,7 @@ namespace Animate
             std::vector<vk::SurfaceFormatKHR> formats;
             std::vector<vk::PresentModeKHR> present_modes;
         };
-
-        struct DrawableComparator {
-            bool operator() (
-                const std::weak_ptr<Drawable> lhs, 
-                const std::weak_ptr<Drawable> rhs
-            ) const {
-                return lhs.lock() < rhs.lock();
-            }
-        };
-
+        
         class Context : public std::enable_shared_from_this<Context>
         {
             public:
@@ -82,7 +67,7 @@ namespace Animate
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
-                std::multiset< std::weak_ptr<Drawable>, DrawableComparator> scene;
+                std::vector< std::weak_ptr<Drawable> > scene;
 
                 std::shared_ptr<Quad> quad;
 
@@ -94,6 +79,7 @@ namespace Animate
                     vk::BufferUsageFlags usage,
                     vk::MemoryPropertyFlags properties
                 );
+                std::weak_ptr<Buffer> get_buffer(uint64_t id);
                 void release_buffer(std::weak_ptr<Buffer> buffer);
                 void render_scene();
                 void flush_scene();

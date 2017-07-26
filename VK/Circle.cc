@@ -5,6 +5,8 @@
 
 #define PI 3.1415926535897f
 
+using namespace Animate::VK;
+
 /**
  * Constructor
  */

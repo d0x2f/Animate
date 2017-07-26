@@ -1,19 +1,25 @@
 #include "Drawable.hh"
 
+#include "../../VK/Pipeline.hh"
+#include "../../VK/Texture.hh"
+#include "../../VK/Context.hh"
+#include "../../VK/Buffer.hh"
+#include "../../VK/Context.hh"
+
 using namespace Animate::Object::Property;
 using namespace Animate::VK;
 
 /**
  * Initialise the drawable.
  */
-void Drawable::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture)
+void Drawable::initialise(std::weak_ptr<Pipeline> pipeline, std::weak_ptr<Texture> texture)
 {
     //Return if already initialised
     if (this->initialised) {
         return;
 }
 
-    this->set_shader(shader);
+    this->set_pipeline(pipeline);
     this->set_texture(texture);
 
     this->initialise_buffers();
@@ -25,14 +31,14 @@ void Drawable::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture>
 /**
  * Initialise the drawable.
  */
-void Drawable::initialise(std::weak_ptr<Pipeline> shader)
+void Drawable::initialise(std::weak_ptr<Pipeline> pipeline)
 {
     //Return if already initialised
     if (this->initialised) {
         return;
     }
 
-    this->set_shader(shader);
+    this->set_pipeline(pipeline);
 
     this->initialise_buffers();
 
@@ -41,19 +47,19 @@ void Drawable::initialise(std::weak_ptr<Pipeline> shader)
 }
 
 /**
- * Set the shader.
+ * Set the pipeline.
  *
- * @param shader A new shader to use when drawing.
+ * @param pipeline A new pipeline to use when drawing.
  */
-void Drawable::set_shader(std::weak_ptr<Pipeline> shader)
+void Drawable::set_pipeline(std::weak_ptr<Pipeline> pipeline)
 {
-    this->shader = shader;
+    this->pipeline = pipeline;
 }
 
 /**
  * Set the texture.
  *
- * @param shader A new texture to use when drawing.
+ * @param texture A new texture to use when drawing.
  */
 void Drawable::set_texture(std::weak_ptr<Texture> texture)
 {
@@ -70,9 +76,9 @@ std::vector< std::weak_ptr<Buffer> > const Drawable::get_buffers()
     return {};
 }
 
-std::weak_ptr<Pipeline> const Drawable::get_shader()
+std::weak_ptr<Pipeline> const Drawable::get_pipeline()
 {
-    return this->shader;
+    return this->pipeline;
 }
 
 std::weak_ptr<Texture> const Drawable::get_texture()

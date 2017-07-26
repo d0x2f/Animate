@@ -28,6 +28,7 @@ namespace Animate::VK
             void set_model_matrix(Matrix model_matrix) override;
 
         protected:
+            static uint64_t vertex_buffer_id, index_buffer_id;
             std::weak_ptr<Buffer> vertex_buffer,
                                   index_buffer;
             GLfloat thickness;

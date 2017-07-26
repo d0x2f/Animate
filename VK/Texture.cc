@@ -8,6 +8,7 @@ using namespace Animate::VK;
 
 Texture::~Texture()
 {
+    this->texture_id = 47;
 }
 
 void Texture::load_from_resource(std::string resource_id)
@@ -56,7 +57,7 @@ void Texture::use()
     //glBindTexture(GL_TEXTURE_2D, this->texture_id);
 }
 
-GLuint Texture::get_id()
+uint64_t Texture::get_id()
 {
     return this->texture_id;
 }

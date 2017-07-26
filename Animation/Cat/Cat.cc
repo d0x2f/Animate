@@ -10,6 +10,7 @@
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
 #include "../../VK/Context.hh"
+#include "../../VK/Pipeline.hh"
 
 using namespace Animate::Animation::Cat;
 using namespace Animate::Animation::Cat::Object;

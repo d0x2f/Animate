@@ -1,5 +1,6 @@
 #include "Object.hh"
 #include "../Geometry/Definitions.hh"
+#include "../VK/Context.hh"
 
 using namespace Animate::Object;
 
@@ -71,6 +72,7 @@ void Object::set_model_matrix(Matrix model_matrix)
  */
 void Object::add_to_scene()
 {
+    int i = 0;
     for (
         std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
         it != this->components.end();

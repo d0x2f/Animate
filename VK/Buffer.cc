@@ -2,7 +2,7 @@
 
 using namespace Animate::VK;
 
-uint64_t Buffer::id_counter = 0;
+uint64_t Buffer::id_counter = 1;
 
 Buffer::Buffer(
     std::weak_ptr<VK::Context> context,

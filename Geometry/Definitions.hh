@@ -220,20 +220,6 @@ namespace Animate::Geometry {
         Vector4(GLfloat x=0., GLfloat y=0., GLfloat z=0., GLfloat w=0.) : x(x), y(y), z(z), w(w) {}
 
         /**
-         * Return a raw c array.
-         **/
-        GLfloat *get_raw_data() {
-            GLfloat *data = (GLfloat *)malloc(sizeof(GLfloat)*4);
-
-            data[0] = x;
-            data[1] = y;
-            data[2] = z;
-            data[3] = w;
-
-            return data;
-        }
-
-        /**
          * Dot product.
          */
         GLfloat dot(Vector4 that)

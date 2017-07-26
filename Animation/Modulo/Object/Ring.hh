@@ -9,6 +9,7 @@
 #include "../../../Geometry/Definitions.hh"
 
 using namespace Animate::Object;
+using namespace Animate::VK;
 
 namespace Animate::Animation::Modulo::Object
 {
@@ -23,7 +24,7 @@ namespace Animate::Animation::Modulo::Object
     class Ring : public Object, public Animate::Object::Property::Coloured
     {
         public:
-            Ring(std::weak_ptr<VK::Context> context, Point position, Scale size);
+            Ring(std::weak_ptr<Context> context, Point position, Scale size);
 
             void initialise(std::weak_ptr<Pipeline> shader);
             void on_tick(GLuint64 time_delta) override;

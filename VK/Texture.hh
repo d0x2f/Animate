@@ -13,9 +13,9 @@ namespace Animate::VK
 
             void load_from_resource(std::string resource_id);
             void use();
-            GLuint get_id();
+            uint64_t get_id();
 
         protected:
-            GLuint texture_id;
+            uint64_t texture_id;
     };
 }

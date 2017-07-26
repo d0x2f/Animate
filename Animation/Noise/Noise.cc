@@ -76,7 +76,7 @@ bool Noise::on_render()
     {
         std::lock_guard<std::mutex> guard(this->tick_mutex);
 
-        this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+        //this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
         //Draw every object
         for (

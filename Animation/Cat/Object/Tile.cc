@@ -1,5 +1,7 @@
 #include "Tile.hh"
 #include "../../../VK/Quad.hh"
+#include "../../../VK/Pipeline.hh"
+#include "../../../VK/Texture.hh"
 #include "../../../Geometry/Definitions.hh"
 
 using namespace Animate::Animation::Cat::Object;

@@ -2,7 +2,15 @@
 #include <iostream>
 
 #include "Line.hh"
+#include "Context.hh"
+#include "Buffer.hh"
 #include "../Geometry/Vertex.hh"
+
+using namespace Animate::VK;
+
+//Reuse existing buffers since for a line, they won't change
+uint64_t Line::vertex_buffer_id = 0;
+uint64_t Line::index_buffer_id = 0;
 
 /**
  * Constructor
@@ -40,8 +48,15 @@ void Line::initialise_buffers()
 
 void Line::create_vertex_buffer()
 {
+    std::shared_ptr<Context> context = this->context.lock();
+
     //Check if the buffer is already initialised
     if (this->vertex_buffer.lock()) {
+        return;
+    }
+
+    if (Line::vertex_buffer_id > 0) {
+        this->vertex_buffer = context->get_buffer(Line::vertex_buffer_id);
         return;
     }
 
@@ -54,10 +69,11 @@ void Line::create_vertex_buffer()
         Vertex(Vector3(this->thickness/2, 1., 0.),  Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
+    
     vk::DeviceSize size = 16 * sizeof(Vertex);
 
     VK::Buffer staging_buffer(
-        this->context.lock(),
+        context,
         size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
@@ -67,19 +83,30 @@ void Line::create_vertex_buffer()
     memcpy(data, vertices, (size_t) size);
     staging_buffer.unmap();
     
-    this->vertex_buffer = this->context.lock()->create_buffer(
+    this->vertex_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal
     );
 
-    this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
+    std::shared_ptr<Buffer> vertex_buffer = this->vertex_buffer.lock();
+
+    vertex_buffer->copy_buffer_data(staging_buffer);
+
+    Line::vertex_buffer_id = vertex_buffer->get_id();
 }
 
 void Line::create_index_buffer()
 {
+    std::shared_ptr<Context> context = this->context.lock();
+
     //Check if the buffer is already initialised
     if (this->index_buffer.lock()) {
+        return;
+    }
+
+    if (Line::index_buffer_id > 0) {
+        this->index_buffer = context->get_buffer(Line::index_buffer_id);
         return;
     }
 
@@ -90,7 +117,7 @@ void Line::create_index_buffer()
     vk::DeviceSize size = 4 * sizeof(uint16_t);
 
     VK::Buffer staging_buffer(
-        this->context.lock(),
+        context,
         size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
@@ -100,13 +127,17 @@ void Line::create_index_buffer()
     memcpy(data, indices, (size_t) size);
     staging_buffer.unmap();
     
-    this->index_buffer = this->context.lock()->create_buffer(
+    this->index_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal
     );
 
-    this->index_buffer.lock()->copy_buffer_data(staging_buffer);
+    std::shared_ptr<Buffer> index_buffer = this->index_buffer.lock();
+
+    index_buffer->copy_buffer_data(staging_buffer);
+
+    Line::index_buffer_id = index_buffer->get_id();
 }
 
 std::vector< std::weak_ptr<Buffer> > const Line::get_buffers()

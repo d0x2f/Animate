@@ -165,18 +165,3 @@ Matrix Pipeline::get_matrix()
 {
     return this->pv;
 }
-
-void Pipeline::set_uniform(std::string name, GLfloat value)
-{
-    
-}
-
-void Pipeline::set_uniform(std::string name, Vector4 value)
-{
-    
-}
-
-vk::Pipeline Pipeline::get_vk_pipeline()
-{
-    return this->pipeline;
-}

@@ -42,7 +42,7 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     );
     quad->set_model_matrix(Matrix::identity());
     quad->initialise_buffers();
-    quad->set_shader(this->create_pipeline(
+    quad->set_pipeline(this->create_pipeline(
         "/Animate/data/Default/shader.frag.spv",
         "/Animate/data/Default/shader.vert.spv"
     ));
@@ -130,7 +130,7 @@ void Context::recreate_pipelines()
 
 void Context::add_to_scene(std::weak_ptr<Drawable> drawable)
 {
-    this->scene.insert(drawable);
+    this->scene.push_back(drawable);
 }
 
 void Context::fill_command_buffer(int i)
@@ -164,7 +164,6 @@ void Context::fill_command_buffer(int i)
     this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
 
     std::shared_ptr<Pipeline> pipeline;
-    std::shared_ptr<Pipeline> next_pipeline;
     std::vector< std::weak_ptr<Buffer> > buffers;
     std::shared_ptr<Buffer> buffer;
     vk::BufferUsageFlags usage;
@@ -174,7 +173,7 @@ void Context::fill_command_buffer(int i)
     std::shared_ptr<Drawable> drawable;
 
     for (
-        std::multiset< std::weak_ptr<Drawable> >::const_iterator drawable_it = this->scene.begin();
+        std::vector< std::weak_ptr<Drawable> >::const_iterator drawable_it = this->scene.begin();
         drawable_it != this->scene.end();
         drawable_it++
     ) {
@@ -186,7 +185,7 @@ void Context::fill_command_buffer(int i)
 
         //Get relevent data
         drawable = drawable_it->lock();
-        next_pipeline = drawable->get_shader().lock();
+        pipeline = drawable->get_pipeline().lock();
         buffers = drawable->get_buffers();
         indices_count = 0;
 
@@ -209,7 +208,7 @@ void Context::fill_command_buffer(int i)
 
         //Draw the item if it has indices.
         if (indices_count > 0) {
-            Matrix mvp = next_pipeline->get_matrix() * drawable->get_model_matrix();
+            Matrix mvp = pipeline->get_matrix() * drawable->get_model_matrix();
 
             //Set push constants
             this->command_buffers[i].pushConstants(
@@ -221,11 +220,8 @@ void Context::fill_command_buffer(int i)
             );
 
             //Bind a new pipeline if it's different to the current one
-            if (!pipeline || (next_pipeline->get_vk_pipeline() != pipeline->get_vk_pipeline())) {
-                pipeline = next_pipeline;
-                this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
-            }
-
+            this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
+            
             this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
         }
     }
@@ -578,6 +574,17 @@ std::weak_ptr<Buffer> Context::create_buffer(
     return buffer;
 }
 
+std::weak_ptr<Buffer> Context::get_buffer(uint64_t id)
+{
+    std::map< uint64_t, std::shared_ptr<Buffer> >::const_iterator it;
+    it = this->buffers.find(id);
+    if (it != this->buffers.end()) {
+        return it->second;
+    } else {
+        throw std::runtime_error("Tried to get a non existant buffer.");
+    }
+}
+
 void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 {
     uint64_t id = buffer.lock()->get_id();
@@ -691,10 +698,8 @@ void Context::create_uniform_buffer()
 
     void *data = this->uniform_buffer.lock()->map();
     Matrix i = Matrix::identity();
-    GLfloat *raw = i.get_raw_data();
-    memcpy(data, raw, sizeof(GLfloat)*16);
+    memcpy(data, &i, sizeof(GLfloat)*16);
     this->uniform_buffer.lock()->unmap();
-    std::free(raw);
 }
 
 void Context::create_descriptor_pool()

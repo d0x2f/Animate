@@ -12,30 +12,6 @@ Matrix::Matrix(Vector4 r1, Vector4 r2, Vector4 r3, Vector4 r4) : r1(r1), r2(r2),
 {}
 
 /**
-* Return a raw c array.
-**/
-GLfloat *Matrix::get_raw_data() {
-    GLfloat *data = (GLfloat *)malloc(sizeof(GLfloat)*16);
-
-    GLfloat *r1_data = r1.get_raw_data();
-    GLfloat *r2_data = r2.get_raw_data();
-    GLfloat *r3_data = r3.get_raw_data();
-    GLfloat *r4_data = r4.get_raw_data();
-
-    std::memcpy(&data[0],  r1_data, sizeof(GLfloat)*4);
-    std::memcpy(&data[4],  r2_data, sizeof(GLfloat)*4);
-    std::memcpy(&data[8],  r3_data, sizeof(GLfloat)*4);
-    std::memcpy(&data[12], r4_data, sizeof(GLfloat)*4);
-
-    std::free(r1_data);
-    std::free(r2_data);
-    std::free(r3_data);
-    std::free(r4_data);
-
-    return data;
-}
-
-/**
 * Matrix transposition.
 **/
 Matrix Matrix::transpose()

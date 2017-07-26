@@ -2,6 +2,8 @@
 
 #include "Quad.hh"
 #include "../Geometry/Vertex.hh"
+#include "Context.hh"
+#include "Buffer.hh"
 
 using namespace Animate::VK;
 using namespace Animate::Geometry;
@@ -19,8 +21,9 @@ Quad::Quad(std::weak_ptr<VK::Context> context, Point position, Scale size)
 Quad::~Quad()
 {
     if (!this->context.expired()) {
-        this->context.lock()->release_buffer(this->vertex_buffer);
-        this->context.lock()->release_buffer(this->index_buffer);
+        std::shared_ptr<Context> context = this->context.lock();
+        context->release_buffer(this->vertex_buffer);
+        context->release_buffer(this->index_buffer);
     }
 }
 
