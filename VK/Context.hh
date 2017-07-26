@@ -13,6 +13,11 @@ namespace Animate
 {
     class AppContext;
 
+    namespace Object::Property
+    {
+        class Drawable;
+    }
+
     typedef Animate::Object::Property::Drawable Drawable;
 
     namespace VK
@@ -67,11 +72,7 @@ namespace Animate
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
-                std::vector< std::weak_ptr<Drawable> > scene;
 
-                std::shared_ptr<Quad> quad;
-
-                void add_to_scene(std::weak_ptr<Drawable> drawable);
                 void fill_command_buffer(int i);
                 std::weak_ptr<Pipeline> create_pipeline(std::string fragment_code_id, std::string vertex_code_id);
                 std::weak_ptr<Buffer> create_buffer(

@@ -12,7 +12,7 @@ using namespace Animate::Geometry;
  * Constructor
  */
 Quad::Quad(std::weak_ptr<VK::Context> context, Point position, Scale size)
-    : Drawable(context), Movable(position), Scalable(size)
+    : Drawable(context, QUAD, 4), Movable(position), Scalable(size)
 {}
 
 /**
@@ -116,9 +116,14 @@ void Quad::create_index_buffer()
     this->index_buffer.lock()->copy_buffer_data(staging_buffer);
 }
 
-std::vector< std::weak_ptr<Buffer> > const Quad::get_buffers()
+vk::Buffer const Quad::get_vertex_buffer()
 {
-    return {this->vertex_buffer, this->index_buffer};
+    return *this->vertex_buffer.lock().get();
+}
+
+vk::Buffer const Quad::get_index_buffer()
+{
+    return *this->index_buffer.lock().get();
 }
 
 /**

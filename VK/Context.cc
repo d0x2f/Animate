@@ -32,28 +32,10 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_descriptor_set();
     this->create_command_buffers();
     this->create_semaphores();
-
-    this->quad = std::shared_ptr<Quad>(
-        new Quad(
-            this->shared_from_this(),
-            Point(0., 0.),
-            Scale(1., 1.)
-        )
-    );
-    quad->set_model_matrix(Matrix::identity());
-    quad->initialise_buffers();
-    quad->set_pipeline(this->create_pipeline(
-        "/Animate/data/Default/shader.frag.spv",
-        "/Animate/data/Default/shader.vert.spv"
-    ));
-
-    this->add_to_scene(quad);
 }
 
 Context::~Context()
 {
-    this->quad.reset();
-
     this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout);
     this->logical_device.destroyDescriptorPool(this->descriptor_pool);
     this->logical_device.destroyPipelineLayout(this->pipeline_layout);
@@ -128,11 +110,6 @@ void Context::recreate_pipelines()
     }
 }
 
-void Context::add_to_scene(std::weak_ptr<Drawable> drawable)
-{
-    this->scene.push_back(drawable);
-}
-
 void Context::fill_command_buffer(int i)
 {
     vk::Rect2D render_area = vk::Rect2D(
@@ -163,66 +140,44 @@ void Context::fill_command_buffer(int i)
     this->command_buffers[i].setViewport(0, 1, &viewport);
     this->command_buffers[i].beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
 
-    std::shared_ptr<Pipeline> pipeline;
-    std::vector< std::weak_ptr<Buffer> > buffers;
-    std::shared_ptr<Buffer> buffer;
-    vk::BufferUsageFlags usage;
-    vk::Buffer ident;
-    vk::DeviceSize indices_count = 0;
+    vk::DeviceSize index_count = 0;
     vk::DeviceSize offsets[] = {0};
-    std::shared_ptr<Drawable> drawable;
 
-    for (
-        std::vector< std::weak_ptr<Drawable> >::const_iterator drawable_it = this->scene.begin();
-        drawable_it != this->scene.end();
-        drawable_it++
-    ) {
-        //Check the drawable hasn't been deleted
-        if (drawable_it->expired()) {
-            this->scene.erase(drawable_it);
-            continue;
-        }
+    for(auto const& pipeline: this->pipelines) {
+        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
 
-        //Get relevent data
-        drawable = drawable_it->lock();
-        pipeline = drawable->get_pipeline().lock();
-        buffers = drawable->get_buffers();
-        indices_count = 0;
+        std::vector<std::weak_ptr<Drawable> > drawables = pipeline->get_drawables();
 
-        //Bind all the available buffers
-        for (
-            std::vector< std::weak_ptr<Buffer> >::const_iterator buffer_it = buffers.begin();
-            buffer_it != buffers.end();
-            buffer_it++
-        ) {
-            buffer = buffer_it->lock();
-            usage = buffer->get_usage();
-            ident = buffer->get_ident();
-            if ((usage & vk::BufferUsageFlagBits::eVertexBuffer) == vk::BufferUsageFlagBits::eVertexBuffer) {
-                this->command_buffers[i].bindVertexBuffers(0, 1, &ident, offsets);
-            } else if ((usage & vk::BufferUsageFlagBits::eIndexBuffer) == vk::BufferUsageFlagBits::eIndexBuffer) {
-                this->command_buffers[i].bindIndexBuffer(ident, 0, vk::IndexType::eUint16);
-                indices_count = buffer->get_size() / sizeof(uint16_t);
+        for(auto const& _drawable: drawables) {
+            if (_drawable.expired()) {
+                continue;
             }
-        }
 
-        //Draw the item if it has indices.
-        if (indices_count > 0) {
-            Matrix mvp = pipeline->get_matrix() * drawable->get_model_matrix();
+            std::shared_ptr<Drawable> drawable = _drawable.lock();
 
-            //Set push constants
-            this->command_buffers[i].pushConstants(
-                this->pipeline_layout,
-                vk::ShaderStageFlagBits::eVertex,
-                0,
-                sizeof(GLfloat)*16,
-                &mvp
-            );
+            vk::Buffer vertex_buffer = drawable->get_vertex_buffer();
+            vk::Buffer index_buffer = drawable->get_index_buffer();
+            index_count = drawable->get_index_count();
 
-            //Bind a new pipeline if it's different to the current one
-            this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
-            
-            this->command_buffers[i].drawIndexed(indices_count, 1, 0, 0, 0);
+            if (vertex_buffer && index_buffer && index_count > 0) {
+                Matrix model_matrix = drawable->get_model_matrix();
+
+                this->command_buffers[i].bindVertexBuffers(0, 1, &vertex_buffer, offsets);
+                this->command_buffers[i].bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint16);
+
+                Matrix mvp = pipeline->get_matrix() * drawable->get_model_matrix();
+
+                //Set push constants
+                this->command_buffers[i].pushConstants(
+                    this->pipeline_layout,
+                    vk::ShaderStageFlagBits::eVertex,
+                    0,
+                    sizeof(GLfloat)*16,
+                    &mvp
+                );
+
+                this->command_buffers[i].drawIndexed(index_count, 1, 0, 0, 0);
+            }
         }
     }
 
@@ -290,7 +245,9 @@ void Context::render_scene()
 
 void Context::flush_scene()
 {
-    this->scene.clear();
+    for(auto const& pipeline: this->pipelines) {
+        pipeline->flush_scene();
+    }
 }
 
 uint32_t Context::find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags properties)

@@ -73,12 +73,8 @@ void Object::set_model_matrix(Matrix model_matrix)
 void Object::add_to_scene()
 {
     int i = 0;
-    for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
-        it != this->components.end();
-        ++it
-    ) {
-        this->context.lock()->add_to_scene(*it);
+    for(auto const& component: this->components) {
+        component->add_to_scene();
     }
 }
 

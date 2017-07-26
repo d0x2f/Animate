@@ -17,7 +17,7 @@ void Drawable::initialise(std::weak_ptr<Pipeline> pipeline, std::weak_ptr<Textur
     //Return if already initialised
     if (this->initialised) {
         return;
-}
+    }
 
     this->set_pipeline(pipeline);
     this->set_texture(texture);
@@ -69,11 +69,26 @@ void Drawable::set_texture(std::weak_ptr<Texture> texture)
 /**
  * return nullptr for drawables that don't use a buffer.
  *
- * @return An empty vector
+ * @return nullptr
  **/
-std::vector< std::weak_ptr<Buffer> > const Drawable::get_buffers()
+vk::Buffer const Drawable::get_vertex_buffer()
 {
-    return {};
+    return nullptr;
+}
+
+/**
+ * return nullptr for drawables that don't use a buffer.
+ *
+ * @return nullptr
+ **/
+vk::Buffer const Drawable::get_index_buffer()
+{
+    return nullptr;
+}
+
+uint32_t Drawable::get_index_count()
+{
+    return this->indices;
 }
 
 std::weak_ptr<Pipeline> const Drawable::get_pipeline()
@@ -106,5 +121,5 @@ void Drawable::set_model_matrix(Matrix model_matrix)
  */
 void Drawable::add_to_scene()
 {
-    this->context.lock()->add_to_scene(this->shared_from_this());
+    this->pipeline.lock()->add_drawable(this->shared_from_this());
 }

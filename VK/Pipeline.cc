@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Pipeline.hh"
+#include "Context.hh"
 #include "../Utilities.hh"
 #include "../Geometry/Vertex.hh"
 
@@ -164,4 +165,19 @@ void Pipeline::set_matrices(Matrix view, Matrix projection)
 Matrix Pipeline::get_matrix()
 {
     return this->pv;
+}
+
+void Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
+{
+    this->drawables.push_back(drawable);
+}
+
+void Pipeline::flush_scene()
+{
+    this->drawables.clear();
+}
+
+std::vector<std::weak_ptr<Drawable> > const& Pipeline::get_drawables()
+{
+    return this->drawables;
 }

@@ -11,7 +11,7 @@ using namespace Animate::VK;
  * Constructor
  */
 Circle::Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness)
-    : Drawable(context), Movable(position), Scalable(size), Coloured(colour)
+    : Drawable(context, CIRCLE, 0), Movable(position), Scalable(size), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1
     //this->thickness = std::clamp(thickness, 0., 1.);

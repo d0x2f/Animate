@@ -16,7 +16,7 @@ uint64_t Line::index_buffer_id = 0;
  * Constructor
  */
 Line::Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
-    : Drawable(context), Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
+    : Drawable(context, LINE, 4), Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1
     //this->thickness = std::clamp(thickness, 0., 1.);
@@ -140,9 +140,14 @@ void Line::create_index_buffer()
     Line::index_buffer_id = index_buffer->get_id();
 }
 
-std::vector< std::weak_ptr<Buffer> > const Line::get_buffers()
+vk::Buffer const Line::get_vertex_buffer()
 {
-    return {this->vertex_buffer, this->index_buffer};
+    return *this->vertex_buffer.lock().get();
+}
+
+vk::Buffer const Line::get_index_buffer()
+{
+    return *this->index_buffer.lock().get();
 }
 
 /**

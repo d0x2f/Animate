@@ -17,10 +17,18 @@ namespace Animate
 
     namespace Object::Property
     {
+        enum PrimitiveType {
+            CONTAINER,
+            QUAD,
+            LINE,
+            CIRCLE
+        };
+
         class Drawable : public std::enable_shared_from_this<Drawable>
         {
             public:
-                Drawable(std::weak_ptr<VK::Context> context) : context(context) {};
+                Drawable(std::weak_ptr<VK::Context> context, PrimitiveType type = CONTAINER, uint32_t indices = 0)
+                    : context(context), type(type), indices(indices) {};
                 virtual ~Drawable() {};
 
                 void initialise(std::weak_ptr<VK::Pipeline> pipeline, std::weak_ptr<VK::Texture> texture);
@@ -28,7 +36,11 @@ namespace Animate
                 void set_pipeline(std::weak_ptr<VK::Pipeline> pipeline);
                 void set_texture(std::weak_ptr<VK::Texture> texture);
 
-                virtual std::vector< std::weak_ptr<VK::Buffer> > const get_buffers();
+                virtual vk::Buffer const get_vertex_buffer();
+                virtual vk::Buffer const get_index_buffer();
+
+                uint32_t get_index_count();
+
                 std::weak_ptr<VK::Pipeline> const get_pipeline();
                 std::weak_ptr<VK::Texture> const get_texture();
                 Matrix const get_model_matrix();
@@ -40,6 +52,8 @@ namespace Animate
 
             protected:
                 std::weak_ptr<VK::Context> context;
+                PrimitiveType type;
+                uint32_t indices;
                 bool initialised = false;
                 std::weak_ptr<VK::Pipeline> pipeline;
                 std::weak_ptr<VK::Texture> texture;
