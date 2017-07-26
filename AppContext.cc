@@ -75,6 +75,10 @@ std::weak_ptr<vk::SurfaceKHR> const AppContext::get_surface()
  */
 std::weak_ptr<VK::Context> const AppContext::get_graphics_context()
 {
+    if (!this->graphics_context) {
+        throw std::runtime_error("Attemped to get graphics engine before initialised.");
+    }
+
     return this->graphics_context;
 }
 

@@ -14,8 +14,12 @@ std::weak_ptr<Texture> Textures::get_texture(std::string resource_id)
     it = this->texture_cache.find(resource_id);
 
     if (it == this->texture_cache.end()) {
-        std::shared_ptr<Texture> texture = std::shared_ptr<Texture>(new Texture());
-        texture->load_from_resource(resource_id);
+        std::shared_ptr<Texture> texture = std::shared_ptr<Texture>(
+            new Texture(
+                this->context.lock()->get_graphics_context(),
+                resource_id
+            )
+        );
         this->texture_cache.insert(
             std::pair< std::string, std::shared_ptr<Texture> >(resource_id, texture)
         );

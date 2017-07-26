@@ -58,37 +58,15 @@ void Buffer::copy_buffer_data(Buffer& source)
     if (source.get_size() > this->size) {
         throw std::runtime_error("Not enough space to copy buffer.");
     }
-
-    vk::CommandBufferAllocateInfo allocation_info = vk::CommandBufferAllocateInfo()
-        .setLevel(vk::CommandBufferLevel::ePrimary)
-        .setCommandPool(this->context.lock()->command_pool)
-        .setCommandBufferCount(1);
-
-    vk::CommandBuffer command_buffer;
-    this->context.lock()->logical_device.allocateCommandBuffers(&allocation_info, &command_buffer);
-
-    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
-        .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
     
-    vk::BufferCopy copy_details = vk::BufferCopy()
-        .setSrcOffset(0)
-        .setDstOffset(0)
-        .setSize(this->size);
+    this->context.lock()->run_one_time_commands([&](vk::CommandBuffer command_buffer){
+        vk::BufferCopy copy_details = vk::BufferCopy()
+            .setSrcOffset(0)
+            .setDstOffset(0)
+            .setSize(this->size);
 
-    command_buffer.begin(&begin_info);
-    command_buffer.copyBuffer(source, this->ident, 1, &copy_details);
-    command_buffer.end();
-
-    vk::SubmitInfo submit_info = vk::SubmitInfo()
-        .setCommandBufferCount(1)
-        .setPCommandBuffers(&command_buffer);
-
-    if (this->context.lock()->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't submit to graphics queue.");
-    }
-
-    this->context.lock()->logical_device.waitIdle();
-    this->context.lock()->logical_device.freeCommandBuffers(this->context.lock()->command_pool, 1, &command_buffer);
+        command_buffer.copyBuffer(source, ident, 1, &copy_details);
+    });
 }
 
 void* Buffer::map()

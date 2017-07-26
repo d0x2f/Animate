@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <functional>
 
 namespace Animate
 {
@@ -74,6 +75,7 @@ namespace Animate
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
 
                 void fill_command_buffer(int i);
+
                 std::weak_ptr<Pipeline> create_pipeline(std::string fragment_code_id, std::string vertex_code_id);
                 std::weak_ptr<Buffer> create_buffer(
                     vk::DeviceSize size,
@@ -82,6 +84,9 @@ namespace Animate
                 );
                 std::weak_ptr<Buffer> get_buffer(uint64_t id);
                 void release_buffer(std::weak_ptr<Buffer> buffer);
+
+                void run_one_time_commands(std::function<void(vk::CommandBuffer)> func);
+
                 void render_scene();
                 void flush_scene();
 

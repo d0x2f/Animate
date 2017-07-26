@@ -548,6 +548,37 @@ void Context::release_buffer(std::weak_ptr<Buffer> buffer)
     }
 }
 
+void Context::run_one_time_commands(std::function<void(vk::CommandBuffer)> func)
+{
+    vk::CommandBufferAllocateInfo allocation_info = vk::CommandBufferAllocateInfo()
+        .setLevel(vk::CommandBufferLevel::ePrimary)
+        .setCommandPool(this->command_pool)
+        .setCommandBufferCount(1);
+
+    vk::CommandBuffer command_buffer;
+    this->logical_device.allocateCommandBuffers(&allocation_info, &command_buffer);
+
+    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
+        .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+    command_buffer.begin(&begin_info);
+
+    func(command_buffer);
+
+    command_buffer.end();
+
+    vk::SubmitInfo submit_info = vk::SubmitInfo()
+        .setCommandBufferCount(1)
+        .setPCommandBuffers(&command_buffer);
+
+    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't submit to graphics queue.");
+    }
+
+    this->logical_device.waitIdle();
+    this->logical_device.freeCommandBuffers(this->command_pool, 1, &command_buffer);
+}
+
 void Context::create_framebuffers()
 {
     this->swap_chain_framebuffers.resize(this->swap_chain_image_views.size());
