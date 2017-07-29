@@ -20,9 +20,13 @@ namespace Animate::VK
             vk::Device logical_device;
             vk::Image image;
             vk::DeviceMemory memory;
+            vk::ImageView image_view;
+            vk::Sampler sampler;
 
             void create_image(uint32_t width, uint32_t height);
             void transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayout new_layout);
             void copy_buffer_to_image(VK::Buffer &staging_buffer, uint32_t width, uint32_t height);
+            void create_image_view();
+            void create_sampler();
     };
 }

@@ -26,7 +26,7 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_render_pass();
     this->create_framebuffers();
     this->create_pipeline_layout();
-    //this->create_uniform_buffer();
+    this->create_uniform_buffer();
     this->create_command_pool();
     this->create_descriptor_pool();
     this->create_descriptor_set();
@@ -367,7 +367,8 @@ void Context::create_logical_device()
         );
     }
 
-    vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures();
+    vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures()
+        .setSamplerAnisotropy(VK_TRUE);
 
     std::vector<const char*> layers = this->get_required_instance_layers();
     std::vector<const char*> extensions = this->get_required_device_extensions();
@@ -642,15 +643,23 @@ void Context::create_semaphores()
 
 void Context::create_pipeline_layout()
 {
-    vk::DescriptorSetLayoutBinding set_layout_binding = vk::DescriptorSetLayoutBinding()
+    vk::DescriptorSetLayoutBinding uniform_layout_binding = vk::DescriptorSetLayoutBinding()
         .setBinding(0)
         .setDescriptorCount(1)
         .setDescriptorType(vk::DescriptorType::eUniformBuffer)
         .setStageFlags(vk::ShaderStageFlagBits::eVertex);
 
-    vk::DescriptorSetLayoutCreateInfo set_layout_create_info = vk::DescriptorSetLayoutCreateInfo();
-        //.setBindingCount(1)
-        //.setPBindings(&set_layout_binding);
+    vk::DescriptorSetLayoutBinding sampler_layout_binding = vk::DescriptorSetLayoutBinding()
+        .setBinding(1)
+        .setDescriptorCount(1)
+        .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+        .setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+        std::array<vk::DescriptorSetLayoutBinding, 2> bindings = {uniform_layout_binding, sampler_layout_binding};
+
+    vk::DescriptorSetLayoutCreateInfo set_layout_create_info = vk::DescriptorSetLayoutCreateInfo()
+        .setBindingCount(bindings.size())
+        .setPBindings(bindings.data());
 
     if (this->logical_device.createDescriptorSetLayout(&set_layout_create_info, nullptr, &this->descriptor_set_layout) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create descriptor set layout.");
@@ -662,8 +671,8 @@ void Context::create_pipeline_layout()
         .setSize(sizeof(GLfloat)*16);
 
     vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo()
-        //.setSetLayoutCount(1)
-        //.setPSetLayouts(&this->descriptor_set_layout)
+        .setSetLayoutCount(1)
+        .setPSetLayouts(&this->descriptor_set_layout)
         .setPushConstantRangeCount(1)
         .setPPushConstantRanges(&push_constant_range);
 
@@ -675,26 +684,32 @@ void Context::create_pipeline_layout()
 void Context::create_uniform_buffer()
 {
     this->uniform_buffer = this->create_buffer(
-        sizeof(GLfloat)*16,
+        sizeof(GLfloat)*1,
         vk::BufferUsageFlagBits::eUniformBuffer,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
-
+/*
     void *data = this->uniform_buffer.lock()->map();
     Matrix i = Matrix::identity();
     memcpy(data, &i, sizeof(GLfloat)*16);
     this->uniform_buffer.lock()->unmap();
+*/
 }
 
 void Context::create_descriptor_pool()
 {
-    vk::DescriptorPoolSize pool_size = vk::DescriptorPoolSize()
-        .setType(vk::DescriptorType::eUniformBuffer)
-        .setDescriptorCount(1);
+    std::array<vk::DescriptorPoolSize, 2> pool_sizes = {
+        vk::DescriptorPoolSize()
+            .setType(vk::DescriptorType::eUniformBuffer)
+            .setDescriptorCount(1),
+        vk::DescriptorPoolSize()
+            .setType(vk::DescriptorType::eCombinedImageSampler)
+            .setDescriptorCount(1)
+    };
 
     vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
-        .setPoolSizeCount(1)
-        .setPPoolSizes(&pool_size)
+        .setPoolSizeCount(pool_sizes.size())
+        .setPPoolSizes(pool_sizes.data())
         .setMaxSets(1);
 
     if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
@@ -713,10 +728,10 @@ void Context::create_descriptor_set()
         throw std::runtime_error("Couldn't create descriptor set.");
     }
 
-    /*vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo()
+    vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo()
         .setBuffer(this->uniform_buffer.lock()->get_ident())
         .setOffset(0)
-        .setRange(sizeof(GLfloat)*16);
+        .setRange(this->uniform_buffer.lock()->get_size());
 
     vk::WriteDescriptorSet descriptor_write = vk::WriteDescriptorSet()
         .setDstSet(this->descriptor_set)
@@ -728,39 +743,17 @@ void Context::create_descriptor_set()
 
     this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
 
-    vk::CommandBufferAllocateInfo command_buffer_allocation_info = vk::CommandBufferAllocateInfo()
-        .setLevel(vk::CommandBufferLevel::ePrimary)
-        .setCommandPool(this->command_pool)
-        .setCommandBufferCount(1);
-
-    vk::CommandBuffer command_buffer;
-    this->logical_device.allocateCommandBuffers(&command_buffer_allocation_info, &command_buffer);
-
-    vk::CommandBufferBeginInfo begin_info = vk::CommandBufferBeginInfo()
-        .setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-
-    command_buffer.begin(&begin_info);
-    command_buffer.bindDescriptorSets(
-        vk::PipelineBindPoint::eGraphics,
-        this->pipeline_layout,
-        0,
-        1,
-        &this->descriptor_set,
-        0,
-        nullptr
-    );
-    command_buffer.end();
-
-    vk::SubmitInfo submit_info = vk::SubmitInfo()
-        .setCommandBufferCount(1)
-        .setPCommandBuffers(&command_buffer);
-
-    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't submit to graphics queue.");
-    }
-
-    this->logical_device.waitIdle();
-    this->logical_device.freeCommandBuffers(this->command_pool, 1, &command_buffer);*/
+    this->run_one_time_commands([&](vk::CommandBuffer command_buffer){
+        command_buffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eGraphics,
+            pipeline_layout,
+            0,
+            1,
+            &descriptor_set,
+            0,
+            nullptr
+        );
+    });
 }
 
 bool Context::is_device_suitable(vk::PhysicalDevice const & device)
@@ -777,7 +770,11 @@ bool Context::is_device_suitable(vk::PhysicalDevice const & device)
     //vk::PhysicalDeviceProperties properties = device.getProperties();
     vk::PhysicalDeviceFeatures features = device.getFeatures();
 
-    return features.geometryShader && queue_families.is_complete() && swap_chain_adequate;
+    return 
+        features.samplerAnisotropy &&
+        features.geometryShader &&
+        queue_families.is_complete() &&
+        swap_chain_adequate;
 }
 
 QueueFamilyIndices Context::get_device_queue_families(vk::PhysicalDevice const & device)

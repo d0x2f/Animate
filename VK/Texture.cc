@@ -36,12 +36,16 @@ Texture::Texture(std::weak_ptr<Context> context, std::string resource_id) : cont
     
     this->create_image(width, height);
     this->copy_buffer_to_image(staging_buffer, width, height);
+    this->create_image_view();
+    this->create_sampler();
 
     std::cout << "Loaded texture" << std::endl;
 }
 
 Texture::~Texture()
 {
+    this->logical_device.destroySampler(this->sampler);
+    this->logical_device.destroyImageView(this->image_view);
     this->logical_device.destroyImage(this->image);
     this->logical_device.freeMemory(this->memory);
 }
@@ -165,4 +169,48 @@ void Texture::copy_buffer_to_image(VK::Buffer &staging_buffer, uint32_t width, u
         vk::ImageLayout::eTransferDstOptimal,
         vk::ImageLayout::eShaderReadOnlyOptimal
     );
+}
+
+void Texture::create_image_view()
+{
+    vk::ImageViewCreateInfo view_info = vk::ImageViewCreateInfo()
+        .setImage(this->image)
+        .setViewType(vk::ImageViewType::e2D)
+        .setFormat(vk::Format::eR8G8B8A8Unorm)
+        .setSubresourceRange(
+            vk::ImageSubresourceRange()
+                .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                .setBaseMipLevel(0)
+                .setLevelCount(1)
+                .setBaseArrayLayer(0)
+                .setLayerCount(1)
+        );
+
+    if (this->context.lock()->logical_device.createImageView(&view_info, nullptr, &this->image_view) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create texture image view.");
+    }
+}
+
+void Texture::create_sampler()
+{
+    vk::SamplerCreateInfo create_info = vk::SamplerCreateInfo()
+        .setMagFilter(vk::Filter::eLinear)
+        .setMinFilter(vk::Filter::eLinear)
+        .setAddressModeU(vk::SamplerAddressMode::eRepeat)
+        .setAddressModeV(vk::SamplerAddressMode::eRepeat)
+        .setAddressModeW(vk::SamplerAddressMode::eRepeat)
+        .setAnisotropyEnable(VK_TRUE)
+        .setMaxAnisotropy(16)
+        .setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+        .setUnnormalizedCoordinates(VK_FALSE)
+        .setCompareEnable(VK_FALSE)
+        .setCompareOp(vk::CompareOp::eAlways)
+        .setMipmapMode(vk::SamplerMipmapMode::eLinear)
+        .setMipLodBias(0.0f)
+        .setMinLod(0.0f)
+        .setMaxLod(0.0f);
+
+    if (this->context.lock()->logical_device.createSampler(&create_info, nullptr, &this->sampler) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create texture sampler.");
+    }
 }
