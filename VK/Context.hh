@@ -10,7 +10,6 @@
 #include <map>
 #include <functional>
 #include <thread>
-#include <mutex>
 
 namespace Animate
 {
@@ -50,7 +49,7 @@ namespace Animate
             public:
                 Context(std::weak_ptr<Animate::AppContext> context);
                 ~Context();
-            
+                
                 vk::Instance instance;
                 VkDebugReportCallbackEXT debug_callback_obj;
                 vk::PhysicalDevice physical_device;
@@ -94,8 +93,6 @@ namespace Animate
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
-                std::mutex command_pool_mutex;
-                std::mutex queue_mutex;
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;

@@ -84,8 +84,6 @@ void Context::recreate_swap_chain()
 
 void Context::cleanup_swap_chain_dependancies()
 {
-    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
-
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
         this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
     }
@@ -108,8 +106,6 @@ void Context::recreate_pipelines()
 
 void Context::fill_command_buffer(int i)
 {
-    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
-        
     vk::Rect2D render_area = vk::Rect2D(
         {0,0},
         this->swap_chain_extent
@@ -147,7 +143,6 @@ void Context::fill_command_buffer(int i)
     for(auto const& pipeline: this->pipelines) {
         first_pipeline_draw = true;
 
-        //std::lock_guard<std::mutex> guard(pipeline->drawable_mutex);
         std::vector< std::weak_ptr<Drawable> > drawables = pipeline->get_scene();
 
         for (auto const& _drawable : drawables) {
@@ -234,10 +229,8 @@ void Context::render_scene()
     }
 
     this->fill_command_buffer(image_index);
-
+    
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-
-    std::lock_guard<std::mutex> guard(this->queue_mutex);
 
     vk::SubmitInfo submit_info = vk::SubmitInfo()
         .setWaitSemaphoreCount(1)
@@ -521,6 +514,7 @@ std::weak_ptr<Pipeline> Context::create_pipeline(std::string fragment_code_id, s
             vertex_code_id
         )
     );
+
     this->pipelines.push_back(pipeline);
     return pipeline;
 }
@@ -571,9 +565,6 @@ void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 
 void Context::run_one_time_commands(std::function<void(vk::CommandBuffer)> func)
 {
-    std::lock_guard<std::mutex> command_pool_guard(this->command_pool_mutex);
-    std::lock_guard<std::mutex> queue_guard(this->queue_mutex);
-
     vk::CommandBufferAllocateInfo allocation_info = vk::CommandBufferAllocateInfo()
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandPool(this->command_pool)
@@ -624,8 +615,6 @@ void Context::create_framebuffers()
 
 void Context::create_command_pool()
 {
-    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
-
     QueueFamilyIndices indices = this->get_device_queue_families(this->physical_device);
 
     vk::CommandPoolCreateInfo command_pool_create_info = vk::CommandPoolCreateInfo()
@@ -641,17 +630,13 @@ void Context::create_command_buffers()
 {
     this->command_buffers.resize(this->swap_chain_framebuffers.size());
 
-    {
-        std::lock_guard<std::mutex> guard(this->command_pool_mutex);
+    vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
+        .setCommandPool(this->command_pool)
+        .setCommandBufferCount((uint32_t) this->command_buffers.size())
+        .setLevel(vk::CommandBufferLevel::ePrimary);
 
-        vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
-            .setCommandPool(this->command_pool)
-            .setCommandBufferCount((uint32_t) this->command_buffers.size())
-            .setLevel(vk::CommandBufferLevel::ePrimary);
-
-        if (this->logical_device.allocateCommandBuffers(&command_buffer_allocate_info, this->command_buffers.data()) != vk::Result::eSuccess) {
-            throw std::runtime_error("Couldn't create command buffers.");
-        }
+    if (this->logical_device.allocateCommandBuffers(&command_buffer_allocate_info, this->command_buffers.data()) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create command buffers.");
     }
 
     for (size_t i = 0; i < this->command_buffers.size(); i++) {
@@ -715,16 +700,16 @@ void Context::create_descriptor_pool()
     std::array<vk::DescriptorPoolSize, 2> pool_sizes = {
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(10),
+            .setDescriptorCount(3),
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eCombinedImageSampler)
-            .setDescriptorCount(10)
+            .setDescriptorCount(3)
     };
 
     vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
         .setPoolSizeCount(pool_sizes.size())
         .setPPoolSizes(pool_sizes.data())
-        .setMaxSets(10);
+        .setMaxSets(3);
 
     if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create descriptor pool.");

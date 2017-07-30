@@ -23,8 +23,6 @@ namespace Animate::VK
             Pipeline(std::weak_ptr<Context> context, std::string fragment_code_id, std::string vertex_code_id);
             ~Pipeline();
 
-            std::mutex drawable_mutex;
-
             operator vk::Pipeline() const
             {
                 return this->pipeline;
@@ -44,8 +42,6 @@ namespace Animate::VK
         private:
             std::weak_ptr<Context> context;
             vk::Device logical_device;
-
-            std::mutex matrix_mutex;
 
             std::weak_ptr<Buffer> uniform_buffer;
             vk::DescriptorSet descriptor_set;

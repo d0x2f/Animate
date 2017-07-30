@@ -10,6 +10,7 @@ using namespace Animate::VK;
 
 Texture::Texture(std::weak_ptr<Context> context, std::string resource_id) : context(context)
 {
+    return;
     this->logical_device = context.lock()->logical_device;
 
     Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_resource(resource_id);
@@ -44,6 +45,7 @@ Texture::Texture(std::weak_ptr<Context> context, std::string resource_id) : cont
 
 Texture::~Texture()
 {
+    return;
     this->logical_device.destroySampler(this->sampler);
     this->logical_device.destroyImageView(this->image_view);
     this->logical_device.destroyImage(this->image);

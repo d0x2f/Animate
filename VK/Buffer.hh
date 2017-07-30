@@ -13,7 +13,7 @@ namespace Animate::VK
     {
         public:
             Buffer(
-                std::weak_ptr<VK::Context> context,
+                std::weak_ptr<VK::Context> _context,
                 vk::DeviceSize size,
                 vk::BufferUsageFlags usage,
                 vk::MemoryPropertyFlags properties
@@ -32,7 +32,7 @@ namespace Animate::VK
 
             uint64_t get_id();
 
-            void copy_buffer_data(Buffer& source);
+            void copy_buffer_data(std::shared_ptr<Buffer> source);
 
             void* map();
             void unmap();
@@ -44,8 +44,6 @@ namespace Animate::VK
         protected:
             std::weak_ptr<VK::Context> context;
             vk::Device logical_device;
-
-            std::mutex data_mutex;
             
             vk::Buffer ident;
             vk::DeviceMemory memory;

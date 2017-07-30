@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <mutex>
 
 #include "../../Geometry/Matrix.hh"
 
@@ -62,7 +61,6 @@ namespace Animate
                 bool initialised = false;
             
             private:
-                std::mutex matrix_mutex;
                 PrimitiveType type;
                 uint32_t indices;
                 uint64_t pipeline_drawable_id;

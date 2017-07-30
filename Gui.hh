@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <mutex>
 
 #include "Animation/Animation.hh"
 #include "AppContext.hh"
@@ -25,6 +26,7 @@ namespace Animate
         private:
             std::shared_ptr<AppContext> context;
             std::thread graphics_thread;
+            static std::mutex thread_sync_mutex;
 
             void init_glfw();
             void init_graphics();

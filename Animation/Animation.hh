@@ -2,7 +2,6 @@
 
 #include <gtkmm-3.0/gtkmm.h>
 #include <thread>
-#include <mutex>
 #include <string>
 #include <atomic>
 

@@ -30,6 +30,7 @@ Pipeline::Pipeline(
  */
 Pipeline::~Pipeline()
 {
+    this->logical_device.waitIdle();
     for(auto const& shader_module: this->shader_modules) {
         this->logical_device.destroyShaderModule(shader_module, nullptr);
     }
@@ -76,6 +77,7 @@ void Pipeline::recreate_pipeline()
 void Pipeline::create_pipeline()
 {
     std::shared_ptr<Context> context = this->context.lock();
+
     auto binding_description = Geometry::Vertex::get_binding_description();
     auto attribute_descriptions = Geometry::Vertex::get_attribute_descriptions();
 
@@ -215,22 +217,16 @@ void Pipeline::create_uniform_buffer()
  */
 void Pipeline::set_matrices(Matrix view, Matrix projection)
 {
-    std::lock_guard<std::mutex> guard(this->matrix_mutex);
-
     this->pv = projection * view;
 }
 
 Matrix Pipeline::get_matrix()
 {
-    std::lock_guard<std::mutex> guard(this->matrix_mutex);
-
     return this->pv;
 }
 
 uint64_t Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
 {
-    std::lock_guard<std::mutex> guard(this->drawable_mutex);
-
     this->staging_drawables.push_back(drawable);
 }
 
@@ -246,8 +242,6 @@ std::vector< std::weak_ptr<Drawable> > & Pipeline::get_scene()
 
 void Pipeline::commit_scene()
 {
-    std::lock_guard<std::mutex> guard(this->drawable_mutex);
-
     this->scene = this->staging_drawables;
 
     this->staging_drawables.clear();

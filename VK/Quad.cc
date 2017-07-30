@@ -63,18 +63,20 @@ void Quad::create_vertex_buffer()
 
     vk::DeviceSize size = 16 * sizeof(Vertex);
 
-    VK::Buffer staging_buffer(
-        this->context.lock(),
+    std::shared_ptr<Context> context = this->context.lock();
+
+    std::weak_ptr<VK::Buffer> _staging_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
+    std::shared_ptr<VK::Buffer> staging_buffer = _staging_buffer.lock();
 
-    void *data = staging_buffer.map();
+    void *data = staging_buffer->map();
     memcpy(data, vertices, (size_t) size);
-    staging_buffer.unmap();
+    staging_buffer->unmap();
     
-    this->vertex_buffer = this->context.lock()->create_buffer(
+    this->vertex_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal
@@ -96,18 +98,20 @@ void Quad::create_index_buffer()
 
     vk::DeviceSize size = 4 * sizeof(uint16_t);
 
-    VK::Buffer staging_buffer(
-        this->context.lock(),
+    std::shared_ptr<Context> context = this->context.lock();
+    
+    std::weak_ptr<VK::Buffer> _staging_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
+    std::shared_ptr<VK::Buffer> staging_buffer = _staging_buffer.lock();
 
-    void *data = staging_buffer.map();
+    void *data = staging_buffer->map();
     memcpy(data, indices, (size_t) size);
-    staging_buffer.unmap();
+    staging_buffer->unmap();
     
-    this->index_buffer = this->context.lock()->create_buffer(
+    this->index_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal
