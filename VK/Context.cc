@@ -26,10 +26,8 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_render_pass();
     this->create_framebuffers();
     this->create_pipeline_layout();
-    this->create_uniform_buffer();
     this->create_command_pool();
     this->create_descriptor_pool();
-    this->create_descriptor_set();
     this->create_command_buffers();
     this->create_semaphores();
 }
@@ -86,10 +84,12 @@ void Context::recreate_swap_chain()
 
 void Context::cleanup_swap_chain_dependancies()
 {
+    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
+
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
         this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
     }
-
+    
     this->logical_device.freeCommandBuffers(this->command_pool, static_cast<uint32_t>(this->command_buffers.size()), this->command_buffers.data());
 
     this->logical_device.destroyRenderPass(this->render_pass, nullptr);
@@ -108,6 +108,8 @@ void Context::recreate_pipelines()
 
 void Context::fill_command_buffer(int i)
 {
+    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
+        
     vk::Rect2D render_area = vk::Rect2D(
         {0,0},
         this->swap_chain_extent
@@ -138,13 +140,17 @@ void Context::fill_command_buffer(int i)
 
     vk::DeviceSize index_count = 0;
     vk::DeviceSize offsets[] = {0};
+    vk::Buffer  last_vertex_buffer,
+                last_index_buffer;
+    bool first_pipeline_draw = true;
 
     for(auto const& pipeline: this->pipelines) {
-        this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
+        first_pipeline_draw = true;
 
-        std::vector<std::weak_ptr<Drawable> > drawables = pipeline->get_drawables();
+        //std::lock_guard<std::mutex> guard(pipeline->drawable_mutex);
+        std::vector< std::weak_ptr<Drawable> > drawables = pipeline->get_scene();
 
-        for(auto const& _drawable: drawables) {
+        for (auto const& _drawable : drawables) {
             if (_drawable.expired()) {
                 continue;
             }
@@ -158,8 +164,20 @@ void Context::fill_command_buffer(int i)
             if (vertex_buffer && index_buffer && index_count > 0) {
                 Matrix model_matrix = drawable->get_model_matrix();
 
-                this->command_buffers[i].bindVertexBuffers(0, 1, &vertex_buffer, offsets);
-                this->command_buffers[i].bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint16);
+                if (first_pipeline_draw) {
+                    this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
+                    first_pipeline_draw = false;
+                }
+
+                if (last_vertex_buffer != vertex_buffer) {
+                    this->command_buffers[i].bindVertexBuffers(0, 1, &vertex_buffer, offsets);
+                    last_vertex_buffer = vertex_buffer;
+                }
+
+                if (last_index_buffer != index_buffer) {
+                    this->command_buffers[i].bindIndexBuffer(index_buffer, 0, vk::IndexType::eUint16);
+                    last_index_buffer = index_buffer;
+                }
 
                 Matrix mvp = pipeline->get_matrix() * drawable->get_model_matrix();
 
@@ -176,9 +194,16 @@ void Context::fill_command_buffer(int i)
             }
         }
     }
-
+    
     this->command_buffers[i].endRenderPass();
     this->command_buffers[i].end();
+}
+
+void Context::commit_scenes()
+{
+    for(auto const& pipeline : this->pipelines) {
+        pipeline->commit_scene();
+    }
 }
 
 void Context::render_scene()
@@ -212,6 +237,8 @@ void Context::render_scene()
 
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
+    std::lock_guard<std::mutex> guard(this->queue_mutex);
+
     vk::SubmitInfo submit_info = vk::SubmitInfo()
         .setWaitSemaphoreCount(1)
         .setPWaitSemaphores(&this->image_available_semaphore)
@@ -236,13 +263,6 @@ void Context::render_scene()
 
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
-    }
-}
-
-void Context::flush_scene()
-{
-    for(auto const& pipeline: this->pipelines) {
-        pipeline->flush_scene();
     }
 }
 
@@ -551,6 +571,9 @@ void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 
 void Context::run_one_time_commands(std::function<void(vk::CommandBuffer)> func)
 {
+    std::lock_guard<std::mutex> command_pool_guard(this->command_pool_mutex);
+    std::lock_guard<std::mutex> queue_guard(this->queue_mutex);
+
     vk::CommandBufferAllocateInfo allocation_info = vk::CommandBufferAllocateInfo()
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandPool(this->command_pool)
@@ -601,6 +624,8 @@ void Context::create_framebuffers()
 
 void Context::create_command_pool()
 {
+    std::lock_guard<std::mutex> guard(this->command_pool_mutex);
+
     QueueFamilyIndices indices = this->get_device_queue_families(this->physical_device);
 
     vk::CommandPoolCreateInfo command_pool_create_info = vk::CommandPoolCreateInfo()
@@ -616,13 +641,17 @@ void Context::create_command_buffers()
 {
     this->command_buffers.resize(this->swap_chain_framebuffers.size());
 
-    vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
-        .setCommandPool(this->command_pool)
-        .setCommandBufferCount((uint32_t) this->command_buffers.size())
-        .setLevel(vk::CommandBufferLevel::ePrimary);
+    {
+        std::lock_guard<std::mutex> guard(this->command_pool_mutex);
 
-    if (this->logical_device.allocateCommandBuffers(&command_buffer_allocate_info, this->command_buffers.data()) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create command buffers.");
+        vk::CommandBufferAllocateInfo command_buffer_allocate_info = vk::CommandBufferAllocateInfo()
+            .setCommandPool(this->command_pool)
+            .setCommandBufferCount((uint32_t) this->command_buffers.size())
+            .setLevel(vk::CommandBufferLevel::ePrimary);
+
+        if (this->logical_device.allocateCommandBuffers(&command_buffer_allocate_info, this->command_buffers.data()) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create command buffers.");
+        }
     }
 
     for (size_t i = 0; i < this->command_buffers.size(); i++) {
@@ -681,79 +710,25 @@ void Context::create_pipeline_layout()
     }
 }
 
-void Context::create_uniform_buffer()
-{
-    this->uniform_buffer = this->create_buffer(
-        sizeof(GLfloat)*1,
-        vk::BufferUsageFlagBits::eUniformBuffer,
-        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-    );
-/*
-    void *data = this->uniform_buffer.lock()->map();
-    Matrix i = Matrix::identity();
-    memcpy(data, &i, sizeof(GLfloat)*16);
-    this->uniform_buffer.lock()->unmap();
-*/
-}
-
 void Context::create_descriptor_pool()
 {
     std::array<vk::DescriptorPoolSize, 2> pool_sizes = {
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(1),
+            .setDescriptorCount(10),
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eCombinedImageSampler)
-            .setDescriptorCount(1)
+            .setDescriptorCount(10)
     };
 
     vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
         .setPoolSizeCount(pool_sizes.size())
         .setPPoolSizes(pool_sizes.data())
-        .setMaxSets(1);
+        .setMaxSets(10);
 
     if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create descriptor pool.");
     }
-}
-
-void Context::create_descriptor_set()
-{
-    vk::DescriptorSetAllocateInfo allocation_info = vk::DescriptorSetAllocateInfo()
-        .setDescriptorPool(this->descriptor_pool)
-        .setDescriptorSetCount(1)
-        .setPSetLayouts(&this->descriptor_set_layout);
-
-    if (this->logical_device.allocateDescriptorSets(&allocation_info, &this->descriptor_set) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create descriptor set.");
-    }
-
-    vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo()
-        .setBuffer(this->uniform_buffer.lock()->get_ident())
-        .setOffset(0)
-        .setRange(this->uniform_buffer.lock()->get_size());
-
-    vk::WriteDescriptorSet descriptor_write = vk::WriteDescriptorSet()
-        .setDstSet(this->descriptor_set)
-        .setDstBinding(0)
-        .setDstArrayElement(0)
-        .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-        .setDescriptorCount(1)
-        .setPBufferInfo(&buffer_info);
-
-    this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
-
-    this->run_one_time_commands([&](vk::CommandBuffer command_buffer){
-        command_buffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics,
-            pipeline_layout,
-            0,
-            1,
-            &descriptor_set,
-            0,
-            nullptr
-        );
-    });
 }
 
 bool Context::is_device_suitable(vk::PhysicalDevice const & device)

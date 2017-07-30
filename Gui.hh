@@ -17,24 +17,20 @@ namespace Animate
             Gui();
             ~Gui();
 
-            void start_loop();
+            void start_loops();
 
             void on_key(int key, int scancode, int action, int mods);
             void on_window_resize(int width, int height);
 
         private:
             std::shared_ptr<AppContext> context;
-
-            std::unique_ptr<Animation::Animation> noise_animation;
-            std::vector< std::unique_ptr<Animation::Animation> >::iterator current_animation;
-
-            std::vector< std::unique_ptr<Animation::Animation> > animations;
+            std::thread graphics_thread;
 
             void init_glfw();
             void init_graphics();
             void init_context();
-            void init_animations();
 
-            void set_animation(Animation::Animation *animation);
+            void run_tick_loop();
+            static void run_graphics_loop(std::shared_ptr<AppContext> app_context);
     };
 }

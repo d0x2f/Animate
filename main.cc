@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     try {
         auto app = Gtk::Application::create(argc, argv, "dog.dyl.animate");
         Animate::Gui gui;
-        gui.start_loop();
+        gui.start_loops();
     } catch (std::runtime_error const& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

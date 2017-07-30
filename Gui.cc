@@ -4,10 +4,9 @@
 #include <cstdint>
 
 #include "Gui.hh"
+#include "Utilities.hh"
 #include "VK/Context.hh"
-#include "Animation/Cat/Cat.hh"
-#include "Animation/Modulo/Modulo.hh"
-#include "Animation/Noise/Noise.hh"
+#include "VK/Textures.hh"
 
 using namespace Animate;
 using namespace Animate::Animation;
@@ -21,7 +20,7 @@ Gui::Gui()
     this->init_context();
     this->init_glfw();
     this->init_graphics();
-    this->init_animations();
+    this->context->setup_animations();
 }
 
 /**
@@ -80,40 +79,13 @@ void Gui::init_context()
     this->context = std::shared_ptr<AppContext>( new AppContext() );
 
     //Create a texture manager
-    new Textures(this->context);
-}
-
-void Gui::init_animations()
-{
-    //Create animation and connect it up
-    this->noise_animation = std::unique_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context));
-    noise_animation->initialise();
-
-    Animation::Animation *animation = new Animation::Cat::Cat(this->context);
-    animation->initialise();
-
-    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
-
-    animation = new Animation::Modulo::Modulo(this->context);
-    animation->initialise();
-
-    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
-
-    this->current_animation = this->animations.begin()+1;
-    (*this->current_animation)->start();
+    new VK::Textures(this->context);
 }
 
 void Gui::on_key(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        (*this->current_animation)->stop();
-
-        this->current_animation++;
-        if (this->current_animation == this->animations.end()) {
-            this->current_animation = this->animations.begin();
-        }
-
-        (*this->current_animation)->start();
+        this->context->next_animation();
     }
 }
 
@@ -122,31 +94,64 @@ void Gui::on_window_resize(int width, int height)
     this->context->get_graphics_context().lock()->recreate_swap_chain();
 }
 
+void Gui::start_loops()
+{
+    this->graphics_thread = std::thread(Gui::run_graphics_loop, this->context);
+    this->run_tick_loop();
+
+    context->should_close = true;
+
+    if (this->graphics_thread.joinable()) {
+        this->graphics_thread.join();
+    }
+}
+
 /**
  * Start the gui loop.
  */
-void Gui::start_loop()
+void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
 {
+    GLuint64 current_time, frame_count=0, last_frame_time=Utilities::get_micro_time();
+
     //Loop until the window is closed
-    while (!glfwWindowShouldClose(this->context->get_window()))
+    while (!app_context->should_close)
     {
-        //Construct a frame for the current animation if it's loaded, otherwise noise.
-        if ((*this->current_animation)->check_loaded()) {
-            (*this->current_animation)->on_render();
-        } else {
-            this->noise_animation->on_render();
-        }
-
         //Perform the render
-        std::shared_ptr<VK::Context> context = this->context->get_graphics_context().lock();
-        context->render_scene();
-        context->flush_scene();
+        app_context->get_graphics_context().lock()->render_scene();
 
-        //Poll events
-        glfwPollEvents();
+        current_time = Utilities::get_micro_time();
+        frame_count++;
+        if (current_time - last_frame_time >= 1000000) {
+            std::cout << "Frame time: " << 1000000./static_cast<GLfloat>(frame_count) << " FPS: " << frame_count << std::endl;
+            frame_count = 0;
+            last_frame_time = current_time;
+        }
     }
 
     //Get the graphics context again incase it's changed in the last.. millisecond?
-    std::shared_ptr<VK::Context> context = this->context->get_graphics_context().lock();
-    context->logical_device.waitIdle();
+    app_context->get_graphics_context().lock()->logical_device.waitIdle();
+}
+
+void Gui::run_tick_loop()
+{
+    int tick_rate = 200;
+    GLuint64 last_tick_time = Utilities::get_micro_time();
+
+    //Loop until the window is closed
+    while (!glfwWindowShouldClose(this->context->get_window()))
+    {
+        GLuint64 tick_time = Utilities::get_micro_time();
+
+        //Construct a frame for the current animation if it's loaded, otherwise noise.
+        std::weak_ptr<Animation::Animation> current_animation = this->context->get_current_animation();
+        current_animation.lock()->on_tick(tick_time - last_tick_time);
+        last_tick_time = tick_time;
+
+        this->context->get_graphics_context().lock()->commit_scenes();
+
+        //Poll events
+        glfwPollEvents();
+
+        usleep(1000000. / tick_rate);
+    }
 }

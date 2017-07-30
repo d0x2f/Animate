@@ -44,6 +44,8 @@ namespace Animate::VK
         protected:
             std::weak_ptr<VK::Context> context;
             vk::Device logical_device;
+
+            std::mutex data_mutex;
             
             vk::Buffer ident;
             vk::DeviceMemory memory;

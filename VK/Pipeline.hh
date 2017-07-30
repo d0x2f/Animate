@@ -23,6 +23,8 @@ namespace Animate::VK
             Pipeline(std::weak_ptr<Context> context, std::string fragment_code_id, std::string vertex_code_id);
             ~Pipeline();
 
+            std::mutex drawable_mutex;
+
             operator vk::Pipeline() const
             {
                 return this->pipeline;
@@ -33,26 +35,35 @@ namespace Animate::VK
             void set_matrices(Matrix view, Matrix projection);
             Matrix get_matrix();
 
-            void add_drawable(std::weak_ptr<Drawable> drawable);
-            void flush_scene();
-            std::vector<std::weak_ptr<Drawable> > const& get_drawables();
+            uint64_t add_drawable(std::weak_ptr<Drawable> drawable);
+            std::vector< std::weak_ptr<Drawable> > & get_drawables();
+
+            void commit_scene();
+            std::vector< std::weak_ptr<Drawable> > & get_scene();
 
         private:
             std::weak_ptr<Context> context;
             vk::Device logical_device;
+
+            std::mutex matrix_mutex;
+
+            std::weak_ptr<Buffer> uniform_buffer;
+            vk::DescriptorSet descriptor_set;
 
             std::string fragment_code_id;
             std::string vertex_code_id;
             vk::Pipeline pipeline;
             Matrix pv;
 
-            std::vector<std::weak_ptr<Drawable> > drawables;
+            std::vector<std::weak_ptr<Drawable> > staging_drawables;
+            std::vector<std::weak_ptr<Drawable> > scene;
 
             std::vector<vk::ShaderModule> shader_modules;
             std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;
 
             void load_shader(vk::ShaderStageFlagBits type, std::string resource_id);
             void create_pipeline();
+            void create_descriptor_set();
             void create_uniform_buffer();
     };
 }

@@ -103,6 +103,8 @@ std::weak_ptr<Texture> const Drawable::get_texture()
 
 Matrix const Drawable::get_model_matrix()
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+    
     return this->model_matrix;
 }
 
@@ -113,6 +115,8 @@ Matrix const Drawable::get_model_matrix()
  */
 void Drawable::set_model_matrix(Matrix model_matrix)
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+
     this->model_matrix = model_matrix;
 }
 

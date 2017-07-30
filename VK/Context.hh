@@ -9,6 +9,8 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <thread>
+#include <mutex>
 
 namespace Animate
 {
@@ -69,10 +71,6 @@ namespace Animate
                 vk::DescriptorSetLayout descriptor_set_layout;
                 vk::PipelineLayout pipeline_layout;
                 vk::DescriptorPool descriptor_pool;
-                vk::DescriptorSet descriptor_set;
-
-                std::vector< std::shared_ptr<Pipeline> > pipelines;
-                std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
 
                 void fill_command_buffer(int i);
 
@@ -88,7 +86,7 @@ namespace Animate
                 void run_one_time_commands(std::function<void(vk::CommandBuffer)> func);
 
                 void render_scene();
-                void flush_scene();
+                void commit_scenes();
 
                 void recreate_swap_chain();
 
@@ -96,7 +94,11 @@ namespace Animate
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
-                std::weak_ptr<Buffer> uniform_buffer;
+                std::mutex command_pool_mutex;
+                std::mutex queue_mutex;
+
+                std::vector< std::shared_ptr<Pipeline> > pipelines;
+                std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
 
                 void cleanup_swap_chain_dependancies();
 
@@ -115,7 +117,6 @@ namespace Animate
                 void create_pipeline_layout();
                 void create_uniform_buffer();
                 void create_descriptor_pool();
-                void create_descriptor_set();
 
                 void recreate_pipelines();
 

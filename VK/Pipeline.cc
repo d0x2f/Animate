@@ -4,6 +4,7 @@
 #include "Context.hh"
 #include "../Utilities.hh"
 #include "../Geometry/Vertex.hh"
+#include "Buffer.hh"
 
 using namespace Animate::VK;
 
@@ -20,6 +21,8 @@ Pipeline::Pipeline(
     this->load_shader(vk::ShaderStageFlagBits::eFragment, fragment_code_id);
     this->load_shader(vk::ShaderStageFlagBits::eVertex, vertex_code_id);
     this->create_pipeline();
+    this->create_uniform_buffer();
+    this->create_descriptor_set();
 }
 
 /**
@@ -147,6 +150,63 @@ void Pipeline::create_pipeline()
     }
 }
 
+void Pipeline::create_descriptor_set()
+{
+    std::shared_ptr<Context> context = this->context.lock();
+
+    vk::DescriptorSetAllocateInfo allocation_info = vk::DescriptorSetAllocateInfo()
+        .setDescriptorPool(context->descriptor_pool)
+        .setDescriptorSetCount(1)
+        .setPSetLayouts(&context->descriptor_set_layout);
+
+    vk::Result result = this->logical_device.allocateDescriptorSets(&allocation_info, &this->descriptor_set);
+    if (result != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create descriptor set: " + vk::to_string(result));
+    }
+
+    vk::DescriptorBufferInfo buffer_info = vk::DescriptorBufferInfo()
+        .setBuffer(this->uniform_buffer.lock()->get_ident())
+        .setOffset(0)
+        .setRange(this->uniform_buffer.lock()->get_size());
+
+    vk::WriteDescriptorSet descriptor_write = vk::WriteDescriptorSet()
+        .setDstSet(this->descriptor_set)
+        .setDstBinding(0)
+        .setDstArrayElement(0)
+        .setDescriptorType(vk::DescriptorType::eUniformBuffer)
+        .setDescriptorCount(1)
+        .setPBufferInfo(&buffer_info);
+
+    this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
+
+    context->run_one_time_commands([&](vk::CommandBuffer command_buffer){
+        command_buffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eGraphics,
+            context->pipeline_layout,
+            0,
+            1,
+            &descriptor_set,
+            0,
+            nullptr
+        );
+    });
+}
+
+void Pipeline::create_uniform_buffer()
+{
+    this->uniform_buffer = this->context.lock()->create_buffer(
+        sizeof(GLfloat)*1,
+        vk::BufferUsageFlagBits::eUniformBuffer,
+        vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+    );
+/*
+    void *data = this->uniform_buffer.lock()->map();
+    Matrix i = Matrix::identity();
+    memcpy(data, &i, sizeof(GLfloat)*16);
+    this->uniform_buffer.lock()->unmap();
+*/
+}
+
 /**
  * Save the given matrices.
  *
@@ -155,25 +215,40 @@ void Pipeline::create_pipeline()
  */
 void Pipeline::set_matrices(Matrix view, Matrix projection)
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+
     this->pv = projection * view;
 }
 
 Matrix Pipeline::get_matrix()
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+
     return this->pv;
 }
 
-void Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
+uint64_t Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
 {
-    this->drawables.push_back(drawable);
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
+
+    this->staging_drawables.push_back(drawable);
 }
 
-void Pipeline::flush_scene()
+std::vector< std::weak_ptr<Drawable> > & Pipeline::get_drawables()
 {
-    this->drawables.clear();
+    return this->staging_drawables;
 }
 
-std::vector<std::weak_ptr<Drawable> > const& Pipeline::get_drawables()
+std::vector< std::weak_ptr<Drawable> > & Pipeline::get_scene()
 {
-    return this->drawables;
+    return this->scene;
+}
+
+void Pipeline::commit_scene()
+{
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
+
+    this->scene = this->staging_drawables;
+
+    this->staging_drawables.clear();
 }

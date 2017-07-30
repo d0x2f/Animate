@@ -22,8 +22,6 @@ using namespace Animate::Object;
  */
 Noise::Noise(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
-    this->tick_rate = 1;
-
     srand(time(NULL));
 }
 
@@ -37,30 +35,6 @@ void Noise::initialise()
     //Set shaders
     this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv");
 
-    //Add a Quad
-    Object::Object *object = new Object::Object(graphics_context);
-    std::shared_ptr<Quad> quad(new Quad(graphics_context));
-    quad->initialise(
-        this->shader
-    );
-    object->add_component(quad);
-    this->add_object("quad", object);
-}
-
-/**
- * Render a frame.
- *
- * @param gl_context    GDK Opengl context reference.
- *
- * @return True so as not to bubble into another render handler.
- */
-bool Noise::on_render()
-{
-    Animation::on_render();
-
-    //Reset matrices
-    Matrix model_matrix = Matrix::identity();
-
     //Look at
     Matrix view_matrix = Matrix::look_at(
         Vector3(0., 0., 1.), // Eye
@@ -72,26 +46,27 @@ bool Noise::on_render()
 
     this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
-    //Scoped multex lock
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-
-        //this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
-
-        //Draw every object
-        for(auto const& object: this->objects) {
-            object.second->set_model_matrix(model_matrix);
-            object.second->add_to_scene();
-        }
-    }
+    //Add a Quad
+    Object::Object *object = new Object::Object(graphics_context);
+    std::shared_ptr<Quad> quad(new Quad(graphics_context));
+    quad->initialise(
+        this->shader
+    );
+    object->add_component(quad);
+    this->add_object("quad", object);
 }
 
 /**
- * Compute a tick
+ * Compute a tick and update objects
  */
 void Noise::on_tick(GLuint64 time_delta)
 {
-    std::lock_guard<std::mutex> guard(this->tick_mutex);
+    //this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+
+    //Draw every object
+    for(auto const& object: this->objects) {
+        object.second->set_model_matrix(Matrix::identity());
+    }
 
     Animation::on_tick(time_delta);
 }

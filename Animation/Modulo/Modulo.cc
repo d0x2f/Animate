@@ -24,8 +24,6 @@ using namespace Animate::Object;
  */
 Modulo::Modulo(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
-    this->tick_rate = 120;
-
     srand(time(NULL));
 }
 
@@ -39,29 +37,6 @@ void Modulo::initialise()
     //Set shaders
     this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv");
 
-
-    //Add a circle
-    Ring *ring = new Ring(graphics_context, Point(0.5,0.5), Scale(.8,.8));
-    ring->initialise(
-        this->shader.lock()
-    );
-    this->add_object("ring", ring);
-}
-
-/**
- * Render a frame.
- *
- * @param gl_context    GDK Opengl context reference.
- *
- * @return True so as not to bubble into another render handler.
- */
-bool Modulo::on_render()
-{
-    Animation::on_render();
-    
-    //Reset matrices
-    Matrix model_matrix = Matrix::identity();
-
     //Look at
     Matrix view_matrix = Matrix::look_at(
         Vector3(0., 0., 1.), // Eye
@@ -73,16 +48,12 @@ bool Modulo::on_render()
 
     this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
-    //Scoped multex lock
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-
-        //Draw every object
-        for(auto const& object: this->objects) {
-            object.second->set_model_matrix(model_matrix);
-            object.second->add_to_scene();
-        }
-    }
+    //Add a circle
+    Ring *ring = new Ring(graphics_context, Point(0.5,0.5), Scale(.8,.8));
+    ring->initialise(
+        this->shader.lock()
+    );
+    this->add_object("ring", ring);
 }
 
 /**
@@ -90,7 +61,10 @@ bool Modulo::on_render()
  */
 void Modulo::on_tick(GLuint64 time_delta)
 {
-    std::lock_guard<std::mutex> guard(this->tick_mutex);
+    //Draw every object
+    for(auto const& object: this->objects) {
+        object.second->set_model_matrix(Matrix::identity());
+    }
 
     Animation::on_tick(time_delta);
 }

@@ -68,7 +68,6 @@ void Object::set_model_matrix(Matrix model_matrix)
  */
 void Object::add_to_scene()
 {
-    int i = 0;
     for(auto const& component: this->components) {
         component->add_to_scene();
     }

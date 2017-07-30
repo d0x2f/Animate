@@ -17,35 +17,22 @@ namespace Animate::Animation
             Animation(std::weak_ptr<AppContext> context);
             ~Animation();
 
-            virtual bool on_render();
             virtual void on_load();
             virtual void on_tick(GLuint64 time_delta);
             virtual void initialise() = 0;
 
-            void start();
-            void stop();
-
-            bool check_running() const;
-            bool check_loaded() const;
-            int get_tick_rate() const;
+            bool check_loaded();
+            void unload();
 
         protected:
             std::weak_ptr<AppContext> context;
-            std::mutex tick_mutex;
-            int tick_rate = 60;
-            GLuint64 last_frame_time = 0;
-            int frame_count = 0;
             std::map< std::string, std::shared_ptr<Object::Object> > objects;
-            std::atomic_bool loaded;
 
             void add_object(std::string name, Object::Object *object);
             std::weak_ptr<Object::Object> get_object(std::string name);
             void clear_objects();
 
         private:
-            std::unique_ptr<std::thread> tick_thread;
-            std::atomic_bool running;
-
-            static void tick_loop(Animation *animation);
+            std::atomic_bool loaded = false;
     };
 }

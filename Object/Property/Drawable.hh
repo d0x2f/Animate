@@ -1,5 +1,8 @@
 #pragma once
 
+#include <atomic>
+#include <mutex>
+
 #include "../../Geometry/Matrix.hh"
 
 using namespace Animate::Geometry;
@@ -47,17 +50,22 @@ namespace Animate
 
                 virtual void set_model_matrix(Matrix model_matrix);
                 virtual void add_to_scene();
-
                 virtual void initialise_buffers() = 0;
 
             protected:
                 std::weak_ptr<VK::Context> context;
-                PrimitiveType type;
-                uint32_t indices;
-                bool initialised = false;
+
                 std::weak_ptr<VK::Pipeline> pipeline;
                 std::weak_ptr<VK::Texture> texture;
                 Matrix model_matrix;
+
+                bool initialised = false;
+            
+            private:
+                std::mutex matrix_mutex;
+                PrimitiveType type;
+                uint32_t indices;
+                uint64_t pipeline_drawable_id;
         };
     }
 }

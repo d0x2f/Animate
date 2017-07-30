@@ -22,10 +22,9 @@ namespace Animate::Animation::Cat
         public:
             Cat(std::weak_ptr<AppContext> context);
 
-            bool on_render() override;
+            void initialise() override;
             void on_load() override;
             void on_tick(GLuint64 time_delta) override;
-            void initialise() override;
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;
@@ -36,7 +35,6 @@ namespace Animate::Animation::Cat
             int grid_size = 4;
             int texture_index = 0;
 
-            std::atomic_bool reset_puzzle_flag;
             void reset_puzzle();
     };
 }

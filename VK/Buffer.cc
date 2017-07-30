@@ -44,6 +44,7 @@ Buffer::Buffer(
 
 Buffer::~Buffer()
 {
+    this->logical_device.waitIdle();
     this->logical_device.destroyBuffer(this->ident);
     this->logical_device.freeMemory(this->memory);
 }
@@ -71,6 +72,8 @@ void Buffer::copy_buffer_data(Buffer& source)
 
 void* Buffer::map()
 {
+    this->data_mutex.lock();
+
     void* data;
     this->context.lock()->logical_device.mapMemory(this->memory, 0, this->size, vk::MemoryMapFlags(), &data);
     return data;
@@ -79,6 +82,8 @@ void* Buffer::map()
 void Buffer::unmap()
 {
     this->context.lock()->logical_device.unmapMemory(this->memory);
+
+    this->data_mutex.unlock();
 }
 
 vk::DeviceSize Buffer::get_size()
