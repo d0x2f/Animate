@@ -113,7 +113,7 @@ void AppContext::setup_animations() {
 
     this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
 
-    this->current_animation = this->animations.begin()+1;
+    this->current_animation = this->animations.begin();
     this->next_animation();
 }
 
@@ -138,6 +138,9 @@ void AppContext::next_animation()
     if (this->current_animation == this->animations.end()) {
         this->current_animation = this->animations.begin();
     }
+
+    this->noise_animation->on_tick(1);
+    this->graphics_context->commit_scenes();
 
     (*this->current_animation)->on_load();
 }

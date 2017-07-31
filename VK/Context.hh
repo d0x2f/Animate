@@ -10,6 +10,7 @@
 #include <map>
 #include <functional>
 #include <thread>
+#include <mutex>
 
 namespace Animate
 {
@@ -93,6 +94,9 @@ namespace Animate
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
+
+                std::mutex vulkan_resource_mutex;
+                std::mutex command_mutex;
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;

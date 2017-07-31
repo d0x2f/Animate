@@ -58,6 +58,8 @@ uint64_t Buffer::get_id()
 
 void Buffer::copy_buffer_data(std::shared_ptr<Buffer> source)
 {
+    std::lock_guard<std::mutex> guard(this->data_mutex);
+    
     std::shared_ptr<Context> context = this->context.lock();
 
     if (source->get_size() > this->size) {
@@ -76,6 +78,8 @@ void Buffer::copy_buffer_data(std::shared_ptr<Buffer> source)
 
 void* Buffer::map()
 {
+    std::lock_guard<std::mutex> guard(this->data_mutex);
+
     void* data;
     this->context.lock()->logical_device.mapMemory(this->memory, 0, this->size, vk::MemoryMapFlags(), &data);
     return data;
@@ -83,6 +87,8 @@ void* Buffer::map()
 
 void Buffer::unmap()
 {
+    std::lock_guard<std::mutex> guard(this->data_mutex);
+
     this->context.lock()->logical_device.unmapMemory(this->memory);
 }
 

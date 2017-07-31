@@ -63,6 +63,8 @@ Context::~Context()
 
 void Context::recreate_swap_chain()
 {
+    std::lock_guard<std::mutex> guard(this->vulkan_resource_mutex);
+
     this->logical_device.waitIdle();
 
     this->cleanup_swap_chain_dependancies();
@@ -203,6 +205,7 @@ void Context::commit_scenes()
 
 void Context::render_scene()
 {
+
     uint32_t image_index;
     vk::Result result = this->logical_device.acquireNextImageKHR(
         this->swap_chain,
@@ -228,6 +231,9 @@ void Context::render_scene()
             throw std::runtime_error("Couldn't acquire swap chain image.");
     }
 
+    std::lock_guard<std::mutex> command_guard(this->command_mutex);
+    std::lock_guard<std::mutex> resource_guard(this->vulkan_resource_mutex);
+
     this->fill_command_buffer(image_index);
     
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -241,10 +247,6 @@ void Context::render_scene()
         .setSignalSemaphoreCount(1)
         .setPSignalSemaphores(&this->render_finished_semaphore);
 
-    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't submit to graphics queue.");
-    }
-
     vk::PresentInfoKHR present_info = vk::PresentInfoKHR()
         .setWaitSemaphoreCount(1)
         .setPWaitSemaphores(&this->render_finished_semaphore)
@@ -252,8 +254,12 @@ void Context::render_scene()
         .setPSwapchains(&this->swap_chain)
         .setPImageIndices(&image_index);
 
-    this->present_queue.waitIdle();
+    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't submit to graphics queue.");
+    }
 
+    this->present_queue.waitIdle();
+    
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
     }
@@ -461,7 +467,6 @@ void Context::create_image_views()
             .setImage(this->swap_chain_images.at(i))
             .setViewType(vk::ImageViewType::e2D)
             .setFormat(this->swap_chain_image_format)
-            .setComponents(vk::ComponentMapping())
             .setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 
         if (this->logical_device.createImageView(&create_info, nullptr, &this->swap_chain_image_views.at(i)) != vk::Result::eSuccess) {
@@ -555,6 +560,8 @@ std::weak_ptr<Buffer> Context::get_buffer(uint64_t id)
 
 void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 {
+    std::lock_guard<std::mutex> guard(this->vulkan_resource_mutex);
+
     uint64_t id = buffer.lock()->get_id();
     std::map< uint64_t, std::shared_ptr<Buffer> >::const_iterator it;
     it = this->buffers.find(id);
@@ -565,6 +572,8 @@ void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 
 void Context::run_one_time_commands(std::function<void(vk::CommandBuffer)> func)
 {
+    std::lock_guard<std::mutex> guard(this->command_mutex);
+
     vk::CommandBufferAllocateInfo allocation_info = vk::CommandBufferAllocateInfo()
         .setLevel(vk::CommandBufferLevel::ePrimary)
         .setCommandPool(this->command_pool)

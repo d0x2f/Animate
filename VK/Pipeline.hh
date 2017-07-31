@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "../Geometry/Definitions.hh"
 #include "../Geometry/Matrix.hh"
@@ -34,14 +35,17 @@ namespace Animate::VK
             Matrix get_matrix();
 
             uint64_t add_drawable(std::weak_ptr<Drawable> drawable);
-            std::vector< std::weak_ptr<Drawable> > & get_drawables();
+            std::vector< std::weak_ptr<Drawable> > get_drawables();
 
             void commit_scene();
-            std::vector< std::weak_ptr<Drawable> > & get_scene();
+            std::vector< std::weak_ptr<Drawable> > get_scene();
 
         private:
             std::weak_ptr<Context> context;
             vk::Device logical_device;
+
+            std::mutex drawable_mutex;
+            std::mutex matrix_mutex;
 
             std::weak_ptr<Buffer> uniform_buffer;
             vk::DescriptorSet descriptor_set;

@@ -118,8 +118,6 @@ void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
     //Loop until the window is closed
     while (!app_context->should_close)
     {
-        std::lock_guard<std::mutex> quard(Gui::thread_sync_mutex);
-
         //Perform the render
         app_context->get_graphics_context().lock()->render_scene();
 
@@ -146,24 +144,20 @@ void Gui::run_tick_loop()
     //Loop until the window is closed
     while (!glfwWindowShouldClose(this->context->get_window()))
     {
-        {
-            std::lock_guard<std::mutex> quard(Gui::thread_sync_mutex);
+        tick_time = Utilities::get_micro_time();
+        tick_delta = tick_time - last_tick_time;
+        last_tick_time = tick_time;
 
-            tick_time = Utilities::get_micro_time();
-            tick_delta = tick_time - last_tick_time;
-            last_tick_time = tick_time;
+        //Construct a frame for the current animation if it's loaded, otherwise noise.
+        std::weak_ptr<Animation::Animation> current_animation = this->context->get_current_animation();
+        current_animation.lock()->on_tick(tick_delta);
 
-            //Construct a frame for the current animation if it's loaded, otherwise noise.
-            std::weak_ptr<Animation::Animation> current_animation = this->context->get_current_animation();
-            current_animation.lock()->on_tick(tick_delta);
+        this->context->get_graphics_context().lock()->commit_scenes();
 
-            this->context->get_graphics_context().lock()->commit_scenes();
+        //Poll events
+        glfwPollEvents();
 
-            //Poll events
-            glfwPollEvents();
-
-            last_tick_time = Utilities::get_micro_time();
-        }
+        last_tick_time = Utilities::get_micro_time();
 
         if ((1000000. / tick_rate) > tick_delta) {
             usleep((1000000. / tick_rate) - tick_delta);

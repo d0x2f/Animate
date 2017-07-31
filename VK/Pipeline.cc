@@ -217,31 +217,42 @@ void Pipeline::create_uniform_buffer()
  */
 void Pipeline::set_matrices(Matrix view, Matrix projection)
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+
     this->pv = projection * view;
 }
 
 Matrix Pipeline::get_matrix()
 {
+    std::lock_guard<std::mutex> guard(this->matrix_mutex);
+
     return this->pv;
 }
 
 uint64_t Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
 {
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
+
     this->staging_drawables.push_back(drawable);
 }
 
-std::vector< std::weak_ptr<Drawable> > & Pipeline::get_drawables()
+std::vector< std::weak_ptr<Drawable> > Pipeline::get_drawables()
 {
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
+
     return this->staging_drawables;
 }
 
-std::vector< std::weak_ptr<Drawable> > & Pipeline::get_scene()
+std::vector< std::weak_ptr<Drawable> > Pipeline::get_scene()
 {
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
     return this->scene;
 }
 
 void Pipeline::commit_scene()
 {
+    std::lock_guard<std::mutex> guard(this->drawable_mutex);
+
     this->scene = this->staging_drawables;
 
     this->staging_drawables.clear();

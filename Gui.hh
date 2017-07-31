@@ -26,7 +26,6 @@ namespace Animate
         private:
             std::shared_ptr<AppContext> context;
             std::thread graphics_thread;
-            static std::mutex thread_sync_mutex;
 
             void init_glfw();
             void init_graphics();

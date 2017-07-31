@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <mutex>
 
 #include "../../Geometry/Matrix.hh"
 
@@ -53,6 +54,8 @@ namespace Animate
 
             protected:
                 std::weak_ptr<VK::Context> context;
+
+                std::mutex matrix_mutex;
 
                 std::weak_ptr<VK::Pipeline> pipeline;
                 std::weak_ptr<VK::Texture> texture;

@@ -45,7 +45,7 @@ void Quad::initialise_buffers()
 void Quad::create_vertex_buffer()
 {
     //Check if the buffer is already initialised
-    if (this->vertex_buffer.lock()) {
+    if (!this->vertex_buffer.expired()) {
         return;
     }
 
@@ -83,12 +83,14 @@ void Quad::create_vertex_buffer()
     );
 
     this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
+
+    context->release_buffer(staging_buffer);
 }
 
 void Quad::create_index_buffer()
 {
     //Check if the buffer is already initialised
-    if (this->index_buffer.lock()) {
+    if (!this->index_buffer.expired()) {
         return;
     }
 
@@ -118,6 +120,8 @@ void Quad::create_index_buffer()
     );
 
     this->index_buffer.lock()->copy_buffer_data(staging_buffer);
+    
+    context->release_buffer(staging_buffer);
 }
 
 vk::Buffer const Quad::get_vertex_buffer()
