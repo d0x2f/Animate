@@ -148,11 +148,11 @@ void Context::fill_command_buffer(int i)
         std::vector< std::weak_ptr<Drawable> > drawables = pipeline->get_scene();
 
         for (auto const& _drawable : drawables) {
-            if (_drawable.expired()) {
+            std::shared_ptr<Drawable> drawable = _drawable.lock();
+
+            if (!drawable) {
                 continue;
             }
-
-            std::shared_ptr<Drawable> drawable = _drawable.lock();
 
             vk::Buffer vertex_buffer = drawable->get_vertex_buffer();
             vk::Buffer index_buffer = drawable->get_index_buffer();
