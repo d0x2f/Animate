@@ -11,8 +11,6 @@
 using namespace Animate;
 using namespace Animate::Animation;
 
-std::mutex Gui::thread_sync_mutex;
-
 /**
  * Sets the window size and title.
  * Starts the cat animation.
