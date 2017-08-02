@@ -180,18 +180,6 @@ void Pipeline::create_descriptor_set()
         .setPBufferInfo(&buffer_info);
 
     this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
-
-    context->run_one_time_commands([&](vk::CommandBuffer command_buffer){
-        command_buffer.bindDescriptorSets(
-            vk::PipelineBindPoint::eGraphics,
-            context->pipeline_layout,
-            0,
-            1,
-            &descriptor_set,
-            0,
-            nullptr
-        );
-    });
 }
 
 vk::DescriptorSet Pipeline::get_descriptor_set()

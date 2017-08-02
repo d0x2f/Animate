@@ -63,7 +63,7 @@ Context::~Context()
 
 void Context::recreate_swap_chain()
 {
-    std::lock_guard<std::mutex> guard(this->vulkan_resource_mutex);
+    std::lock_guard<std::mutex> command_guard(this->command_mutex);
 
     this->logical_device.waitIdle();
 
@@ -165,15 +165,20 @@ void Context::fill_command_buffer(int i)
                     this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
 
                     vk::DescriptorSet descriptor_set = pipeline->get_descriptor_set();
-                    this->command_buffers[i].bindDescriptorSets(
-                        vk::PipelineBindPoint::eGraphics,
-                        this->pipeline_layout,
-                        0,
-                        1,
-                        &descriptor_set,
-                        0,
-                        nullptr
-                    );
+
+                    if (this->currently_bound_descriptor_set != descriptor_set) {
+                        this->command_buffers[i].bindDescriptorSets(
+                            vk::PipelineBindPoint::eGraphics,
+                            this->pipeline_layout,
+                            0,
+                            1,
+                            &descriptor_set,
+                            0,
+                            nullptr
+                        );
+                        this->currently_bound_descriptor_set = descriptor_set;
+                    }
+                    
                     first_pipeline_draw = false;
                 }
 

@@ -101,6 +101,8 @@ namespace Animate
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
                 std::map< uint64_t, std::shared_ptr<Buffer> > buffers;
 
+                vk::DescriptorSet currently_bound_descriptor_set;
+
                 void cleanup_swap_chain_dependancies();
 
                 void create_instance();

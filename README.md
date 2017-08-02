@@ -23,7 +23,6 @@ Writting computer graphics binds two of my favourite subjects, programming and m
   * Drawables within a pipeline are already organised into primitive types (Quad/Line/Circle).
   * Using this pre-organisation the pipeline can store all drawable buffers into a single indexed buffer.
   * Calls to drawable's set\_model\_matrix, set\_color, etc. can trigger an update of only the relevant sections of the buffer.
-* Create a uniform buffer to store incidental shader variables (such as microtime for random noise).
 * Move away from GDK resource manager in favor of some other stand alone resource management library.
 
 ## Requirememts
