@@ -78,7 +78,7 @@ void Buffer::copy_buffer_data(std::shared_ptr<Buffer> source)
 
 void* Buffer::map()
 {
-    std::lock_guard<std::mutex> guard(this->data_mutex);
+    this->data_mutex.lock();
 
     void* data;
     this->context.lock()->logical_device.mapMemory(this->memory, 0, this->size, vk::MemoryMapFlags(), &data);
@@ -87,7 +87,7 @@ void* Buffer::map()
 
 void Buffer::unmap()
 {
-    std::lock_guard<std::mutex> guard(this->data_mutex);
+    this->data_mutex.unlock();
 
     this->context.lock()->logical_device.unmapMemory(this->memory);
 }
