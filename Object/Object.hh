@@ -24,7 +24,7 @@ namespace Animate::Object
             virtual void set_model_matrix(Matrix model_matrix);
             virtual void add_to_scene();
 
-            virtual void on_tick(GLuint64 time_delta);
+            virtual void on_tick(uint64_t time_delta);
 
         protected:
             std::vector< std::shared_ptr<Drawable> > components;

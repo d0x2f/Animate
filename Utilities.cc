@@ -17,9 +17,9 @@ gconstpointer Utilities::get_resource_as_bytes(std::string key, size_t *size)
     return bytes->get_data(resource_size);
 }
 
-GLuint64 Utilities::get_micro_time()
+uint64_t Utilities::get_micro_time()
 {
     struct timeval time;
     gettimeofday(&time, NULL);
-    return ((GLuint64)time.tv_sec * 1000000) + time.tv_usec;
+    return ((uint64_t)time.tv_sec * 1000000) + time.tv_usec;
 }

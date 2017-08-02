@@ -17,7 +17,7 @@ namespace Animate::Animation::Modulo
             Modulo(std::weak_ptr<AppContext> context);
 
             void initialise();
-            void on_tick(GLuint64 time_delta);
+            void on_tick(uint64_t time_delta);
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;

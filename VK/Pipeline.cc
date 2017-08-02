@@ -194,19 +194,25 @@ void Pipeline::create_descriptor_set()
     });
 }
 
+vk::DescriptorSet Pipeline::get_descriptor_set()
+{
+    return this->descriptor_set;
+}
+
 void Pipeline::create_uniform_buffer()
 {
     this->uniform_buffer = this->context.lock()->create_buffer(
-        sizeof(GLfloat)*1,
+        sizeof(float),
         vk::BufferUsageFlagBits::eUniformBuffer,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
-/*
+}
+
+void Pipeline::set_uniform_float(float value)
+{
     void *data = this->uniform_buffer.lock()->map();
-    Matrix i = Matrix::identity();
-    memcpy(data, &i, sizeof(GLfloat)*16);
+    memcpy(data, &value, sizeof(float));
     this->uniform_buffer.lock()->unmap();
-*/
 }
 
 /**

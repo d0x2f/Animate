@@ -78,7 +78,7 @@ void Object::add_to_scene()
  *
  * @param time_delta Time since last tick.
  */
-void Object::on_tick(GLuint64 time_delta)
+void Object::on_tick(uint64_t time_delta)
 {
 
 }

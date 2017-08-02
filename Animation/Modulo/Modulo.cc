@@ -59,7 +59,7 @@ void Modulo::initialise()
 /**
  * Compute a tick
  */
-void Modulo::on_tick(GLuint64 time_delta)
+void Modulo::on_tick(uint64_t time_delta)
 {
     //Draw every object
     for(auto const& object: this->objects) {

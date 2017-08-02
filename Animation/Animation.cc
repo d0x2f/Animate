@@ -21,6 +21,12 @@ Animation::~Animation()
 {
 }
 
+void Animation::load()
+{
+    std::thread load_thread(&Animation::on_load, this);
+    load_thread.detach();
+}
+
 /**
  * Perform functions in the tick thread that should occur before we call ourselves "loaded".
  */
@@ -43,7 +49,7 @@ bool Animation::check_loaded()
 /**
  * Compute a tick
  */
-void Animation::on_tick(GLuint64 time_delta)
+void Animation::on_tick(uint64_t time_delta)
 {
     //Tick all the objects
     for(auto const& object: this->objects) {

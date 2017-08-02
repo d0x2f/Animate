@@ -15,10 +15,10 @@ namespace Animate::Animation::Modulo::Object
 {
     struct LineDescription {
         Vector3 from;
-        GLfloat length;
-        GLfloat z_rotation;
+        float length;
+        float z_rotation;
 
-        LineDescription(Vector3 from, GLfloat length, GLfloat z_rotation) : from(from), length(length), z_rotation(z_rotation) {}
+        LineDescription(Vector3 from, float length, float z_rotation) : from(from), length(length), z_rotation(z_rotation) {}
     };
 
     class Ring : public Object, public Animate::Object::Property::Coloured
@@ -27,12 +27,12 @@ namespace Animate::Animation::Modulo::Object
             Ring(std::weak_ptr<Context> context, Point position, Scale size);
 
             void initialise(std::weak_ptr<Pipeline> shader);
-            void on_tick(GLuint64 time_delta) override;
+            void on_tick(uint64_t time_delta) override;
 
         private:
-            GLfloat hue = 0;
-            GLuint modulo = 1000;
-            GLfloat factor = 1;
+            float hue = 0;
+            uint32_t modulo = 1000;
+            float factor = 1;
             std::vector<std::shared_ptr<Line> > lines;
     };
 }

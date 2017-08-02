@@ -10,7 +10,7 @@ using namespace Animate::VK;
 /**
  * Constructor
  */
-Circle::Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, GLfloat thickness)
+Circle::Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, float thickness)
     : Drawable(context, CIRCLE, 0), Movable(position), Scalable(size), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1
@@ -38,21 +38,21 @@ Circle::~Circle()
 void Circle::initialise_buffers()
 {
     //2 vertices per degree each with 3 floats for position data
-    GLuint buffer_size = (361*2) * 3;
+    uint32_t buffer_size = (361*2) * 3;
 
     //Vertex & colour Data.
-    GLfloat vertices[buffer_size];
+    float vertices[buffer_size];
 
     //Fill vertices
-    for (GLuint i=0; i<361; i++) {
+    for (uint32_t i=0; i<361; i++) {
         //Top vertex
-        vertices[(i*6)  ] = cos((((GLfloat)i)*PI)/180.);   //x
-        vertices[(i*6)+1] = sin((((GLfloat)i)*PI)/180.);   //y
+        vertices[(i*6)  ] = cos((((float)i)*PI)/180.);   //x
+        vertices[(i*6)+1] = sin((((float)i)*PI)/180.);   //y
         vertices[(i*6)+2] = 0.;                            //z
 
         //Bottom vertex
-        vertices[(i*6)+3] = cos((((GLfloat)i)*PI)/180.) * (1. - this->thickness);   //x
-        vertices[(i*6)+4] = sin((((GLfloat)i)*PI)/180.) * (1. - this->thickness);   //y
+        vertices[(i*6)+3] = cos((((float)i)*PI)/180.) * (1. - this->thickness);   //x
+        vertices[(i*6)+4] = sin((((float)i)*PI)/180.) * (1. - this->thickness);   //y
         vertices[(i*6)+5] = 0.;                                                     //z
     }
 }

@@ -22,7 +22,7 @@ namespace Animate::Geometry
             {
                 return vk::VertexInputBindingDescription()
                     .setBinding(0)
-                    .setStride(sizeof(GLfloat) * 12)
+                    .setStride(sizeof(float) * 12)
                     .setInputRate(vk::VertexInputRate::eVertex);
             }
 

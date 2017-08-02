@@ -133,14 +133,13 @@ std::weak_ptr<Animation::Animation> AppContext::get_current_animation()
 
 void AppContext::next_animation()
 {
+    (*this->current_animation)->unload();
+
     this->current_animation++;
 
     if (this->current_animation == this->animations.end()) {
         this->current_animation = this->animations.begin();
     }
 
-    this->noise_animation->on_tick(1);
-    this->graphics_context->commit_scenes();
-
-    (*this->current_animation)->on_load();
+    (*this->current_animation)->load();
 }

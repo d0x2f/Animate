@@ -31,8 +31,12 @@ namespace Animate::VK
             
             void recreate_pipeline();
 
+            vk::DescriptorSet get_descriptor_set();
+
             void set_matrices(Matrix view, Matrix projection);
             Matrix get_matrix();
+
+            void set_uniform_float(float value);
 
             uint64_t add_drawable(std::weak_ptr<Drawable> drawable);
             std::vector< std::weak_ptr<Drawable> > get_drawables();

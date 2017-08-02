@@ -100,7 +100,7 @@ void Cat::on_load()
 /**
  * Compute a tick
  */
-void Cat::on_tick(GLuint64 time_delta)
+void Cat::on_tick(uint64_t time_delta)
 {
     Animation::on_tick(time_delta);
 

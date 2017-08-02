@@ -19,7 +19,7 @@ namespace Animate::VK
     class Line : public Drawable, public Movable, public Scalable, public Rotatable, public Coloured
     {
         public:
-            Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness);
+            Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, float thickness);
             ~Line();
 
             void initialise_buffers() override;
@@ -33,7 +33,7 @@ namespace Animate::VK
             static uint64_t vertex_buffer_id, index_buffer_id;
             std::weak_ptr<Buffer> vertex_buffer,
                                   index_buffer;
-            GLfloat thickness;
+            float thickness;
 
             void create_vertex_buffer();
             void create_index_buffer();

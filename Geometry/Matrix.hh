@@ -30,7 +30,7 @@ namespace Animate::Geometry
 
             static Matrix identity();
             static Matrix look_at(Vector3 eye, Vector3 center, Vector3 up = Vector3(0.,1.));
-            static Matrix frustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far);
-            static Matrix orthographic(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far);
+            static Matrix frustum(float left, float right, float bottom, float top, float near, float far);
+            static Matrix orthographic(float left, float right, float bottom, float top, float near, float far);
     };
 }

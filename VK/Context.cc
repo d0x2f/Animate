@@ -163,6 +163,17 @@ void Context::fill_command_buffer(int i)
 
                 if (first_pipeline_draw) {
                     this->command_buffers[i].bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline.get());
+
+                    vk::DescriptorSet descriptor_set = pipeline->get_descriptor_set();
+                    this->command_buffers[i].bindDescriptorSets(
+                        vk::PipelineBindPoint::eGraphics,
+                        this->pipeline_layout,
+                        0,
+                        1,
+                        &descriptor_set,
+                        0,
+                        nullptr
+                    );
                     first_pipeline_draw = false;
                 }
 
@@ -183,7 +194,7 @@ void Context::fill_command_buffer(int i)
                     this->pipeline_layout,
                     vk::ShaderStageFlagBits::eVertex,
                     0,
-                    sizeof(GLfloat)*16,
+                    sizeof(float)*16,
                     &mvp
                 );
 
@@ -671,7 +682,7 @@ void Context::create_pipeline_layout()
         .setBinding(0)
         .setDescriptorCount(1)
         .setDescriptorType(vk::DescriptorType::eUniformBuffer)
-        .setStageFlags(vk::ShaderStageFlagBits::eVertex);
+        .setStageFlags(vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment);
 
     vk::DescriptorSetLayoutBinding sampler_layout_binding = vk::DescriptorSetLayoutBinding()
         .setBinding(1)
@@ -679,7 +690,7 @@ void Context::create_pipeline_layout()
         .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
         .setStageFlags(vk::ShaderStageFlagBits::eFragment);
 
-        std::array<vk::DescriptorSetLayoutBinding, 2> bindings = {uniform_layout_binding, sampler_layout_binding};
+    std::array<vk::DescriptorSetLayoutBinding, 2> bindings = {uniform_layout_binding, sampler_layout_binding};
 
     vk::DescriptorSetLayoutCreateInfo set_layout_create_info = vk::DescriptorSetLayoutCreateInfo()
         .setBindingCount(bindings.size())
@@ -692,7 +703,7 @@ void Context::create_pipeline_layout()
     vk::PushConstantRange push_constant_range = vk::PushConstantRange()
         .setStageFlags(vk::ShaderStageFlagBits::eVertex)
         .setOffset(0)
-        .setSize(sizeof(GLfloat)*16);
+        .setSize(sizeof(float)*16);
 
     vk::PipelineLayoutCreateInfo layout_info = vk::PipelineLayoutCreateInfo()
         .setSetLayoutCount(1)

@@ -59,9 +59,9 @@ void Noise::initialise()
 /**
  * Compute a tick and update objects
  */
-void Noise::on_tick(GLuint64 time_delta)
+void Noise::on_tick(uint64_t time_delta)
 {
-    //this->shader.lock()->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+    this->shader.lock()->set_uniform_float(static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
 
     //Draw every object
     for(auto const& object: this->objects) {

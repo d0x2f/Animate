@@ -15,7 +15,7 @@ uint64_t Line::index_buffer_id = 0;
 /**
  * Constructor
  */
-Line::Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, GLfloat thickness)
+Line::Line(std::weak_ptr<VK::Context> context, Point position, Scale scale, Vector3 rotation, Colour colour, float thickness)
     : Drawable(context, LINE, 4), Movable(position), Scalable(scale), Rotatable(rotation), Coloured(colour)
 {
     //Clamp thickness 0 <= x <= 1

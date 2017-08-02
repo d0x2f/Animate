@@ -16,8 +16,8 @@ namespace Animate::Animation
             Animation(std::weak_ptr<AppContext> context);
             ~Animation();
 
-            virtual void on_load();
-            virtual void on_tick(GLuint64 time_delta);
+            void load();
+            virtual void on_tick(uint64_t time_delta);
             virtual void initialise() = 0;
 
             bool check_loaded();
@@ -30,6 +30,8 @@ namespace Animate::Animation
             void add_object(std::string name, Object::Object *object);
             std::weak_ptr<Object::Object> get_object(std::string name);
             void clear_objects();
+
+            virtual void on_load();
 
         private:
             std::atomic_bool loaded = false;

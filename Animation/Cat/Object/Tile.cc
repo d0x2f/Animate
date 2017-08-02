@@ -15,7 +15,7 @@ Tile::Tile(std::weak_ptr<VK::Context> context, Point position, Scale size)
 /**
  * Initialise the tile.
  */
-void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture, GLuint position, GLuint grid_size)
+void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture, uint32_t position, uint32_t grid_size)
 {
     //Return if already initialised
     if (this->initialised) {
@@ -34,7 +34,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> tex
     //Calculate position
     this->set_board_position(Position(position % grid_size, position / grid_size));
 
-    GLfloat grid_size_float = static_cast <GLfloat> (grid_size);
+    float grid_size_float = static_cast <float> (grid_size);
 
     //Calculate texture position
     Position texture_position = Position(
@@ -60,7 +60,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> tex
  *
  * @param time_delta The time in microseconds since the last tick.
  */
-void Tile::on_tick(GLuint64 time_delta)
+void Tile::on_tick(uint64_t time_delta)
 {
     //Only tick if this tile is moving
     if (!this->moving) {
@@ -76,7 +76,7 @@ void Tile::on_tick(GLuint64 time_delta)
     Point position_difference = to_position - this->position;
 
     if (position_difference.dot(last_movement_vector) > 0.) {
-        GLfloat move_factor = static_cast <GLfloat> (time_delta)/100000.;
+        float move_factor = static_cast <float> (time_delta)/100000.;
         Point movement_vector = position_difference.normalise() * move_factor;
         this->move(movement_vector);
     } else {

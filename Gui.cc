@@ -111,7 +111,7 @@ void Gui::start_loops()
  */
 void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
 {
-    GLuint64 current_time, frame_count=0, last_frame_time=Utilities::get_micro_time();
+    uint64_t current_time, frame_count=0, last_frame_time=Utilities::get_micro_time();
 
     //Loop until the window is closed
     while (!app_context->should_close)
@@ -122,7 +122,7 @@ void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
         current_time = Utilities::get_micro_time();
         frame_count++;
         if (current_time - last_frame_time >= 1000000) {
-            std::cout << "Frame time: " << 1000000./static_cast<GLfloat>(frame_count) << " FPS: " << frame_count << std::endl;
+            std::cout << "Frame time: " << 1000000./static_cast<float>(frame_count) << " FPS: " << frame_count << std::endl;
             frame_count = 0;
             last_frame_time = current_time;
         }
@@ -135,9 +135,9 @@ void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
 void Gui::run_tick_loop()
 {
     int tick_rate = 60;
-    GLuint64 last_tick_time = Utilities::get_micro_time();
-    GLuint64 tick_time = Utilities::get_micro_time();
-    GLuint64 tick_delta = 0;
+    uint64_t last_tick_time = Utilities::get_micro_time();
+    uint64_t tick_time = Utilities::get_micro_time();
+    uint64_t tick_delta = 0;
 
     //Loop until the window is closed
     while (!glfwWindowShouldClose(this->context->get_window()))

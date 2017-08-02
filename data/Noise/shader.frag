@@ -1,8 +1,8 @@
 #version 450
 
-layout (std140) uniform variables {
+layout (binding = 0) uniform variables {
     float random_seed;
-};
+} uniforms;
 
 layout (location = 0) out vec4 out_colour;
 
@@ -49,9 +49,9 @@ void main() {
     vec2 pos = gl_FragCoord.xy;
 
     // Use the noise function
-    float r = noise(vec2(random(vec2(random_seed+pos))));
-    float g = noise(vec2(random(vec2(random_seed+pos+vec2(1)))));
-    float b = noise(vec2(random(vec2(random_seed+pos-vec2(1)))));
+    float r = noise(vec2(random(vec2(uniforms.random_seed+pos))));
+    float g = noise(vec2(random(vec2(uniforms.random_seed+pos+vec2(1)))));
+    float b = noise(vec2(random(vec2(uniforms.random_seed+pos-vec2(1)))));
 
     out_colour = vec4(r, g, b, 1.0);
 }

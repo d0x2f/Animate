@@ -24,7 +24,7 @@ namespace Animate::Animation::Cat
 
             void initialise() override;
             void on_load() override;
-            void on_tick(GLuint64 time_delta) override;
+            void on_tick(uint64_t time_delta) override;
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;
