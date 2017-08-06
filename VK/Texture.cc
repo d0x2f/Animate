@@ -34,10 +34,7 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
         STBI_rgb_alpha
     );
 
-    size = width * height * 4;
-
     if (!pixels) {
-        std::cout << static_cast<int>(byte_length) << " " << width << " " << height << " " << channels << std::endl;
         throw std::runtime_error("Couldn't load texture resource: " + resources.front());
     }
     
@@ -51,7 +48,7 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
     );
 
     void *data = staging_buffer.map();
-    memcpy(data, pixels, static_cast<size_t>(size));
+    memcpy(data, pixels, static_cast<size_t>(destination_size));
     staging_buffer.unmap();
     
     this->create_image(width, height);
