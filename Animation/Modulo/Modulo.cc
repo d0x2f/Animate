@@ -61,6 +61,10 @@ void Modulo::initialise()
  */
 void Modulo::on_tick(uint64_t time_delta)
 {
+    //Increment the hue
+    this->hue = fmod(this->hue + (time_delta/10000000.), 6.);
+    this->shader.lock()->set_uniform_float(this->hue);
+
     //Draw every object
     for(auto const& object: this->objects) {
         object.second->set_model_matrix(Matrix::identity());

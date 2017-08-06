@@ -71,23 +71,6 @@ void Ring::on_tick(uint64_t time_delta)
 {
     this->factor += (static_cast<float>(time_delta)/4000000);
 
-    //Convert the hue to an rgb value asuming saturation and value are 100%.
-    this->hue = fmod(this->hue + (time_delta/10000000.), 6.);
-    float x = 1 - abs(fmod(this->hue, 2.) - 1);
-    if (this->hue <= 1) {
-        this->colour = Colour(1., x, 0., 1.);
-    } else if (this->hue <= 2) {
-        this->colour = Colour(x, 1., 0., 1.);
-    } else if (this->hue <= 3) {
-        this->colour = Colour(0., 1, x, 1.);
-    } else if (this->hue <= 4) {
-        this->colour = Colour(0, x, 1., 1.);
-    } else if (this->hue <= 5) {
-        this->colour = Colour(x, 0., 1., 1.);
-    } else if (this->hue <= 6) {
-        this->colour = Colour(1, 0., x, 1.);
-    }
-
     //Set the calculated colour for all components.
     for(auto const& component: this->components) {
         if(Coloured *_component = dynamic_cast<Coloured*>(component.get())) {

@@ -20,6 +20,7 @@ namespace Animate::Animation::Modulo
             void on_tick(uint64_t time_delta);
 
         protected:
+            float hue = 0;
             std::weak_ptr<VK::Pipeline> shader;
     };
 }
