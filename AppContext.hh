@@ -25,13 +25,11 @@ namespace Animate
             void set_window(GLFWwindow *window);
             void set_graphics_context(VK::Context  *graphics_context);
             void set_surface(vk::SurfaceKHR *surface);
-            void set_textures(VK::Textures *textures);
             void setup_animations();
 
             GLFWwindow *get_window();
             std::weak_ptr<vk::SurfaceKHR> const get_surface();
             std::weak_ptr<VK::Context> const get_graphics_context();
-            std::weak_ptr<VK::Textures> const get_textures();
 
             size_t get_animation_count();
             std::weak_ptr<Animation::Animation> get_current_animation();
@@ -41,7 +39,6 @@ namespace Animate
             GLFWwindow *window;
             std::shared_ptr<vk::SurfaceKHR> surface;
             std::shared_ptr<VK::Context> graphics_context;
-            std::shared_ptr<VK::Textures> textures;
 
             std::shared_ptr<Animation::Animation> noise_animation;
             std::vector< std::shared_ptr<Animation::Animation> >::iterator current_animation;

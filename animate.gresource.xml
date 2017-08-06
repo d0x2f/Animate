@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
     <gresource prefix="/Animate">
-        <file preprocess="to-pixdata" >data/Cat/0.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/1.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/2.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/3.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/4.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/5.jpg</file>
-        <file preprocess="to-pixdata" >data/Cat/6.jpg</file>
+        <file>data/Cat/0.jpg</file>
+        <file>data/Cat/1.jpg</file>
+        <file>data/Cat/2.jpg</file>
+        <file>data/Cat/3.jpg</file>
+        <file>data/Cat/4.jpg</file>
+        <file>data/Cat/5.jpg</file>
+        <file>data/Cat/6.jpg</file>
 
         <file>data/Default/shader.frag.spv</file>
         <file>data/Default/shader.vert.spv</file>

@@ -7,6 +7,7 @@
 #include <vector>
 #include <mutex>
 
+#include "Textures.hh"
 #include "../Geometry/Definitions.hh"
 #include "../Geometry/Matrix.hh"
 #include "../Object/Property/Drawable.hh"
@@ -21,7 +22,12 @@ namespace Animate::VK
     class Pipeline
     {
         public:
-            Pipeline(std::weak_ptr<Context> context, std::string fragment_code_id, std::string vertex_code_id);
+            Pipeline(
+                std::weak_ptr<Context> context,
+                std::string fragment_code_id,
+                std::string vertex_code_id,
+                std::vector<std::string> resources
+            );
             ~Pipeline();
 
             operator vk::Pipeline() const
@@ -32,6 +38,9 @@ namespace Animate::VK
             void recreate_pipeline();
 
             vk::DescriptorSet get_descriptor_set();
+
+            void create_textures(std::vector<std::string> resources);
+            std::weak_ptr<Textures> get_textures();
 
             void set_matrices(Matrix view, Matrix projection);
             Matrix get_matrix();
@@ -53,6 +62,7 @@ namespace Animate::VK
 
             std::weak_ptr<Buffer> uniform_buffer;
             vk::DescriptorSet descriptor_set;
+            std::shared_ptr<Textures> textures;
 
             std::string fragment_code_id;
             std::string vertex_code_id;

@@ -14,7 +14,8 @@ using namespace Animate::VK;
 Pipeline::Pipeline(
     std::weak_ptr<VK::Context> context,
     std::string fragment_code_id,
-    std::string vertex_code_id
+    std::string vertex_code_id,
+    std::vector<std::string> resources
 ) : context(context), fragment_code_id(fragment_code_id), vertex_code_id(vertex_code_id)
 {
     this->logical_device = context.lock()->logical_device;
@@ -22,6 +23,7 @@ Pipeline::Pipeline(
     this->load_shader(vk::ShaderStageFlagBits::eVertex, vertex_code_id);
     this->create_pipeline();
     this->create_uniform_buffer();
+    this->create_textures(resources);
     this->create_descriptor_set();
 }
 
@@ -171,7 +173,7 @@ void Pipeline::create_descriptor_set()
         .setOffset(0)
         .setRange(this->uniform_buffer.lock()->get_size());
 
-    vk::WriteDescriptorSet descriptor_write = vk::WriteDescriptorSet()
+    vk::WriteDescriptorSet descriptor_uniform_write = vk::WriteDescriptorSet()
         .setDstSet(this->descriptor_set)
         .setDstBinding(0)
         .setDstArrayElement(0)
@@ -179,12 +181,43 @@ void Pipeline::create_descriptor_set()
         .setDescriptorCount(1)
         .setPBufferInfo(&buffer_info);
 
-    this->logical_device.updateDescriptorSets(1, &descriptor_write, 0, nullptr);
+    std::vector<vk::WriteDescriptorSet> descriptor_writes = {descriptor_uniform_write};
+
+    if (this->textures) {
+        vk::DescriptorImageInfo image_info = vk::DescriptorImageInfo()
+            .setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+            .setImageView(this->textures->get_image_view())
+            .setSampler(this->textures->get_sampler());
+
+        vk::WriteDescriptorSet descriptor_sampler_write = vk::WriteDescriptorSet()
+            .setDstSet(this->descriptor_set)
+            .setDstBinding(1)
+            .setDstArrayElement(0)
+            .setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+            .setDescriptorCount(1)
+            .setPImageInfo(&image_info);
+
+        descriptor_writes.push_back(descriptor_sampler_write);
+    }
+
+    this->logical_device.updateDescriptorSets(descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 vk::DescriptorSet Pipeline::get_descriptor_set()
 {
     return this->descriptor_set;
+}
+
+void Pipeline::create_textures(std::vector<std::string> resources)
+{
+    if (resources.size() > 0) {
+        this->textures = std::shared_ptr<Textures>(new Textures(this->context, resources));
+    }
+}
+
+std::weak_ptr<Textures> Pipeline::get_textures()
+{
+    return this->textures;
 }
 
 void Pipeline::create_uniform_buffer()
@@ -214,7 +247,13 @@ void Pipeline::set_matrices(Matrix view, Matrix projection)
 {
     std::lock_guard<std::mutex> guard(this->matrix_mutex);
 
-    this->pv = projection * view;
+    Matrix correction = Matrix(
+        Vector4(1.,0.,0.,0.),
+        Vector4(0.,-1.,0.,0.),
+        Vector4(0.,0.,0.5,0.5),
+        Vector4(0.,0.,0., 1.)
+    );
+    this->pv = correction * projection * view;
 }
 
 Matrix Pipeline::get_matrix()

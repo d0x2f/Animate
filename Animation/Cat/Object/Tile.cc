@@ -15,7 +15,7 @@ Tile::Tile(std::weak_ptr<VK::Context> context, Point position, Scale size)
 /**
  * Initialise the tile.
  */
-void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> texture, uint32_t position, uint32_t grid_size)
+void Tile::initialise(std::weak_ptr<Pipeline> shader, uint32_t texture_layer, uint32_t position, uint32_t grid_size)
 {
     //Return if already initialised
     if (this->initialised) {
@@ -48,7 +48,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, std::weak_ptr<Texture> tex
 
     std::shared_ptr<Quad> quad(new Quad(this->context, Point(), Scale(1., 1., 1.)));
     quad->set_texture_position(texture_position, texture_size);
-    quad->initialise(shader, texture);
+    quad->initialise(shader, texture_layer);
     this->add_component(quad);
 
     this->initialised = true;

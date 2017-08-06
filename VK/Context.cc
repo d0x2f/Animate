@@ -527,13 +527,17 @@ void Context::create_render_pass()
     }
 }
 
-std::weak_ptr<Pipeline> Context::create_pipeline(std::string fragment_code_id, std::string vertex_code_id)
-{
+std::weak_ptr<Pipeline> Context::create_pipeline(
+    std::string fragment_code_id,
+    std::string vertex_code_id,
+    std::vector<std::string> resources
+) {
     std::shared_ptr<Pipeline> pipeline(
         new Pipeline(
             this->shared_from_this(),
             fragment_code_id,
-            vertex_code_id
+            vertex_code_id,
+            resources
         )
     );
 

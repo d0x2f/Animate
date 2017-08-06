@@ -3,28 +3,33 @@
 
 using namespace Animate::VK;
 
-Textures::Textures(std::weak_ptr<AppContext> context) : context(context)
+Textures::Textures(std::weak_ptr<Context> context, std::vector<std::string> resources) : context(context)
 {
-    this->context.lock()->set_textures(this);
+    this->array_texture = std::shared_ptr<Texture>(new Texture(this->context, resources));
 }
 
-std::weak_ptr<Texture> Textures::get_texture(std::string resource_id)
+std::weak_ptr<Texture> Textures::get_texture()
 {
-    std::map< std::string, std::shared_ptr<Texture> >::iterator it;
-    it = this->texture_cache.find(resource_id);
+    return this->array_texture;
+}
 
-    if (it == this->texture_cache.end()) {
-        std::shared_ptr<Texture> texture = std::shared_ptr<Texture>(
-            new Texture(
-                this->context.lock()->get_graphics_context(),
-                resource_id
-            )
-        );
-        this->texture_cache.insert(
-            std::pair< std::string, std::shared_ptr<Texture> >(resource_id, texture)
-        );
-        return texture;
+uint32_t Textures::get_layer(std::string resource_id)
+{
+    return 0;
+    
+    std::map< std::string, uint32_t >::iterator it = this->texture_layers.find(resource_id);
+
+    if (it != this->texture_layers.end()) {
+        return it->second;
     }
+}
 
-    return it->second;
+vk::ImageView Textures::get_image_view()
+{
+    return this->array_texture->get_image_view();
+}
+
+vk::Sampler Textures::get_sampler()
+{
+    return this->array_texture->get_sampler();
 }

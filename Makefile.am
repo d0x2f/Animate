@@ -61,7 +61,9 @@ animate_HEADERS =   VK/Context.hh \
                     Gui.hh \
                     AppContext.hh \
                     resources.h \
-                    Utilities.hh
+                    Utilities.hh\
+                    \
+                    libs/stb_image.h
 
 animate_CPPFLAGS = @GTK_CFLAGS@ @GTKMM_CFLAGS@
 animate_LDADD = @GTK_LIBS@ @GTKMM_LIBS@

@@ -34,10 +34,10 @@ namespace Animate
                     : context(context), type(type), indices(indices) {};
                 virtual ~Drawable() {};
 
-                void initialise(std::weak_ptr<VK::Pipeline> pipeline, std::weak_ptr<VK::Texture> texture);
+                void initialise(std::weak_ptr<VK::Pipeline> pipeline, uint32_t texture_layer);
                 void initialise(std::weak_ptr<VK::Pipeline> pipeline);
                 void set_pipeline(std::weak_ptr<VK::Pipeline> pipeline);
-                void set_texture(std::weak_ptr<VK::Texture> texture);
+                void set_texture_layer(uint32_t texture_layer);
 
                 virtual vk::Buffer const get_vertex_buffer();
                 virtual vk::Buffer const get_index_buffer();
@@ -45,7 +45,7 @@ namespace Animate
                 uint32_t get_index_count();
 
                 std::weak_ptr<VK::Pipeline> const get_pipeline();
-                std::weak_ptr<VK::Texture> const get_texture();
+                uint32_t const get_texture_layer();
                 Matrix const get_model_matrix();
 
                 virtual void set_model_matrix(Matrix model_matrix);
@@ -58,7 +58,7 @@ namespace Animate
                 std::mutex matrix_mutex;
 
                 std::weak_ptr<VK::Pipeline> pipeline;
-                std::weak_ptr<VK::Texture> texture;
+                uint32_t texture_layer;
                 Matrix model_matrix;
 
                 bool initialised = false;

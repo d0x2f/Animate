@@ -41,16 +41,6 @@ void AppContext::set_graphics_context(VK::Context  *graphics_context)
 }
 
 /**
- * Set the texture manager to track.
- *
- * @param textures A textures manager
- */
-void AppContext::set_textures(VK::Textures *textures)
-{
-    this->textures = std::shared_ptr<VK::Textures>(textures);
-}
-
-/**
  * Retrieves the app window.
  */
 GLFWwindow *AppContext::get_window()
@@ -84,18 +74,6 @@ std::weak_ptr<VK::Context> const AppContext::get_graphics_context()
     }
 
     return this->graphics_context;
-}
-
-/**
- * Retrieves the tracked textures object.
- */
-std::weak_ptr<VK::Textures> const AppContext::get_textures()
-{
-    if (!this->textures) {
-        throw std::runtime_error("Attemped to get texture manager before initialised.");
-    }
-
-    return this->textures;
 }
 
 void AppContext::setup_animations() {

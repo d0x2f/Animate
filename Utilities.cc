@@ -12,7 +12,7 @@ gconstpointer Utilities::get_resource_as_bytes(std::string key, size_t *size)
     Glib::RefPtr< const Glib::Bytes > bytes = Gio::Resource::lookup_data_global(key);
     size_t resource_size = bytes->get_size();
     if (size != nullptr) {
-        (*size) = resource_size;
+        *size = resource_size;
     }
     return bytes->get_data(resource_size);
 }

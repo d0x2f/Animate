@@ -13,7 +13,7 @@ using namespace Animate::Animation;
 
 /**
  * Sets the window size and title.
- * Starts the cat animation.
+ * Starts the first animation.
  */
 Gui::Gui()
 {
@@ -76,10 +76,7 @@ void Gui::init_graphics()
 void Gui::init_context()
 {
     //Create context object
-    this->context = std::shared_ptr<AppContext>( new AppContext() );
-
-    //Create a texture manager
-    new VK::Textures(this->context);
+    this->context = std::make_shared<AppContext>();
 }
 
 void Gui::on_key(int key, int scancode, int action, int mods)

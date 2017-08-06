@@ -6,33 +6,52 @@
 #include "Buffer.hh"
 #include "../Utilities.hh"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "libs/stb_image.h"
+
 using namespace Animate::VK;
 
-Texture::Texture(std::weak_ptr<Context> context, std::string resource_id) : context(context)
+Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resources) : context(context)
 {
-    return;
     this->logical_device = context.lock()->logical_device;
+    
+    Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 
-    Glib::RefPtr<Gdk::Pixbuf> pixbuf = Gdk::Pixbuf::create_from_resource(resource_id);
+    vk::DeviceSize size;
+    int width;
+    int height;
+    int channels;
+    size_t byte_length;
 
-    if (!pixbuf) {
-        throw std::runtime_error("Couldn't load texture resource: " + resource_id);
+    uint8_t const *bytes = reinterpret_cast<const uint8_t*>(Utilities::get_resource_as_bytes(resources.front(), &byte_length));
+
+    stbi_uc* pixels = stbi_load_from_memory(
+        bytes,
+        static_cast<int>(byte_length),
+        &width,
+        &height,
+        &channels,
+        STBI_rgb_alpha
+    );
+
+    size = width * height * 4;
+
+    if (!pixels) {
+        std::cout << static_cast<int>(byte_length) << " " << width << " " << height << " " << channels << std::endl;
+        throw std::runtime_error("Couldn't load texture resource: " + resources.front());
     }
-
-    uint32_t width = pixbuf->get_width();
-    uint32_t height = pixbuf->get_height();
-    vk::DeviceSize source_size = pixbuf->get_byte_length();
+    
     vk::DeviceSize destination_size = 4 * width * height;
 
     VK::Buffer staging_buffer(
         this->context.lock(),
-        std::max(source_size, destination_size),
+        destination_size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
 
     void *data = staging_buffer.map();
-    memcpy(data, pixbuf->get_pixels(), (size_t) source_size);
+    memcpy(data, pixels, static_cast<size_t>(size));
     staging_buffer.unmap();
     
     this->create_image(width, height);
@@ -45,11 +64,20 @@ Texture::Texture(std::weak_ptr<Context> context, std::string resource_id) : cont
 
 Texture::~Texture()
 {
-    return;
     this->logical_device.destroySampler(this->sampler);
     this->logical_device.destroyImageView(this->image_view);
     this->logical_device.destroyImage(this->image);
     this->logical_device.freeMemory(this->memory);
+}
+
+vk::ImageView Texture::get_image_view()
+{
+    return this->image_view;
+}
+
+vk::Sampler Texture::get_sampler()
+{
+    return this->sampler;
 }
 
 void Texture::create_image(uint32_t width, uint32_t height)

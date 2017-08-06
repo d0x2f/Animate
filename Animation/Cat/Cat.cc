@@ -33,7 +33,19 @@ Cat::Cat(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 void Cat::initialise()
 {
     //Set shaders
-    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Cat/shader.frag.spv", "/Animate/data/Cat/shader.vert.spv");
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline(
+        "/Animate/data/Cat/shader.frag.spv",
+        "/Animate/data/Cat/shader.vert.spv",
+        {
+            "/Animate/data/Cat/0.jpg",
+            "/Animate/data/Cat/1.jpg",
+            "/Animate/data/Cat/2.jpg",
+            "/Animate/data/Cat/3.jpg",
+            "/Animate/data/Cat/4.jpg",
+            "/Animate/data/Cat/5.jpg",
+            "/Animate/data/Cat/6.jpg"
+        }
+    );
 
     //Look at
     Matrix view_matrix = Matrix::look_at(
@@ -70,9 +82,10 @@ void Cat::reset_puzzle()
             continue;
         }
         tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
+        std::shared_ptr<Pipeline> pipeline = this->shader.lock();
         tile->initialise(
-            this->shader.lock(),
-            this->context.lock()->get_textures().lock()->get_texture(texture_name),
+            pipeline,
+            pipeline->get_textures().lock()->get_layer(texture_name),
             this->initial_position[i], //board position
             this->grid_size  //Grid size
         );

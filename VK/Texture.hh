@@ -12,8 +12,11 @@ namespace Animate::VK
     class Texture
     {
         public:
-            Texture(std::weak_ptr<Context> context, std::string resource_id);
+            Texture(std::weak_ptr<Context> context, std::vector<std::string> resources);
             ~Texture();
+
+            vk::ImageView get_image_view();
+            vk::Sampler get_sampler();
 
         private:
             std::weak_ptr<Context> context;
