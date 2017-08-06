@@ -87,9 +87,9 @@ void* Buffer::map()
 
 void Buffer::unmap()
 {
-    this->data_mutex.unlock();
-
     this->context.lock()->logical_device.unmapMemory(this->memory);
+
+    this->data_mutex.unlock();
 }
 
 vk::DeviceSize Buffer::get_size()

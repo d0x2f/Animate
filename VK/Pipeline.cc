@@ -198,9 +198,10 @@ void Pipeline::create_uniform_buffer()
 
 void Pipeline::set_uniform_float(float value)
 {
-    void *data = this->uniform_buffer.lock()->map();
+    std::shared_ptr<Buffer> uniform_buffer = this->uniform_buffer.lock();
+    void *data = uniform_buffer->map();
     memcpy(data, &value, sizeof(float));
-    this->uniform_buffer.lock()->unmap();
+    uniform_buffer->unmap();
 }
 
 /**
