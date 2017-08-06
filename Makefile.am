@@ -1,12 +1,14 @@
 bin_PROGRAMS = animate
 
 animatedir = .
-animate_SOURCES =   GL/Quad.cc \
-                    GL/Circle.cc \
-                    GL/Line.cc \
-                    GL/Shader.cc \
-                    GL/Textures.cc \
-                    GL/Texture.cc \
+animate_SOURCES =   VK/Context.cc \
+                    VK/Quad.cc \
+                    VK/Circle.cc \
+                    VK/Line.cc \
+                    VK/Pipeline.cc \
+                    VK/Textures.cc \
+                    VK/Texture.cc \
+                    VK/Buffer.cc \
                     \
                     Object/Object.cc \
                     Object/Property/Drawable.cc \
@@ -25,16 +27,18 @@ animate_SOURCES =   GL/Quad.cc \
                     Animation/Noise/Noise.cc \
                     \
                     Gui.cc \
-                    Context.cc \
+                    AppContext.cc \
                     resources.c \
                     Utilities.cc \
                     main.cc
-animate_HEADERS =   GL/Quad.hh \
-                    GL/Circle.hh \
-                    GL/Line.hh \
-                    GL/Shader.hh \
-                    GL/Textures.hh \
-                    GL/Texture.hh \
+animate_HEADERS =   VK/Context.hh \
+                    VK/Quad.hh \
+                    VK/Circle.hh \
+                    VK/Line.hh \
+                    VK/Pipeline.hh \
+                    VK/Textures.hh \
+                    VK/Texture.hh \
+                    VK/Buffer.hh \
                     \
                     Object/Object.hh \
                     Object/Property/Drawable.hh \
@@ -45,6 +49,7 @@ animate_HEADERS =   GL/Quad.hh \
                     \
                     Geometry/Matrix.hh \
                     Geometry/Definitions.hh \
+                    Geometry/Vertex.hh \
                     \
                     Animation/Animation.hh \
                     Animation/Cat/Cat.hh \
@@ -54,15 +59,17 @@ animate_HEADERS =   GL/Quad.hh \
                     Animation/Noise/Noise.hh \
                     \
                     Gui.hh \
-                    Context.hh \
+                    AppContext.hh \
                     resources.h \
-                    Utilities.hh
+                    Utilities.hh\
+                    \
+                    libs/stb_image.h
 
 animate_CPPFLAGS = @GTK_CFLAGS@ @GTKMM_CFLAGS@
 animate_LDADD = @GTK_LIBS@ @GTKMM_LIBS@
 
 SUBDIRS =   Animation \
-            GL \
+            VK \
             Geometry \
             Object
 

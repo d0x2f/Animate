@@ -15,9 +15,9 @@ namespace Animate::Object::Property
             Vector3 get_rotation();
 
             void set_rotation(Vector3 rotation);
-            void rotate_x(GLfloat delta);
-            void rotate_y(GLfloat delta);
-            void rotate_z(GLfloat delta);
+            void rotate_x(float delta);
+            void rotate_y(float delta);
+            void rotate_z(float delta);
 
         protected:
             Vector3 rotation;

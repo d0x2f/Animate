@@ -1,5 +1,6 @@
-#include <gtkmm.h>
+#include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
+#include <stdexcept>
 
 #include "Gui.hh"
 
@@ -16,9 +17,10 @@ int main(int argc, char **argv)
     try {
         auto app = Gtk::Application::create(argc, argv, "dog.dyl.animate");
         Animate::Gui gui;
-        gui.start_loop();
-    } catch (std::string error) {
-        std::cerr << error << std::endl;
+        gui.start_loops();
+    } catch (std::runtime_error const& e) {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }

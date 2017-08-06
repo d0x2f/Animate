@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Animation.hh"
-#include "../../GL/Quad.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Quad.hh"
+#include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 
@@ -14,13 +14,13 @@ namespace Animate::Animation::Modulo
     class Modulo : public Animation
     {
         public:
-            Modulo(Context *context);
+            Modulo(std::weak_ptr<AppContext> context);
 
-            bool on_render();
-            void on_tick(GLuint64 time_delta);
             void initialise();
+            void on_tick(uint64_t time_delta);
 
         protected:
-            std::shared_ptr<GL::Shader> shader;
+            float hue = 0;
+            std::weak_ptr<VK::Pipeline> shader;
     };
 }

@@ -1,25 +1,25 @@
-#version 140
+#version 450
 #extension GL_ARB_explicit_attrib_location : enable
 
-layout (location = 0) in vec3 _vertex;
-layout (location = 1) in vec3 _normal;
-layout (location = 2) in vec4 _colour;
-layout (location = 3) in vec2 _tex_coords;
+layout (location = 0) in vec3 vertex;
+layout (location = 1) in vec3 tex_coords;
+layout (location = 2) in vec3 normal;
+layout (location = 3) in vec4 colour;
 
-out vec3 vertex;
-out vec4 colour;
-out vec2 tex_coords;
+layout (push_constant,row_major) uniform matrices {
+    mat4 mvp;
+} push_constants;
 
-layout (std140) uniform matrices {
-    mat4 model;
-    mat4 projection;
-    mat4 view;
+out gl_PerVertex {
+    vec4 gl_Position;
 };
 
-void main() {
-    vertex = _vertex;
-    colour = _colour;
-    tex_coords = _tex_coords;
+layout (location = 1) out vec3 out_tex_coords;
+layout (location = 3) out vec4 out_colour;
 
-    gl_Position = projection * view * model * vec4(vertex, 1.0);
+void main() {
+    out_colour = colour;
+    out_tex_coords = tex_coords;
+
+    gl_Position = push_constants.mvp * vec4(vertex, 1.0);
 }

@@ -1,5 +1,5 @@
-#include <gtkmm.h>
-#include <GL/glew.h>
+#include <gtkmm-3.0/gtkmm.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,23 +9,21 @@
 #include "../../Utilities.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Context.hh"
+#include "../../VK/Pipeline.hh"
 
 using namespace Animate::Animation::Cat;
 using namespace Animate::Animation::Cat::Object;
 using namespace Animate::Geometry;
-using namespace Animate::GL;
+using namespace Animate::VK;
 using namespace Animate::Object;
 
 /**
  * Constructor.
  * Seed the RNG.
  */
-Cat::Cat(Context *context) : Animation::Animation(context)
+Cat::Cat(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
-    this->tick_rate = 60;
-    this->reset_puzzle_flag = false;
-
     srand(time(NULL));
 }
 
@@ -35,8 +33,30 @@ Cat::Cat(Context *context) : Animation::Animation(context)
 void Cat::initialise()
 {
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Cat/shader.frag", "/Animate/data/Cat/shader.vert"));
-    this->shader.get()->initialise();
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline(
+        "/Animate/data/Cat/shader.frag.spv",
+        "/Animate/data/Cat/shader.vert.spv",
+        {
+            "/Animate/data/Cat/0.jpg",
+            "/Animate/data/Cat/1.jpg",
+            "/Animate/data/Cat/2.jpg",
+            "/Animate/data/Cat/3.jpg",
+            "/Animate/data/Cat/4.jpg",
+            "/Animate/data/Cat/5.jpg",
+            "/Animate/data/Cat/6.jpg"
+        }
+    );
+
+    //Look at
+    Matrix view_matrix = Matrix::look_at(
+        Vector3(0., 0., 1.), // Eye
+        Vector3()            // Center (looking at)
+    );
+
+    //Ortho
+    Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
+
+    this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 }
 
 /**
@@ -44,8 +64,6 @@ void Cat::initialise()
  */
 void Cat::reset_puzzle()
 {
-    std::lock_guard<std::mutex> guard(this->tick_mutex);
-
     //Clear tiles
     this->clear_objects();
     this->tile_position_map.clear();
@@ -54,6 +72,8 @@ void Cat::reset_puzzle()
     std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 7;
 
+    std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Initialise cat tiles
     Tile *tile;
     for (int i = 0; i < this->grid_size * this->grid_size; i++) {
@@ -61,10 +81,11 @@ void Cat::reset_puzzle()
             this->zero_position = i;
             continue;
         }
-        tile = new Tile(Point(), Scale(1., 1., 1.));
+        tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
+        std::shared_ptr<Pipeline> pipeline = this->shader.lock();
         tile->initialise(
-            this->shader.get(),
-            this->context->get_textures()->get_texture(texture_name),
+            pipeline,
+            pipeline->get_textures().lock()->get_layer(texture_name),
             this->initial_position[i], //board position
             this->grid_size  //Grid size
         );
@@ -76,66 +97,7 @@ void Cat::reset_puzzle()
 }
 
 /**
- * Render a frame.
- *
- * @return True so as not to bubble into another render handler.
- */
-bool Cat::on_render()
-{
-    Animation::on_render();
-
-    if (this->reset_puzzle_flag) {
-        this->reset_puzzle();
-        this->reset_puzzle_flag = false;
-    }
-
-    //Reset matrices
-    Matrix model_matrix = Matrix::identity();
-
-    //Look at
-    Matrix view_matrix = Matrix::look_at(
-        Vector3(0., 0., 1.), // Eye
-        Vector3()            // Center (looking at)
-    );
-
-    //Ortho
-    Matrix projection_matrix = Matrix::orthographic(0, this->grid_size, 0, this->grid_size, 0, 1);
-
-    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glClearColor(
-        0.7,
-        0.7,
-        0.7,
-        1.0
-    );
-
-    //Scoped multex lock
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-
-        //Draw every object
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            it->second->draw(model_matrix);
-        }
-    }
-
-    glFlush();
-
-    GLenum error = glGetError();
-    if(error != GL_NO_ERROR)
-        std::cerr << "OPENGL ERROR: " << gluErrorString(error) << "(" << error << ")" << std::endl;
-    return true;
-}
-
-/**
- * Perform functions in the tick thread that should occur before we call ourselves "loaded".
+ * Perform functions that should occur before we call ourselves "loaded".
  */
 void Cat::on_load()
 {
@@ -143,48 +105,39 @@ void Cat::on_load()
         this->initial_position = taquin_generate_vector(this->grid_size);
         this->move_sequence = taquin_solve(this->initial_position, this->grid_size);
 
-        this->reset_puzzle_flag = true;
-        this->loaded = true;
-    } else {
-        Animation::on_load();
+        this->reset_puzzle();
     }
+    Animation::on_load();
 }
 
 /**
  * Compute a tick
  */
-void Cat::on_tick(GLuint64 time_delta)
+void Cat::on_tick(uint64_t time_delta)
 {
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
+    Animation::on_tick(time_delta);
 
-        Animation::on_tick(time_delta);
+    //Update all model matrices and add all to the scene
+    for(auto const& object: this->objects) {
+        object.second->set_model_matrix(Matrix::identity());
+    }
 
-        //Check if any tiles are moving
-        bool in_motion = false;
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            in_motion |= ((Tile *)it->second.get())->is_moving();
-        }
+    //Check if any tiles are moving
+    bool in_motion = false;
+    for(auto const& object: this->objects) {
+        in_motion |= ((Tile *)object.second.get())->is_moving();
+    }
 
-        //If tiles are moving, skip
-        if (in_motion) {
-            return;
-        }
+    //If tiles are moving, skip
+    if (in_motion) {
+        return;
     }
 
     if (this->move_sequence.empty()) {
         this->initial_position = taquin_generate_vector(this->grid_size);
         this->move_sequence = taquin_solve(this->initial_position, this->grid_size);
 
-        this->reset_puzzle_flag = true;
-    }
-
-    if (this->reset_puzzle_flag) {
-        return;
+        this->reset_puzzle();
     }
 
     TaquinSolve::Moves move = this->move_sequence.front();
@@ -210,18 +163,14 @@ void Cat::on_tick(GLuint64 time_delta)
             break;
     }
 
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
+    std::map<int, Tile *>::iterator it = this->tile_position_map.find(to_position);
+    Tile *tile = it->second;
+    it->second->move_to_board_position(Position(
+        from_position % this->grid_size,
+        from_position / this->grid_size
+    ));
+    this->tile_position_map.erase(it);
+    this->tile_position_map.insert(std::pair<int, Tile *>(from_position, tile));
 
-        std::map<int, Tile *>::iterator it = this->tile_position_map.find(to_position);
-        Tile *tile = it->second;
-        it->second->move_to_board_position(Position(
-            from_position % this->grid_size,
-            from_position / this->grid_size
-        ));
-        this->tile_position_map.erase(it);
-        this->tile_position_map.insert(std::pair<int, Tile *>(from_position, tile));
-
-        this->zero_position = to_position;
-    }
+    this->zero_position = to_position;
 }

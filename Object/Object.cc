@@ -1,10 +1,11 @@
 #include "Object.hh"
 #include "../Geometry/Definitions.hh"
+#include "../VK/Context.hh"
 
 using namespace Animate::Object;
 
-Object::Object(Point position, Scale size)
-    : Movable(position), Scalable(size)
+Object::Object(std::weak_ptr<VK::Context> context, Point position, Scale size)
+    : Drawable(context), Movable(position), Scalable(size)
 {}
 
 Object::~Object()
@@ -17,9 +18,9 @@ Object::~Object()
  *
  * @param component The component to take possesion of.
  */
-void Object::add_component(Drawable *component)
+void Object::add_component(std::shared_ptr<Drawable> component)
 {
-    this->components.push_back(std::shared_ptr<Drawable>(component));
+    this->components.push_back(component);
 }
 
 /**
@@ -52,17 +53,23 @@ void Object::initialise_buffers()
  *
  * @param model_matrix Transformation context.
  */
-void Object::draw(Matrix model_matrix)
+void Object::set_model_matrix(Matrix model_matrix)
 {
     //Calculate the matrix transform
     model_matrix = model_matrix * Matrix::identity().scale(this->scale).translate(this->position);
 
-    for (
-        std::vector< std::shared_ptr<Drawable> >::iterator it = this->components.begin();
-        it != this->components.end();
-        ++it
-    ) {
-        (*it)->draw(model_matrix);
+    for(auto const& component: this->components) {
+        component->set_model_matrix(model_matrix);
+    }
+}
+
+/**
+ * Add this drawable to the scene to be rendered
+ */
+void Object::add_to_scene()
+{
+    for(auto const& component: this->components) {
+        component->add_to_scene();
     }
 }
 
@@ -71,7 +78,7 @@ void Object::draw(Matrix model_matrix)
  *
  * @param time_delta Time since last tick.
  */
-void Object::on_tick(GLuint64 time_delta)
+void Object::on_tick(uint64_t time_delta)
 {
 
 }

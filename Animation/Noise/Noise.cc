@@ -1,6 +1,6 @@
-#include <gtkmm.h>
+#include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,22 +9,19 @@
 #include "../../Utilities.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Geometry/Matrix.hh"
-#include "../../GL/Circle.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Circle.hh"
 
 using namespace Animate::Animation::Noise;
 using namespace Animate::Geometry;
-using namespace Animate::GL;
+using namespace Animate::VK;
 using namespace Animate::Object;
 
 /**
  * Constructor.
  * Seed the RNG.
  */
-Noise::Noise(Context *context) : Animation::Animation(context)
+Noise::Noise(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
-    this->tick_rate = 1;
-
     srand(time(NULL));
 }
 
@@ -33,34 +30,10 @@ Noise::Noise(Context *context) : Animation::Animation(context)
  */
 void Noise::initialise()
 {
+    std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
+
     //Set shaders
-    this->shader = std::shared_ptr<Shader>(new Shader(this->context, "/Animate/data/Noise/shader.frag", "/Animate/data/Noise/shader.vert"));
-    this->shader.get()->initialise();
-
-    //Add a Quad
-    Object::Object *object = new Object::Object();
-    Quad *quad = new Quad();
-    quad->initialise(
-        this->shader.get(),
-        new Texture()
-    );
-    object->add_component(quad);
-    this->add_object("quad", object);
-}
-
-/**
- * Render a frame.
- *
- * @param gl_context    GDK Opengl context reference.
- *
- * @return True so as not to bubble into another render handler.
- */
-bool Noise::on_render()
-{
-    Animation::on_render();
-
-    //Reset matrices
-    Matrix model_matrix = Matrix::identity();
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv");
 
     //Look at
     Matrix view_matrix = Matrix::look_at(
@@ -71,47 +44,29 @@ bool Noise::on_render()
     //Ortho
     Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
 
-    this->shader->set_matrices(model_matrix, view_matrix, projection_matrix);
+    this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glClearColor(
-        0.,
-        0.,
-        0.,
-        1.0
+    //Add a Quad
+    Object::Object *object = new Object::Object(graphics_context);
+    std::shared_ptr<Quad> quad(new Quad(graphics_context));
+    quad->initialise(
+        this->shader
     );
-
-    //Scoped multex lock
-    {
-        std::lock_guard<std::mutex> guard(this->tick_mutex);
-
-        this->shader->set_uniform("random_seed", static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
-
-        //Draw every object
-        for (
-            std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-            it != this->objects.end();
-            ++it
-        ) {
-            it->second->draw(model_matrix);
-        }
-    }
-
-    glFlush();
-
-    GLenum error = glGetError();
-    if(error != GL_NO_ERROR)
-        std::cerr << "OPENGL ERROR: " << gluErrorString(error) << "(" << error << ")" << std::endl;
-    return true;
+    object->add_component(quad);
+    this->add_object("quad", object);
 }
 
 /**
- * Compute a tick
+ * Compute a tick and update objects
  */
-void Noise::on_tick(GLuint64 time_delta)
+void Noise::on_tick(uint64_t time_delta)
 {
-    std::lock_guard<std::mutex> guard(this->tick_mutex);
+    this->shader.lock()->set_uniform_float(static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+
+    //Draw every object
+    for(auto const& object: this->objects) {
+        object.second->set_model_matrix(Matrix::identity());
+    }
 
     Animation::on_tick(time_delta);
 }

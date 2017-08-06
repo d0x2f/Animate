@@ -1,93 +1,26 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <cstdint>
 
 #include "Gui.hh"
-#include "Animation/Cat/Cat.hh"
-#include "Animation/Modulo/Modulo.hh"
-#include "Animation/Noise/Noise.hh"
+#include "Utilities.hh"
+#include "VK/Context.hh"
+#include "VK/Textures.hh"
 
 using namespace Animate;
 using namespace Animate::Animation;
 
 /**
  * Sets the window size and title.
- * Starts the cat animation.
+ * Starts the first animation.
  */
-Gui::Gui() {
-    glfwSetErrorCallback([](int error, const char* description){
-        std::cout << description << " (" << error << ")" << std::endl;
-    });
-
-    if (!glfwInit()) {
-        throw std::string("Couldn't initialise GLFW.");
-    }
-
-    glfwWindowHint(GLFW_SAMPLES, 8);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    this->window = glfwCreateWindow(1024, 1024, "Animate", NULL, NULL);
-    if (!this->window) {
-        throw std::string("Couldn't create GLFW window.");
-    }
-
-    //Set this window as the current context
-    glfwMakeContextCurrent(this->window);
-
-    //Disable VSync
-    glfwSwapInterval(0);
-
-    //Initialise glew
-    glewInit();
-
-    //Create context object
-    this->context = std::shared_ptr<Context>( new Context() );
-
-    //Create a texture manager
-    new Textures(this->context.get());
-
-    //Print version information
-    const GLubyte* renderer = glGetString(GL_RENDERER);
-    const GLubyte* version = glGetString(GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_MULTISAMPLE);
-
-    glfwSetWindowUserPointer(this->window, this);
-
-    glfwSetKeyCallback(
-        this->window,
-        [](GLFWwindow* w, int key, int scancode, int action, int mods) {
-            static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
-        }
-    );
-
-    //Create animation and connect it up
-    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->context.get()));
-    noise_animation->initialise();
-
-    Animation::Animation *animation = new Animation::Cat::Cat(this->context.get());
-    animation->initialise();
-
-    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
-
-    animation = new Animation::Modulo::Modulo(this->context.get());
-    animation->initialise();
-
-    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
-
-    this->current_animation = this->animations.begin();
-    (*this->current_animation)->start();
+Gui::Gui()
+{
+    this->init_context();
+    this->init_glfw();
+    this->init_graphics();
+    this->context->setup_animations();
 }
 
 /**
@@ -98,40 +31,130 @@ Gui::~Gui()
     glfwTerminate();
 }
 
+void Gui::init_glfw()
+{
+    glfwSetErrorCallback([](int error, const char* description){
+        std::cout << description << " (" << error << ")" << std::endl;
+    });
+
+    if (!glfwInit()) {
+        throw std::runtime_error("Couldn't initialise GLFW.");
+    }
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+    GLFWwindow *window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
+    if (!window) {
+        throw std::runtime_error("Couldn't create GLFW window.");
+    }
+    this->context->set_window(window);
+
+    glfwSetWindowUserPointer(this->context->get_window(), this);
+
+    glfwSetKeyCallback(
+        this->context->get_window(),
+        [](GLFWwindow* w, int key, int scancode, int action, int mods) {
+            static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_key(key, scancode, action, mods);
+        }
+    );
+
+    glfwSetWindowSizeCallback(
+        this->context->get_window(),
+        [](GLFWwindow* w, int width, int height) {
+            static_cast<Gui*>(glfwGetWindowUserPointer(w))->on_window_resize(width, height);
+        }
+    );
+}
+
+void Gui::init_graphics()
+{
+    new VK::Context(this->context);
+}
+
+void Gui::init_context()
+{
+    //Create context object
+    this->context = std::make_shared<AppContext>();
+}
+
 void Gui::on_key(int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        (*this->current_animation)->stop();
+        this->context->next_animation();
+    }
+}
 
-        this->current_animation++;
-        if (this->current_animation == this->animations.end()) {
-            this->current_animation = this->animations.begin();
-        }
+void Gui::on_window_resize(int width, int height)
+{
+    this->context->get_graphics_context().lock()->recreate_swap_chain();
+}
 
-        (*this->current_animation)->start();
+void Gui::start_loops()
+{
+    this->graphics_thread = std::thread(Gui::run_graphics_loop, this->context);
+    this->run_tick_loop();
+
+    context->should_close = true;
+
+    if (this->graphics_thread.joinable()) {
+        this->graphics_thread.join();
     }
 }
 
 /**
  * Start the gui loop.
  */
-void Gui::start_loop()
+void Gui::run_graphics_loop(std::shared_ptr<AppContext> app_context)
 {
-    //Loop until the window is closed
-    while (!glfwWindowShouldClose(this->window))
-    {
-        //Render the current animation if it's loaded, otherwise noise.
-        Animation::Animation *animation = (*this->current_animation).get();
-        if (animation->check_loaded()) {
-            animation->on_render();
-        } else {
-            this->noise_animation->on_render();
-        }
+    uint64_t current_time, frame_count=0, last_frame_time=Utilities::get_micro_time();
 
-        //Swap buffers
-        glfwSwapBuffers(this->window);
+    //Loop until the window is closed
+    while (!app_context->should_close)
+    {
+        //Perform the render
+        app_context->get_graphics_context().lock()->render_scene();
+
+        current_time = Utilities::get_micro_time();
+        frame_count++;
+        if (current_time - last_frame_time >= 1000000) {
+            std::cout << "Frame time: " << 1000000./static_cast<float>(frame_count) << " FPS: " << frame_count << std::endl;
+            frame_count = 0;
+            last_frame_time = current_time;
+        }
+    }
+
+    //Get the graphics context again incase it's changed in the last.. millisecond?
+    app_context->get_graphics_context().lock()->logical_device.waitIdle();
+}
+
+void Gui::run_tick_loop()
+{
+    int tick_rate = 60;
+    uint64_t last_tick_time = Utilities::get_micro_time();
+    uint64_t tick_time = Utilities::get_micro_time();
+    uint64_t tick_delta = 0;
+
+    //Loop until the window is closed
+    while (!glfwWindowShouldClose(this->context->get_window()))
+    {
+        tick_time = Utilities::get_micro_time();
+        tick_delta = tick_time - last_tick_time;
+        last_tick_time = tick_time;
+
+        //Construct a frame for the current animation if it's loaded, otherwise noise.
+        std::weak_ptr<Animation::Animation> current_animation = this->context->get_current_animation();
+        current_animation.lock()->on_tick(tick_delta);
+
+        this->context->get_graphics_context().lock()->commit_scenes();
 
         //Poll events
         glfwPollEvents();
+
+        last_tick_time = Utilities::get_micro_time();
+
+        if ((1000000. / tick_rate) > tick_delta) {
+            usleep((1000000. / tick_rate) - tick_delta);
+        }
     }
 }

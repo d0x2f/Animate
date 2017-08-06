@@ -1,11 +1,12 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <mutex>
 
 #include "Animation/Animation.hh"
-#include "Context.hh"
+#include "AppContext.hh"
 
 using namespace Animate::Animation;
 
@@ -15,20 +16,22 @@ namespace Animate
     {
         public:
             Gui();
-            virtual ~Gui();
+            ~Gui();
 
-            void start_loop();
+            void start_loops();
 
             void on_key(int key, int scancode, int action, int mods);
+            void on_window_resize(int width, int height);
 
         private:
-            GLFWwindow *window;
-            std::shared_ptr<Context> context;
-            std::shared_ptr<Animation::Animation> noise_animation;
-            std::vector< std::shared_ptr<Animation::Animation> >::iterator current_animation;
+            std::shared_ptr<AppContext> context;
+            std::thread graphics_thread;
 
-            std::vector< std::shared_ptr<Animation::Animation> > animations;
+            void init_glfw();
+            void init_graphics();
+            void init_context();
 
-            void set_animation(Animation::Animation *animation);
+            void run_tick_loop();
+            static void run_graphics_loop(std::shared_ptr<AppContext> app_context);
     };
 }

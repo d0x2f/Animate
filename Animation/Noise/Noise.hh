@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../Animation.hh"
-#include "../../GL/Quad.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Quad.hh"
+#include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 
@@ -14,13 +14,12 @@ namespace Animate::Animation::Noise
     class Noise : public Animation
     {
         public:
-            Noise(Context *context);
+            Noise(std::weak_ptr<AppContext> context);
 
-            bool on_render();
-            void on_tick(GLuint64 time_delta);
             void initialise();
+            void on_tick(uint64_t time_delta);
 
         protected:
-            std::shared_ptr<GL::Shader> shader;
+            std::weak_ptr<VK::Pipeline> shader;
     };
 }

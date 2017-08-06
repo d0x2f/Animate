@@ -1,10 +1,22 @@
-uniform float random_seed;
+#version 450
+
+layout (binding = 0) uniform variables {
+    float random_seed;
+} uniforms;
+
+layout (location = 0) out vec4 out_colour;
 
 // 2D Random
 float random (in vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))
-                 * 43758.5453123);
+    return fract(
+        sin(
+            dot(
+                st.xy,
+                vec2(12.9898,78.233)
+            )
+        )
+        * 43758.5453123
+    );
 }
 
 // 2D Noise based on Morgan McGuire @morgan3d
@@ -37,9 +49,9 @@ void main() {
     vec2 pos = gl_FragCoord.xy;
 
     // Use the noise function
-    float r = noise(vec2(random(vec2(random_seed+pos))));
-    float g = noise(vec2(random(vec2(random_seed+pos+vec2(1)))));
-    float b = noise(vec2(random(vec2(random_seed+pos-vec2(1)))));
+    float r = noise(vec2(random(vec2(uniforms.random_seed+pos))));
+    float g = noise(vec2(random(vec2(uniforms.random_seed+pos+vec2(1)))));
+    float b = noise(vec2(random(vec2(uniforms.random_seed+pos-vec2(1)))));
 
-    gl_FragColor = vec4(r, g, b, 1.0);
+    out_colour = vec4(r, g, b, 1.0);
 }

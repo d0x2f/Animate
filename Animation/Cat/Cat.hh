@@ -5,8 +5,8 @@
 #include <atomic>
 
 #include "../Animation.hh"
-#include "../../GL/Quad.hh"
-#include "../../GL/Shader.hh"
+#include "../../VK/Quad.hh"
+#include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
 #include "../../Object/Object.hh"
 #include "Object/Tile.hh"
@@ -20,15 +20,14 @@ namespace Animate::Animation::Cat
     class Cat : public Animation
     {
         public:
-            Cat(Context *context);
+            Cat(std::weak_ptr<AppContext> context);
 
-            bool on_render() override;
-            void on_load() override;
-            void on_tick(GLuint64 time_delta) override;
             void initialise() override;
+            void on_load() override;
+            void on_tick(uint64_t time_delta) override;
 
         protected:
-            std::shared_ptr<GL::Shader> shader;
+            std::weak_ptr<VK::Pipeline> shader;
             std::vector<uint8_t> initial_position;
             std::queue<TaquinSolve::Moves> move_sequence;
             std::map<int, Tile *> tile_position_map;
@@ -36,7 +35,6 @@ namespace Animate::Animation::Cat
             int grid_size = 4;
             int texture_index = 0;
 
-            std::atomic_bool reset_puzzle_flag;
             void reset_puzzle();
     };
 }

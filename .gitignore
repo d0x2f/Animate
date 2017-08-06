@@ -16,3 +16,4 @@ resources.h
 autom4te.cache/
 build/
 configure
+*.spv

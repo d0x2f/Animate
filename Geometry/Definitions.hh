@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <cstring>
@@ -12,16 +12,16 @@ namespace Animate::Geometry {
      * 2d vector.
      */
     struct Vector2 {
-        GLfloat x,y;
+        float x,y;
 
-        Vector2(GLfloat x=0., GLfloat y=0.) : x(x), y(y) {}
+        Vector2(float x=0., float y=0.) : x(x), y(y) {}
 
         /**
          * Normalise.
          */
         Vector2 normalise()
         {
-            GLfloat u = sqrt( pow(x, 2) + pow(y, 2) );
+            float u = sqrt( pow(x, 2) + pow(y, 2) );
 
             //Avoid division by zero
             if ( u == 0) {
@@ -37,7 +37,7 @@ namespace Animate::Geometry {
         /**
          * Dot product.
          */
-        GLfloat dot(Vector2 that)
+        float dot(Vector2 that)
         {
             return  x * that.x +
                     y * that.y;
@@ -68,7 +68,7 @@ namespace Animate::Geometry {
         /**
          * Negation.
          */
-        Vector2 operator*(GLfloat factor)
+        Vector2 operator*(float factor)
         {
             return Vector2(
                 x * factor,
@@ -84,9 +84,9 @@ namespace Animate::Geometry {
      * 3d vector.
      */
     struct Vector3 {
-        GLfloat x,y,z;
+        float x,y,z;
 
-        Vector3(GLfloat x=0., GLfloat y=0., GLfloat z=0.) : x(x), y(y), z(z) {}
+        Vector3(float x=0., float y=0., float z=0.) : x(x), y(y), z(z) {}
 
         Vector2 xy()
         {
@@ -98,7 +98,7 @@ namespace Animate::Geometry {
          */
         Vector3 normalise()
         {
-            GLfloat u = sqrt( pow(x, 2) + pow(y, 2) + pow(z, 2) );
+            float u = sqrt( pow(x, 2) + pow(y, 2) + pow(z, 2) );
 
             //Avoid division by zero
             if ( u == 0) {
@@ -132,7 +132,7 @@ namespace Animate::Geometry {
         /**
          * Dot product.
          */
-        GLfloat dot(Vector3 that)
+        float dot(Vector3 that)
         {
             return  x * that.x +
                     y * that.y +
@@ -178,7 +178,7 @@ namespace Animate::Geometry {
         /**
          * Negation.
          */
-        Vector3 operator*(GLfloat factor)
+        Vector3 operator*(float factor)
         {
             return Vector3(
                 x * factor,
@@ -215,28 +215,14 @@ namespace Animate::Geometry {
      * 4d vector.
      */
     struct Vector4 {
-        GLfloat x,y,z,w;
+        float x,y,z,w;
 
-        Vector4(GLfloat x=0., GLfloat y=0., GLfloat z=0., GLfloat w=0.) : x(x), y(y), z(z), w(w) {}
-
-        /**
-         * Return a raw c array.
-         **/
-        GLfloat *get_raw_data() {
-            GLfloat *data = (GLfloat *)malloc(sizeof(GLfloat)*4);
-
-            data[0] = x;
-            data[1] = y;
-            data[2] = z;
-            data[3] = w;
-
-            return data;
-        }
+        Vector4(float x=0., float y=0., float z=0., float w=0.) : x(x), y(y), z(z), w(w) {}
 
         /**
          * Dot product.
          */
-        GLfloat dot(Vector4 that)
+        float dot(Vector4 that)
         {
             return  x * that.x +
                     y * that.y +

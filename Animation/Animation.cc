@@ -10,82 +10,21 @@ using namespace Animate::Object;
 /**
  * Constructor
  */
-Animation::Animation(Context *context) : context(context)
+Animation::Animation(std::weak_ptr<AppContext> context) : context(context)
 {
-    this->running = false;
-    this->loaded = false;
 }
 
 /**
  * Destructor.
- * Ensure that the tick thread quits and joins.
  */
 Animation::~Animation()
 {
-    this->stop();
 }
 
-/**
- * Start the animation tick thread.
- */
-void Animation::start()
+void Animation::load()
 {
-    this->stop();
-
-    this->running = true;
-
-    this->tick_thread = std::shared_ptr<std::thread>( new std::thread(Animation::tick_loop, this) );
-}
-
-/**
- * Stop the animation tick thread.
- */
-void Animation::stop() {
-    this->running = false;
-    this->loaded = false;
-
-    if (this->tick_thread && this->tick_thread.get()->joinable()) {
-        this->tick_thread.get()->join();
-    }
-}
-
-/**
- * Return whether the tick thread is runnin or not.
- *
- * @return bool
- */
-bool Animation::check_running() const
-{
-    return this->running;
-}
-
-bool Animation::check_loaded() const
-{
-    return this->loaded;
-}
-
-/**
- * Return the tick rate for this animation.
- *
- * @return int
- */
-int Animation::get_tick_rate() const
-{
-    return this->tick_rate;
-}
-
-/**
- * Default render behaviour simply prints the frame time and rate.
- */
-bool Animation::on_render()
-{
-    GLuint64 current_time = Utilities::get_micro_time();
-    this->frame_count++;
-    if (current_time - this->last_frame_time >= 1000000) {
-        std::cout << "Frame time: " << 1000000./static_cast<GLfloat>(this->frame_count) << " FPS: " << this->frame_count << std::endl;
-        this->frame_count = 0;
-        this->last_frame_time = current_time;
-    }
+    std::thread load_thread(&Animation::on_load, this);
+    load_thread.detach();
 }
 
 /**
@@ -97,40 +36,27 @@ void Animation::on_load()
     this->loaded = true;
 }
 
+void Animation::unload()
+{
+    this->loaded = false;
+}
+
+bool Animation::check_loaded()
+{
+    return this->loaded;
+}
+
 /**
  * Compute a tick
  */
-void Animation::on_tick(GLuint64 time_delta)
+void Animation::on_tick(uint64_t time_delta)
 {
     //Tick all the objects
-    for (
-        std::map< std::string, std::shared_ptr<Animate::Object::Object> >::iterator it = this->objects.begin();
-        it != this->objects.end();
-        ++it
-    ) {
-        it->second->on_tick(time_delta);
+    for(auto const& object: this->objects) {
+        object.second->on_tick(time_delta);
+        object.second->add_to_scene();
     }
 }
-
-/**
- * Run a loop that calls the animations on_tick method.
- * Quit when check_running() returns false.
- */
-void Animation::tick_loop(Animation *animation)
-{
-    animation->on_load();
-
-    GLuint64 last_tick_time = Utilities::get_micro_time();
-    while (animation->check_running()) {
-        //Supply a time difference since the last tick
-        GLuint64 tick_time = Utilities::get_micro_time();
-        animation->on_tick(tick_time - last_tick_time);
-        last_tick_time = tick_time;
-
-        usleep(1000000. / animation->get_tick_rate());
-    }
-}
-
 
 /**
  * Fetch an object from the list.
@@ -139,14 +65,14 @@ void Animation::tick_loop(Animation *animation)
  *
  * @return the object.
  */
-Object *Animation::get_object(std::string name)
+std::weak_ptr<Object> Animation::get_object(std::string name)
 {
     std::map< std::string, std::shared_ptr<Object::Object> >::iterator it;
     it = this->objects.find(name);
     if (it == this->objects.end()) {
-        throw std::string("Requested non existant object.");
+        throw std::runtime_error("Requested non existant object.");
     }
-    return it->second.get();
+    return it->second;
 }
 
 /**

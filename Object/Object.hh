@@ -15,15 +15,16 @@ namespace Animate::Object
     class Object : public Movable, public Scalable, public Drawable
     {
         public:
-            Object(Point position = Point(), Scale size = Scale(1.,1.,1.));
+            Object(std::weak_ptr<VK::Context> context, Point position = Point(), Scale size = Scale(1.,1.,1.));
             ~Object();
 
             void initialise();
-            void add_component(Drawable *component);
+            void add_component(std::shared_ptr<Drawable> component);
             void clear_components();
-            virtual void draw(Matrix model_matrix);
+            virtual void set_model_matrix(Matrix model_matrix);
+            virtual void add_to_scene();
 
-            virtual void on_tick(GLuint64 time_delta);
+            virtual void on_tick(uint64_t time_delta);
 
         protected:
             std::vector< std::shared_ptr<Drawable> > components;

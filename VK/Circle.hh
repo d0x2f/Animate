@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
 #include "../Geometry/Definitions.hh"
@@ -13,20 +13,20 @@
 using namespace Animate::Geometry;
 using namespace Animate::Object::Property;
 
-namespace Animate::GL
+namespace Animate::VK
 {
     class Circle : public Drawable, public Movable, public Scalable, public Coloured
     {
         public:
-            Circle(Point position, Scale size, Colour colour, GLfloat thickness);
+            Circle(std::weak_ptr<VK::Context> context, Point position, Scale size, Colour colour, float thickness);
             ~Circle();
 
-            void draw(Matrix model_matrix) override;
+            void set_model_matrix(Matrix model_matrix) override;
 
         protected:
-            GLuint  vao_id = 0,
+            uint32_t  vao_id = 0,
                     buffer_id = 0;
-            GLfloat thickness;
+            float thickness;
 
             void initialise_buffers() override;
     };

@@ -38,7 +38,7 @@ void Rotatable::set_rotation(Vector3 rotation)
  *
  * @param delta A value to add to our x rotation.
  */
-void Rotatable::rotate_x(GLfloat delta)
+void Rotatable::rotate_x(float delta)
 {
     this->rotation.x += delta;
 }
@@ -48,7 +48,7 @@ void Rotatable::rotate_x(GLfloat delta)
  *
  * @param delta A value to add to our x rotation.
  */
-void Rotatable::rotate_y(GLfloat delta)
+void Rotatable::rotate_y(float delta)
 {
     this->rotation.y += delta;
 }
@@ -58,7 +58,7 @@ void Rotatable::rotate_y(GLfloat delta)
  *
  * @param delta A value to add to our x rotation.
  */
-void Rotatable::rotate_z(GLfloat delta)
+void Rotatable::rotate_z(float delta)
 {
     this->rotation.z += delta;
 }
