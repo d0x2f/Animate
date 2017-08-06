@@ -14,46 +14,44 @@ using namespace Animate::VK;
 Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resources) : context(context)
 {
     this->logical_device = context.lock()->logical_device;
-    
-    Glib::RefPtr<Gdk::Pixbuf> pixbuf;
 
-    vk::DeviceSize size;
-    int width;
-    int height;
-    int channels;
-    size_t byte_length;
+    std::vector<LayerData> layers = Texture::load_resources_as_layers(resources);
 
-    uint8_t const *bytes = reinterpret_cast<const uint8_t*>(Utilities::get_resource_as_bytes(resources.front(), &byte_length));
-
-    stbi_uc* pixels = stbi_load_from_memory(
-        bytes,
-        static_cast<int>(byte_length),
-        &width,
-        &height,
-        &channels,
-        STBI_rgb_alpha
-    );
-
-    if (!pixels) {
-        throw std::runtime_error("Couldn't load texture resource: " + resources.front());
+    //Find the total size needed for the staging buffer.
+    vk::DeviceSize total_size = 0;
+    for(auto const& layer : layers) {
+        total_size += layer.size;
     }
-    
-    vk::DeviceSize destination_size = 4 * width * height;
 
+    //Create the staging buffer.
     VK::Buffer staging_buffer(
         this->context.lock(),
-        destination_size,
+        total_size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
     );
 
+    //Extend width & height.
+    int width=0, height=0;
+
+    //Copy each image into it.
+    size_t offset = 0;
     void *data = staging_buffer.map();
-    memcpy(data, pixels, static_cast<size_t>(destination_size));
+    for(auto const& layer : layers) {
+        memcpy(data + offset, layer.pixels, layer.size);
+        offset += layer.size;
+
+        width = std::max(width, layer.width);
+        height = std::max(height, layer.height);
+
+        //Free pixel memory
+        stbi_image_free(layer.pixels);
+    }
     staging_buffer.unmap();
     
-    this->create_image(width, height);
-    this->copy_buffer_to_image(staging_buffer, width, height);
-    this->create_image_view();
+    this->create_image(width, height, layers.size());
+    this->copy_buffer_to_image(staging_buffer, layers, width, height);
+    this->create_image_view(layers.size());
     this->create_sampler();
 
     std::cout << "Loaded texture" << std::endl;
@@ -67,6 +65,37 @@ Texture::~Texture()
     this->logical_device.freeMemory(this->memory);
 }
 
+std::vector<LayerData> Texture::load_resources_as_layers(std::vector<std::string> resources)
+{
+    std::vector<LayerData> layers;
+
+    for(auto const& resource_id : resources) {
+        LayerData layer;
+
+        size_t data_length;
+        uint8_t const *data = reinterpret_cast<const uint8_t*>(Utilities::get_resource_as_bytes(resource_id, &data_length));
+
+        layer.pixels = stbi_load_from_memory(
+            data,
+            static_cast<int>(data_length),
+            &layer.width,
+            &layer.height,
+            &layer.channels,
+            STBI_rgb_alpha
+        );
+
+        if (!layer.pixels) {
+            throw std::runtime_error("Couldn't load texture resource: " + resource_id);
+        }
+
+        layer.size = layer.width * layer.height * 4;
+
+        layers.push_back(layer);
+    }
+
+    return layers;
+}
+
 vk::ImageView Texture::get_image_view()
 {
     return this->image_view;
@@ -77,13 +106,13 @@ vk::Sampler Texture::get_sampler()
     return this->sampler;
 }
 
-void Texture::create_image(uint32_t width, uint32_t height)
+void Texture::create_image(uint32_t width, uint32_t height, uint32_t layers)
 {
     vk::ImageCreateInfo create_info = vk::ImageCreateInfo()
         .setImageType(vk::ImageType::e2D)
         .setExtent({width, height, 1})
         .setMipLevels(1)
-        .setArrayLayers(1)
+        .setArrayLayers(layers)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setTiling(vk::ImageTiling::eOptimal)
         .setInitialLayout(vk::ImageLayout::ePreinitialized)
@@ -116,7 +145,7 @@ void Texture::create_image(uint32_t width, uint32_t height)
     context->logical_device.bindImageMemory(this->image, this->memory, 0);
 }
 
-void Texture::transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayout new_layout)
+void Texture::transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t layers)
 {
     vk::ImageMemoryBarrier barrier = vk::ImageMemoryBarrier()
         .setOldLayout(old_layout)
@@ -128,7 +157,7 @@ void Texture::transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayou
                 .setBaseMipLevel(0)
                 .setLevelCount(1)
                 .setBaseArrayLayer(0)
-                .setLayerCount(1)
+                .setLayerCount(layers)
         );
 
     if (
@@ -161,48 +190,64 @@ void Texture::transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayou
     });
 }
 
-void Texture::copy_buffer_to_image(VK::Buffer &staging_buffer, uint32_t width, uint32_t height)
+void Texture::copy_buffer_to_image(VK::Buffer &staging_buffer, std::vector<LayerData> layers, uint32_t width, uint32_t height)
 {
     this->transition_image_layout(
         vk::ImageLayout::ePreinitialized,
-        vk::ImageLayout::eTransferDstOptimal
+        vk::ImageLayout::eTransferDstOptimal,
+        layers.size()
     );
 
-    vk::BufferImageCopy copy_region = vk::BufferImageCopy()
-        .setBufferOffset(0)
-        .setBufferRowLength(0)
-        .setBufferImageHeight(0)
-        .setImageSubresource(
-            vk::ImageSubresourceLayers()
-                .setAspectMask(vk::ImageAspectFlagBits::eColor)
-                .setMipLevel(0)
-                .setBaseArrayLayer(0)
-                .setLayerCount(1)
-        )
-        .setImageOffset({0,0,0})
-        .setImageExtent({width, height, 1});
+    std::vector<vk::BufferImageCopy> copy_regions;
+    size_t offset = 0;
+    uint32_t index = 0;
+
+    for(auto const& layer : layers) {
+        vk::BufferImageCopy copy_region = vk::BufferImageCopy()
+            .setBufferOffset(offset)
+            .setBufferRowLength(0)
+            .setBufferImageHeight(0)
+            .setImageSubresource(
+                vk::ImageSubresourceLayers()
+                    .setAspectMask(vk::ImageAspectFlagBits::eColor)
+                    .setMipLevel(0)
+                    .setBaseArrayLayer(index++)
+                    .setLayerCount(1)
+            )
+            .setImageOffset({0,0,0})
+            .setImageExtent({
+                static_cast<uint32_t>(layer.width),
+                static_cast<uint32_t>(layer.height),
+                1
+            });
+
+        copy_regions.push_back(copy_region);
+
+        offset += layer.size;
+    }
 
     this->context.lock()->run_one_time_commands([&](vk::CommandBuffer command_buffer){
         command_buffer.copyBufferToImage(
             staging_buffer,
             image,
             vk::ImageLayout::eTransferDstOptimal,
-            1,
-            &copy_region
+            copy_regions.size(),
+            copy_regions.data()
         );
     });
 
     this->transition_image_layout(
         vk::ImageLayout::eTransferDstOptimal,
-        vk::ImageLayout::eShaderReadOnlyOptimal
+        vk::ImageLayout::eShaderReadOnlyOptimal,
+        layers.size()
     );
 }
 
-void Texture::create_image_view()
+void Texture::create_image_view(uint32_t layers)
 {
     vk::ImageViewCreateInfo view_info = vk::ImageViewCreateInfo()
         .setImage(this->image)
-        .setViewType(vk::ImageViewType::e2D)
+        .setViewType(vk::ImageViewType::e2DArray)
         .setFormat(vk::Format::eR8G8B8A8Unorm)
         .setSubresourceRange(
             vk::ImageSubresourceRange()
@@ -210,7 +255,7 @@ void Texture::create_image_view()
                 .setBaseMipLevel(0)
                 .setLevelCount(1)
                 .setBaseArrayLayer(0)
-                .setLayerCount(1)
+                .setLayerCount(layers)
         );
 
     if (this->context.lock()->logical_device.createImageView(&view_info, nullptr, &this->image_view) != vk::Result::eSuccess) {

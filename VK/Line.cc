@@ -63,14 +63,14 @@ void Line::create_vertex_buffer()
     //Vertex & colour Data:
     const Vertex vertices[] = {
     //  Point                                       Texture            Normal               Colour
-        Vertex(Vector3(-this->thickness/2, 0., 0.), Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(this->thickness/2, 0., 0.),  Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(-this->thickness/2, 1., 0.), Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(this->thickness/2, 1., 0.),  Vector2(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
+        Vertex(Vector3(-this->thickness/2, 0., 0.), Vector3(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(this->thickness/2, 0., 0.),  Vector3(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(-this->thickness/2, 1., 0.), Vector3(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(this->thickness/2, 1., 0.),  Vector3(0., 0.), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
     
-    vk::DeviceSize size = 16 * sizeof(Vertex);
+    vk::DeviceSize size = 4 * sizeof(Vertex);
 
     std::weak_ptr<VK::Buffer> _staging_buffer = context->create_buffer(
         size,

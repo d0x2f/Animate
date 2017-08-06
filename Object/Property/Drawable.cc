@@ -12,25 +12,6 @@ using namespace Animate::VK;
 /**
  * Initialise the drawable.
  */
-void Drawable::initialise(std::weak_ptr<Pipeline> pipeline, uint32_t texture_layer)
-{
-    //Return if already initialised
-    if (this->initialised) {
-        return;
-    }
-
-    this->set_pipeline(pipeline);
-    this->set_texture_layer(texture_layer);
-
-    this->initialise_buffers();
-
-    //Set initialised
-    this->initialised = true;
-}
-
-/**
- * Initialise the drawable.
- */
 void Drawable::initialise(std::weak_ptr<Pipeline> pipeline)
 {
     //Return if already initialised
@@ -54,16 +35,6 @@ void Drawable::initialise(std::weak_ptr<Pipeline> pipeline)
 void Drawable::set_pipeline(std::weak_ptr<Pipeline> pipeline)
 {
     this->pipeline = pipeline;
-}
-
-/**
- * Set the texture.
- *
- * @param texture A new texture to use when drawing.
- */
-void Drawable::set_texture_layer(uint32_t texture_layer)
-{
-    this->texture_layer = texture_layer;
 }
 
 /**
@@ -94,11 +65,6 @@ uint32_t Drawable::get_index_count()
 std::weak_ptr<Pipeline> const Drawable::get_pipeline()
 {
     return this->pipeline;
-}
-
-uint32_t const Drawable::get_texture_layer()
-{
-    return this->texture_layer;
 }
 
 Matrix const Drawable::get_model_matrix()

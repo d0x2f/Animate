@@ -12,17 +12,17 @@ namespace Animate::Geometry
     struct Vertex
     {
             Vector3 position;
-            Vector2 texture;
+            Vector3 texture;
             Vector3 normal;
             Vector4 colour;
 
-            Vertex(Vector3 p, Vector2 t, Vector3 n, Vector4 c) : position(p), texture(t), normal(n), colour(c) {}
+            Vertex(Vector3 p, Vector3 t, Vector3 n, Vector4 c) : position(p), texture(t), normal(n), colour(c) {}
 
             static vk::VertexInputBindingDescription get_binding_description()
             {
                 return vk::VertexInputBindingDescription()
                     .setBinding(0)
-                    .setStride(sizeof(float) * 12)
+                    .setStride(sizeof(float) * 13)
                     .setInputRate(vk::VertexInputRate::eVertex);
             }
 
@@ -40,7 +40,7 @@ namespace Animate::Geometry
                 attributes[1]
                     .setBinding(0)
                     .setLocation(1)
-                    .setFormat(vk::Format::eR32G32Sfloat)
+                    .setFormat(vk::Format::eR32G32B32Sfloat)
                     .setOffset(offsetof(Vertex, texture));
 
                 //Set normal data

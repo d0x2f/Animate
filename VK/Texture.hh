@@ -4,10 +4,20 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
+#include "libs/stb_image.h"
+
 namespace Animate::VK
 {
     class Context;
     class Buffer;
+
+    struct LayerData {
+        size_t size;
+        int width;
+        int height;
+        int channels;
+        stbi_uc *pixels;
+    };
 
     class Texture
     {
@@ -26,10 +36,12 @@ namespace Animate::VK
             vk::ImageView image_view;
             vk::Sampler sampler;
 
-            void create_image(uint32_t width, uint32_t height);
-            void transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayout new_layout);
-            void copy_buffer_to_image(VK::Buffer &staging_buffer, uint32_t width, uint32_t height);
-            void create_image_view();
+            void create_image(uint32_t width, uint32_t height, uint32_t layers);
+            void transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayout new_layout, uint32_t layers);
+            void copy_buffer_to_image(VK::Buffer &staging_buffer, std::vector<LayerData> layers, uint32_t width, uint32_t height);
+            void create_image_view(uint32_t layers);
             void create_sampler();
+
+            static std::vector<LayerData> load_resources_as_layers(std::vector<std::string> resources);
     };
 }

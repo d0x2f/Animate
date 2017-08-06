@@ -27,7 +27,7 @@ Quad::~Quad()
     }
 }
 
-void Quad::set_texture_position(Position texture_position, Position texture_size)
+void Quad::set_texture_position(Vector3 texture_position, Vector3 texture_size)
 {
     this->texture_position = texture_position;
     this->texture_size = texture_size;
@@ -49,19 +49,19 @@ void Quad::create_vertex_buffer()
         return;
     }
 
-    Vector2 t = this->texture_position;
-    Vector2 u = this->texture_position + this->texture_size;
+    Vector3 t = this->texture_position;
+    Vector3 u = this->texture_position + this->texture_size;
 
     //Vertex & colour Data:
     const Vertex vertices[] = {
-    //  Point                       Texture            Normal               Colour
-        Vertex(Vector3(0., 0., 0.), Vector2(t.x, u.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 0., 0.), Vector2(u.x, u.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(0., 1., 0.), Vector2(t.x, t.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 1., 0.), Vector2(u.x, t.y), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
+    //  Point                       Texture                 Normal               Colour
+        Vertex(Vector3(0., 0., 0.), Vector3(t.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(1., 0., 0.), Vector3(u.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(0., 1., 0.), Vector3(t.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(1., 1., 0.), Vector3(u.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
-    vk::DeviceSize size = 16 * sizeof(Vertex);
+    vk::DeviceSize size = 4 * sizeof(Vertex);
 
     std::shared_ptr<Context> context = this->context.lock();
 

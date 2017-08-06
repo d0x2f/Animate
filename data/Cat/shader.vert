@@ -2,7 +2,7 @@
 #extension GL_ARB_explicit_attrib_location : enable
 
 layout (location = 0) in vec3 vertex;
-layout (location = 1) in vec2 tex_coords;
+layout (location = 1) in vec3 tex_coords;
 layout (location = 2) in vec3 normal;
 layout (location = 3) in vec4 colour;
 
@@ -14,7 +14,7 @@ out gl_PerVertex {
     vec4 gl_Position;
 };
 
-layout (location = 1) out vec2 out_tex_coords;
+layout (location = 1) out vec3 out_tex_coords;
 layout (location = 3) out vec4 out_colour;
 
 void main() {

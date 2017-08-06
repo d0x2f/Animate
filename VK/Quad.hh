@@ -22,7 +22,7 @@ namespace Animate::VK
 
             void initialise_buffers() override;
             
-            void set_texture_position(Position texture_position, Position texture_size = Position(1., 1.));
+            void set_texture_position(Vector3 texture_position, Vector3 texture_size = Vector3(1., 1., 0.));
 
             vk::Buffer const get_vertex_buffer() override;
             vk::Buffer const get_index_buffer() override;
@@ -30,8 +30,8 @@ namespace Animate::VK
             void set_model_matrix(Matrix model_matrix) override;
 
         protected:
-            Position texture_position;
-            Position texture_size = Position(1., 1.);
+            Vector3 texture_position;
+            Vector3 texture_size = Vector3(1., 1., 0.);
 
             std::weak_ptr<Buffer> vertex_buffer,
                                   index_buffer;
