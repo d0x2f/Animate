@@ -44,7 +44,6 @@ void Gui::init_glfw()
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-
     GLFWwindow *window = glfwCreateWindow(1024, 1024, "Animate", nullptr, nullptr);
     if (!window) {
         throw std::runtime_error("Couldn't create GLFW window.");
