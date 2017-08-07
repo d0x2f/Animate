@@ -34,11 +34,12 @@ AC_CHECK_LIB([taquinsolve], [taquin_solve_c_stub],,AC_MSG_ERROR([taquinsolve lib
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
  Makefile
- Animation/Makefile
- Animation/Cat/Makefile
- VK/Makefile
- Geometry/Makefile
- Object/Makefile
- Object/Property/Makefile
+ src/Makefile
+ src/Animation/Makefile
+ src/Animation/Cat/Makefile
+ src/VK/Makefile
+ src/Geometry/Makefile
+ src/Object/Makefile
+ src/Object/Property/Makefile
 ])
 AC_OUTPUT

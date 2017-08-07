@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Utilities.hh"
-#include "../resources.h"
+#include "resources.h"
 #include <sys/time.h>
 
 using namespace Animate;
