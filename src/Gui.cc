@@ -95,7 +95,7 @@ void Gui::start_loops()
     this->graphics_thread = std::thread(Gui::run_graphics_loop, this->context);
     this->run_tick_loop();
 
-    context->should_close = true;
+    this->context->should_close = true;
 
     if (this->graphics_thread.joinable()) {
         this->graphics_thread.join();

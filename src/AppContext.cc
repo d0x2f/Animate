@@ -78,18 +78,18 @@ std::weak_ptr<VK::Context> const AppContext::get_graphics_context()
 
 void AppContext::setup_animations() {
     //Create animation and connect it up
-    this->noise_animation = std::unique_ptr<Animation::Animation>(new Animation::Noise::Noise(this->shared_from_this()));
+    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->shared_from_this()));
     this->noise_animation->initialise();
 
     Animation::Animation *animation = new Animation::Cat::Cat(this->shared_from_this());
     animation->initialise();
 
-    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
     animation = new Animation::Modulo::Modulo(this->shared_from_this());
     animation->initialise();
 
-    this->animations.push_back(std::unique_ptr<Animation::Animation>(animation));
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
     this->current_animation = this->animations.begin();
     this->next_animation();
