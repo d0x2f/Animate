@@ -18,8 +18,6 @@ namespace Animate
     class AppContext : public std::enable_shared_from_this<AppContext>
     {
         public:
-            ~AppContext();
-
             std::atomic_bool should_close = false;
 
             void set_window(GLFWwindow *window);

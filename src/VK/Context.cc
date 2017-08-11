@@ -34,31 +34,55 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 
 Context::~Context()
 {
-    this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout);
-    this->logical_device.destroyDescriptorPool(this->descriptor_pool);
-    this->logical_device.destroyPipelineLayout(this->pipeline_layout);
+    if (this->descriptor_set_layout) {
+        this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout);
+    }
+
+    if (this->descriptor_pool) {
+        this->logical_device.destroyDescriptorPool(this->descriptor_pool);
+    }
+
+    if (this->pipeline_layout) {
+        this->logical_device.destroyPipelineLayout(this->pipeline_layout);
+    }
     this->pipelines.clear();
 
     cleanup_swap_chain_dependancies();
 
     this->buffers.clear();
 
-    this->logical_device.destroySwapchainKHR(this->swap_chain);
-
-    this->logical_device.destroySemaphore(this->image_available_semaphore);
-    this->logical_device.destroySemaphore(this->render_finished_semaphore);
-    this->logical_device.destroyCommandPool(this->command_pool);
-
-    this->logical_device.destroy();
-
-    auto DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)this->instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
-    if (DestroyDebugReportCallback != nullptr) {
-        DestroyDebugReportCallback(this->instance, this->debug_callback_obj, nullptr);
-    } else {
-        std::cerr << "Unable to desroy debug callback." << std::endl;
+    if (this->swap_chain) {
+        this->logical_device.destroySwapchainKHR(this->swap_chain);
     }
 
-    this->instance.destroy();
+    if (this->image_available_semaphore) {
+        this->logical_device.destroySemaphore(this->image_available_semaphore);
+    }
+
+    if (this->render_finished_semaphore) {
+        this->logical_device.destroySemaphore(this->render_finished_semaphore);
+    }
+
+    if (this->command_pool) {
+        this->logical_device.destroyCommandPool(this->command_pool);
+    }
+
+    if (this->logical_device) {
+        this->logical_device.destroy();
+    }
+
+    if (this->debug_callback_obj) {
+        auto DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)this->instance.getProcAddr("vkDestroyDebugReportCallbackEXT");
+        if (DestroyDebugReportCallback != nullptr) {
+            DestroyDebugReportCallback(this->instance, this->debug_callback_obj, nullptr);
+        } else {
+            std::cerr << "Unable to desroy debug callback." << std::endl;
+        }
+    }
+
+    if (this->instance) {
+        this->instance.destroy();
+    }
 }
 
 void Context::recreate_swap_chain()
@@ -74,7 +98,7 @@ void Context::recreate_swap_chain()
     this->create_swap_chain();
 
     this->logical_device.destroySwapchainKHR(tmp_swap_chain, nullptr);
-    
+
     this->create_image_views();
     this->create_render_pass();
 
@@ -87,12 +111,22 @@ void Context::recreate_swap_chain()
 void Context::cleanup_swap_chain_dependancies()
 {
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
-        this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
+        if (this->logical_device) {
+            this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
+        }
     }
-    
-    this->logical_device.freeCommandBuffers(this->command_pool, static_cast<uint32_t>(this->command_buffers.size()), this->command_buffers.data());
 
-    this->logical_device.destroyRenderPass(this->render_pass, nullptr);
+    if (this->command_pool) {
+        this->logical_device.freeCommandBuffers(
+            this->command_pool,
+            static_cast<uint32_t>(this->command_buffers.size()),
+            this->command_buffers.data()
+        );
+    }
+
+    if (this->render_pass) {
+        this->logical_device.destroyRenderPass(this->render_pass, nullptr);
+    }
 
     for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
         this->logical_device.destroyImageView(this->swap_chain_image_views[i], nullptr);
@@ -178,7 +212,7 @@ void Context::fill_command_buffer(int i)
                         );
                         this->currently_bound_descriptor_set = descriptor_set;
                     }
-                    
+
                     first_pipeline_draw = false;
                 }
 
@@ -207,7 +241,7 @@ void Context::fill_command_buffer(int i)
             }
         }
     }
-    
+
     this->command_buffers[i].endRenderPass();
     this->command_buffers[i].end();
 }
@@ -250,7 +284,7 @@ void Context::render_scene()
     std::lock_guard<std::mutex> command_guard(this->command_mutex);
 
     this->fill_command_buffer(image_index);
-    
+
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
 
     vk::SubmitInfo submit_info = vk::SubmitInfo()
@@ -276,7 +310,7 @@ void Context::render_scene()
     }
 
     this->present_queue.waitIdle();
-    
+
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
     }
@@ -286,7 +320,7 @@ uint32_t Context::find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags
 {
     vk::PhysicalDeviceMemoryProperties memory_properties;
     this->physical_device.getMemoryProperties(&memory_properties);
-    
+
     for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
         if (
             type_filter & (1 << i) &&
@@ -330,7 +364,10 @@ void Context::create_instance()
         .setEnabledLayerCount(layers.size())
         .setPpEnabledLayerNames(layers.data());
 
-    vk::createInstance(&create_info, nullptr, &this->instance);
+    vk::Result result = vk::createInstance(&create_info, nullptr, &this->instance);
+    if (result != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create vulkan instance: " + vk::to_string(result));
+    }
 }
 
 void Context::bind_debug_callback()
@@ -760,7 +797,7 @@ bool Context::is_device_suitable(vk::PhysicalDevice const & device)
     //vk::PhysicalDeviceProperties properties = device.getProperties();
     vk::PhysicalDeviceFeatures features = device.getFeatures();
 
-    return 
+    return
         features.samplerAnisotropy &&
         features.geometryShader &&
         queue_families.is_complete() &&
