@@ -25,7 +25,7 @@ Writting computer graphics binds two of my favourite subjects, programming and m
   * Calls to drawable's set\_model\_matrix, set\_color, etc. can trigger an update of only the relevant sections of the buffer.
 * Move away from GDK resource manager in favor of some other stand alone resource management library.
 
-## Requirememts
+## Requirements
 
 * Vulkan library and vulkan compatible hardware
 * GTK3, GTKMM3

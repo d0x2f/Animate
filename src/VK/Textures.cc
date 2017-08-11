@@ -5,7 +5,7 @@ using namespace Animate::VK;
 
 Textures::Textures(std::weak_ptr<Context> context, std::vector<std::string> resources) : context(context)
 {
-    this->array_texture = std::shared_ptr<Texture>(new Texture(this->context, resources));
+    this->array_texture.reset(new Texture(this->context, resources));
 
     uint32_t i=0;
     for(auto const& resource : resources) {

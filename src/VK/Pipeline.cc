@@ -37,7 +37,9 @@ Pipeline::~Pipeline()
         this->logical_device.destroyShaderModule(shader_module, nullptr);
     }
 
-    this->logical_device.destroyPipeline(this->pipeline, nullptr);
+    if (this->pipeline) {
+        this->logical_device.destroyPipeline(this->pipeline, nullptr);
+    }
 }
 
 void Pipeline::load_shader(vk::ShaderStageFlagBits type, std::string resource_id)
@@ -211,7 +213,7 @@ vk::DescriptorSet Pipeline::get_descriptor_set()
 void Pipeline::create_textures(std::vector<std::string> resources)
 {
     if (resources.size() > 0) {
-        this->textures = std::shared_ptr<Textures>(new Textures(this->context, resources));
+        this->textures.reset(new Textures(this->context, resources));
     }
 }
 

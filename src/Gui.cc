@@ -69,7 +69,7 @@ void Gui::init_glfw()
 
 void Gui::init_graphics()
 {
-    new VK::Context(this->context);
+    this->context->set_graphics_context(std::make_shared<VK::Context>(this->context));
 }
 
 void Gui::init_context()

@@ -21,7 +21,7 @@ namespace Animate
             std::atomic_bool should_close = false;
 
             void set_window(GLFWwindow *window);
-            void set_graphics_context(VK::Context  *graphics_context);
+            void set_graphics_context(std::shared_ptr<VK::Context> graphics_context);
             void set_surface(vk::SurfaceKHR *surface);
             void setup_animations();
 

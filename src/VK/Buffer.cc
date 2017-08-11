@@ -47,8 +47,13 @@ Buffer::Buffer(
 Buffer::~Buffer()
 {
     this->logical_device.waitIdle();
-    this->logical_device.destroyBuffer(this->ident);
-    this->logical_device.freeMemory(this->memory);
+    if (this->ident) {
+        this->logical_device.destroyBuffer(this->ident);
+    }
+
+    if (this->memory) {
+        this->logical_device.freeMemory(this->memory);
+    }
 }
 
 uint64_t Buffer::get_id()

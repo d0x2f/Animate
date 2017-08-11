@@ -14,8 +14,6 @@ using namespace Animate::VK;
 
 Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 {
-    this->context.lock()->set_graphics_context(this);
-
     this->create_instance();
     this->bind_debug_callback();
     this->create_surface();
@@ -366,7 +364,7 @@ void Context::create_instance()
 
     vk::Result result = vk::createInstance(&create_info, nullptr, &this->instance);
     if (result != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't create vulkan instance: " + vk::to_string(result));
+       throw std::runtime_error("Couldn't create vulkan instance: " + vk::to_string(result));
     }
 }
 

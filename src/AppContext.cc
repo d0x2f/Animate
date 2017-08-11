@@ -23,7 +23,7 @@ void AppContext::set_window(GLFWwindow *window)
 */
 void AppContext::set_surface(vk::SurfaceKHR *surface)
 {
-    this->surface = std::shared_ptr<vk::SurfaceKHR>(surface);
+    this->surface.reset(surface);
 }
 
 /**
@@ -31,9 +31,9 @@ void AppContext::set_surface(vk::SurfaceKHR *surface)
 *
 * @param graphics_context A graphics context.
 */
-void AppContext::set_graphics_context(VK::Context  *graphics_context)
+void AppContext::set_graphics_context(std::shared_ptr<VK::Context> graphics_context)
 {
-    this->graphics_context = std::shared_ptr<VK::Context>(graphics_context);
+    this->graphics_context.swap(graphics_context);
 }
 
 /**
@@ -73,16 +73,18 @@ std::weak_ptr<VK::Context> const AppContext::get_graphics_context()
 }
 
 void AppContext::setup_animations() {
+    std::shared_ptr<AppContext> self = this->shared_from_this();
+
     //Create animation and connect it up
-    this->noise_animation = std::shared_ptr<Animation::Animation>(new Animation::Noise::Noise(this->shared_from_this()));
+    this->noise_animation.reset(new Animation::Noise::Noise(self));
     this->noise_animation->initialise();
 
-    Animation::Animation *animation = new Animation::Cat::Cat(this->shared_from_this());
+    Animation::Animation *animation = new Animation::Cat::Cat(self);
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
-    animation = new Animation::Modulo::Modulo(this->shared_from_this());
+    animation = new Animation::Modulo::Modulo(self);
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
