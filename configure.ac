@@ -5,8 +5,6 @@ AC_PREREQ([2.69])
 AC_INIT([animate], [1.0], [me@dyl.dog])
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_AUX_DIR(build)
-AC_CONFIG_MACRO_DIRS([m4])
 AM_INIT_AUTOMAKE([subdir-objects -Wall -Werror foreign])
 
 # Checks for programs.
