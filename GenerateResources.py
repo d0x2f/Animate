@@ -14,20 +14,11 @@ def generate_code():
         print('void Resources::initialise(){', file=output)
         i = 0
         for path in resource_list:
-            print('std::vector<uint8_t> data_%d = {' % i, file=output, end='')
+            print('std::vector<uint8_t> data_%d = {' % i, file=output)
             with open(path, "rb") as resource:
                 data = resource.read()
                 byte_data = bytearray(data)
-                column = 0
-                first = True
-                for byte in byte_data:
-                    if not first:
-                        print(', ', file=output, end='')
-                    if column % 8 == 0:
-                        print('\n', file=output, end='')
-                    print('0x%02x' % byte, file=output, end='')
-                    column += 1
-                    first = False
+                print(', '.join("0x%02x" % x for x in byte_data), file=output)
             print('\n};', file=output)
             print(
                 'Resources::resources.insert('

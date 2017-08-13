@@ -11,8 +11,7 @@ config.guess
 ltmain.sh
 c_cpp_properties.json
 config.log
-resources.c
-resources.h
+Resources.cc
 autom4te.cache/
 build/
 configure
