@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <cstdint>
+#include <unistd.h>
 
 #include "Gui.hh"
 #include "Utilities.hh"

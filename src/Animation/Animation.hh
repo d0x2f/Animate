@@ -1,6 +1,5 @@
 #pragma once
 
-#include <gtkmm-3.0/gtkmm.h>
 #include <thread>
 #include <string>
 #include <atomic>

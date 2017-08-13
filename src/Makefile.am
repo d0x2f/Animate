@@ -28,9 +28,11 @@ animate_SOURCES =   VK/Context.cc \
                     \
                     Gui.cc \
                     AppContext.cc \
-                    resources.c \
                     Utilities.cc \
+                    Resources.cc \
+                    \
                     main.cc
+
 animate_HEADERS =   VK/Context.hh \
                     VK/Quad.hh \
                     VK/Circle.hh \
@@ -60,20 +62,17 @@ animate_HEADERS =   VK/Context.hh \
                     \
                     Gui.hh \
                     AppContext.hh \
-                    resources.h \
                     Utilities.hh\
+                    Resources.hh \
                     \
                     libs/stb_image.h
-
-animate_CPPFLAGS = @GTK_CFLAGS@ @GTKMM_CFLAGS@
-animate_LDADD = @GTK_LIBS@ @GTKMM_LIBS@
 
 SUBDIRS =   Animation \
             VK \
             Geometry \
             Object
 
-AM_CXXFLAGS = -g3 -O0
+AM_CXXFLAGS = -g3 -O2
 ACLOCAL_AMFLAGS = -I m4
 
 CLEANFILES = *~

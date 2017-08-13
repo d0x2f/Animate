@@ -1,4 +1,3 @@
-#include <gtkmm-3.0/gtkmm.h>
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
@@ -34,16 +33,16 @@ void Cat::initialise()
 {
     //Set shaders
     this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline(
-        "/Animate/data/Cat/shader.frag.spv",
-        "/Animate/data/Cat/shader.vert.spv",
+        "data/Cat/shader.frag.spv",
+        "data/Cat/shader.vert.spv",
         {
-            "/Animate/data/Cat/0.jpg",
-            "/Animate/data/Cat/1.jpg",
-            "/Animate/data/Cat/2.jpg",
-            "/Animate/data/Cat/3.jpg",
-            "/Animate/data/Cat/4.jpg",
-            "/Animate/data/Cat/5.jpg",
-            "/Animate/data/Cat/6.jpg"
+            "data/Cat/0.jpg",
+            "data/Cat/1.jpg",
+            "data/Cat/2.jpg",
+            "data/Cat/3.jpg",
+            "data/Cat/4.jpg",
+            "data/Cat/5.jpg",
+            "data/Cat/6.jpg"
         }
     );
 
@@ -69,7 +68,7 @@ void Cat::reset_puzzle()
     this->tile_position_map.clear();
 
     //Set puzzle values
-    std::string texture_name = "/Animate/data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
+    std::string texture_name = "data/Cat/" + std::to_string(this->texture_index++) + ".jpg";
     this->texture_index %= 7;
 
     std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();

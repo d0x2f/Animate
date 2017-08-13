@@ -1,4 +1,3 @@
-#include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
@@ -33,7 +32,7 @@ void Noise::initialise()
     std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
 
     //Set shaders
-    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Noise/shader.frag.spv", "/Animate/data/Noise/shader.vert.spv");
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("data/Noise/shader.frag.spv", "data/Noise/shader.vert.spv");
 
     //Look at
     Matrix view_matrix = Matrix::look_at(

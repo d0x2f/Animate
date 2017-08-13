@@ -1,0 +1,21 @@
+[
+    "data/Cat/0.jpg",
+    "data/Cat/1.jpg",
+    "data/Cat/2.jpg",
+    "data/Cat/3.jpg",
+    "data/Cat/4.jpg",
+    "data/Cat/5.jpg",
+    "data/Cat/6.jpg",
+
+    "data/Cat/shader.vert.spv",
+    "data/Cat/shader.frag.spv",
+
+    "data/Modulo/shader.vert.spv",
+    "data/Modulo/shader.frag.spv",
+
+    "data/Noise/shader.vert.spv",
+    "data/Noise/shader.frag.spv",
+
+    "data/Default/shader.vert.spv",
+    "data/Default/shader.frag.spv"
+]

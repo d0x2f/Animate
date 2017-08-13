@@ -1,20 +1,25 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <sys/time.h>
 
 #include "Utilities.hh"
-#include "resources.h"
-#include <sys/time.h>
+#include "Resources.hh"
 
 using namespace Animate;
 
-gconstpointer Utilities::get_resource_as_bytes(std::string key, size_t *size)
+const uint8_t * Utilities::get_resource_as_bytes(std::string key, size_t *size)
 {
-    Glib::RefPtr< const Glib::Bytes > bytes = Gio::Resource::lookup_data_global(key);
-    size_t resource_size = bytes->get_size();
-    if (size != nullptr) {
-        *size = resource_size;
+    auto search = Resources::resources.find(key);
+
+    if (search == Resources::resources.end()) {
+        throw std::runtime_error("Resource not found: " + key);
     }
-    return bytes->get_data(resource_size);
+
+    if (size != nullptr) {
+        *size = search->second.size();
+    }
+    return search->second.data();
 }
 
 uint64_t Utilities::get_micro_time()

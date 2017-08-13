@@ -1,4 +1,3 @@
-#include <gtkmm-3.0/gtkmm.h>
 #include <iostream>
 
 #include "Texture.hh"
@@ -85,7 +84,9 @@ std::vector<LayerData> Texture::load_resources_as_layers(std::vector<std::string
         );
 
         if (!layer.pixels) {
-            throw std::runtime_error("Couldn't load texture resource: " + resource_id);
+            throw std::runtime_error("Couldn't load texture resource: " + resource_id + " (" + stbi_failure_reason() + ")");
+        } else {
+            std::cout << "Texture loaded: " + resource_id << std::endl;
         }
 
         layer.size = layer.width * layer.height * 4;

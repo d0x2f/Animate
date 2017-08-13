@@ -1,4 +1,3 @@
-#include <gtkmm-3.0/gtkmm.h>
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
@@ -35,7 +34,7 @@ void Modulo::initialise()
     std::weak_ptr<VK::Context> graphics_context = this->context.lock()->get_graphics_context();
 
     //Set shaders
-    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("/Animate/data/Modulo/shader.frag.spv", "/Animate/data/Modulo/shader.vert.spv");
+    this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline("data/Modulo/shader.frag.spv", "data/Modulo/shader.vert.spv");
 
     //Look at
     Matrix view_matrix = Matrix::look_at(

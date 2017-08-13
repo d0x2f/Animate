@@ -23,9 +23,6 @@ AX_CHECK_COMPILE_FLAG([-std=gnu++1z],
         ])
 ])
 
-PKG_CHECK_MODULES([GTKMM], [gtkmm-3.0 >= 3.8.0])
-AM_PATH_GTK_3_0([3.20.0],[],AC_MSG_ERROR([Gtk+ 3.20.0 or higher required.]))
-
 AC_CHECK_LIB([glfw], [glfwInit],,AC_MSG_ERROR([GLFW library required.]))
 AC_CHECK_LIB([vulkan], [vkCreateInstance],,AC_MSG_ERROR([Vulkan library required.]))
 AC_CHECK_LIB([pthread], [pthread_create],,AC_MSG_ERROR([pthread library required.]))

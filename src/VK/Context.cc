@@ -1,14 +1,14 @@
 #include <set>
 #include <iostream>
 
+#include "../Object/Property/Drawable.hh"
+#include "../Geometry/Vertex.hh"
 #include "../AppContext.hh"
+#include "../Utilities.hh"
 #include "Quad.hh"
 #include "Context.hh"
-#include "Utilities.hh"
 #include "Buffer.hh"
 #include "Pipeline.hh"
-#include "../Geometry/Vertex.hh"
-#include "../Object/Property/Drawable.hh"
 
 using namespace Animate::VK;
 
