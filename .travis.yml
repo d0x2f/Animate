@@ -9,6 +9,7 @@ compiler:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libvulkan-dev
+  - sudo apt-get install python3
 
 script:
   - ./build.sh
