@@ -1,0 +1,32 @@
+language: cpp
+
+sudo: false
+dist: trusty
+
+compiler:
+  - gcc
+
+script:
+  - ./build.sh
+
+after_failure:
+  - cat test/test-suite.log
+
+after_success:
+  - coveralls --exclude test --gcov-options '\-lp'
+
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+before_install:
+    - eval "${MATRIX_EVAL}"
+    - pip install --user cpp-coveralls
