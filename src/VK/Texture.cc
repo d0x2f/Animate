@@ -6,7 +6,7 @@
 #include "../Utilities.hh"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "libs/stb_image.h"
+#include "../libs/stb_image.h"
 
 using namespace Animate::VK;
 

@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 
-#include "libs/stb_image.h"
+#include "../libs/stb_image.h"
 
 namespace Animate::VK
 {
