@@ -6,11 +6,6 @@ dist: trusty
 compiler:
   - gcc
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y libvulkan-dev
-  - sudo apt-get install python3
-
 script:
   - ./build.sh
 
@@ -35,3 +30,6 @@ matrix:
 before_install:
     - eval "${MATRIX_EVAL}"
     - pip install --user cpp-coveralls
+    - sudo apt-get -qq update
+    - sudo apt-get install -y libvulkan-dev
+    - sudo apt-get install python3
