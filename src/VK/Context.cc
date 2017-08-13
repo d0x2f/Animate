@@ -461,6 +461,8 @@ void Context::pick_physical_device()
     if (!this->physical_device) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
+
+    this->multisample_target.sample_count = this->choose_sample_count(this->physical_device.getProperties());
 }
 
 void Context::create_logical_device()
@@ -642,35 +644,47 @@ void Context::create_depth_stencil()
 
 void Context::create_render_pass()
 {
-    this->multisample_target.sample_count = this->choose_sample_count(this->physical_device.getProperties());
-
     std::array<vk::AttachmentDescription, 4> attachments = {};
 
     attachments[0] = vk::AttachmentDescription()
         .setFormat(this->swap_chain_image_format)
-        .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal)
+        .setSamples(this->multisample_target.sample_count)
         .setLoadOp(vk::AttachmentLoadOp::eClear)
-        .setSamples(this->multisample_target.sample_count);
+        .setStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(vk::ImageLayout::eUndefined)
+        .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
     attachments[1] = vk::AttachmentDescription()
         .setFormat(this->swap_chain_image_format)
-        .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
+        .setSamples(vk::SampleCountFlagBits::e1)
         .setLoadOp(vk::AttachmentLoadOp::eDontCare)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
-        .setSamples(vk::SampleCountFlagBits::e1);
+        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(vk::ImageLayout::eUndefined)
+        .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
         
     attachments[2] = vk::AttachmentDescription()
         .setFormat(this->depth_format)
-        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        .setSamples(this->multisample_target.sample_count)
         .setLoadOp(vk::AttachmentLoadOp::eClear)
-        .setSamples(this->multisample_target.sample_count);
+        .setStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(vk::ImageLayout::eUndefined)
+        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         
     attachments[3] = vk::AttachmentDescription()
         .setFormat(this->depth_format)
-        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        .setSamples(vk::SampleCountFlagBits::e1)
         .setLoadOp(vk::AttachmentLoadOp::eDontCare)
         .setStoreOp(vk::AttachmentStoreOp::eStore)
-        .setSamples(vk::SampleCountFlagBits::e1);
+        .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+        .setInitialLayout(vk::ImageLayout::eUndefined)
+        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
         
     vk::AttachmentReference colour_attachment_reference = vk::AttachmentReference()
         .setAttachment(0)

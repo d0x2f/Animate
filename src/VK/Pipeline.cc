@@ -135,7 +135,7 @@ void Pipeline::create_pipeline()
 
     vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
         .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
-        .setBlendEnable(true)
+        .setBlendEnable(VK_TRUE)
         .setSrcColorBlendFactor(vk::BlendFactor::eSrcAlpha)
         .setDstColorBlendFactor(vk::BlendFactor::eOneMinusSrcAlpha)
         .setSrcAlphaBlendFactor(vk::BlendFactor::eOne)
