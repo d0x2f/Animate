@@ -52,8 +52,6 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
     this->copy_buffer_to_image(staging_buffer, layers, width, height);
     this->create_image_view(layers.size());
     this->create_sampler();
-
-    std::cout << "Loaded texture" << std::endl;
 }
 
 Texture::~Texture()
@@ -86,7 +84,7 @@ std::vector<LayerData> Texture::load_resources_as_layers(std::vector<std::string
         if (!layer.pixels) {
             throw std::runtime_error("Couldn't load texture resource: " + resource_id + " (" + stbi_failure_reason() + ")");
         } else {
-            std::cout << "Texture loaded: " + resource_id << std::endl;
+            std::cout << "Loaded Texture: " + resource_id << std::endl;
         }
 
         layer.size = layer.width * layer.height * 4;

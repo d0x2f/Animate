@@ -21,7 +21,9 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_logical_device();
     this->create_swap_chain();
     this->create_image_views();
+    this->create_depth_stencil();
     this->create_render_pass();
+    this->create_multisample_target();
     this->create_framebuffers();
     this->create_pipeline_layout();
     this->create_command_pool();
@@ -98,8 +100,10 @@ void Context::recreate_swap_chain()
     this->logical_device.destroySwapchainKHR(tmp_swap_chain, nullptr);
 
     this->create_image_views();
+    this->create_depth_stencil();
     this->create_render_pass();
 
+    this->create_multisample_target();
     this->recreate_pipelines();
 
     this->create_framebuffers();
@@ -108,6 +112,42 @@ void Context::recreate_swap_chain()
 
 void Context::cleanup_swap_chain_dependancies()
 {
+    if (this->depth_image) {
+        this->logical_device.destroyImage(this->depth_image);
+    }
+
+    if (this->depth_view) {
+        this->logical_device.destroyImageView(this->depth_view);
+    }
+
+    if (this->depth_memory) {
+        this->logical_device.freeMemory(this->depth_memory);
+    }
+
+    if (this->multisample_target.colour.image) {
+        this->logical_device.destroyImage(this->multisample_target.colour.image);
+    }
+    
+    if (this->multisample_target.colour.view) {
+        this->logical_device.destroyImageView(this->multisample_target.colour.view);
+    }
+
+    if (this->multisample_target.colour.memory) {
+        this->logical_device.freeMemory(this->multisample_target.colour.memory);
+    }
+
+    if (this->multisample_target.depth.image) {
+        this->logical_device.destroyImage(this->multisample_target.depth.image);
+    }
+    
+    if (this->multisample_target.depth.view) {
+        this->logical_device.destroyImageView(this->multisample_target.depth.view);
+    }
+
+    if (this->multisample_target.depth.memory) {
+        this->logical_device.freeMemory(this->multisample_target.depth.memory);
+    }
+
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
         if (this->logical_device) {
             this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
@@ -145,8 +185,13 @@ void Context::fill_command_buffer(int i)
         this->swap_chain_extent
     );
 
-    vk::ClearValue clear_colour = vk::ClearValue()
+    vk::ClearValue clear_values[3];
+    clear_values[0] = vk::ClearValue()
         .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+    clear_values[1] = vk::ClearValue()
+        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+    clear_values[2] = vk::ClearValue()
+        .setDepthStencil(vk::ClearDepthStencilValue(1.0f, 0));
 
     vk::Viewport viewport = vk::Viewport()
         .setWidth(this->swap_chain_extent.width)
@@ -159,8 +204,8 @@ void Context::fill_command_buffer(int i)
     vk::RenderPassBeginInfo render_pass_begin_info = vk::RenderPassBeginInfo()
         .setRenderPass(this->render_pass)
         .setRenderArea(render_area)
-        .setClearValueCount(1)
-        .setPClearValues(&clear_colour)
+        .setClearValueCount(3)
+        .setPClearValues(clear_values)
         .setFramebuffer(this->swap_chain_framebuffers[i]);
 
     this->command_buffers[i].reset(vk::CommandBufferResetFlags());
@@ -527,35 +572,152 @@ void Context::create_image_views()
     }
 }
 
+void Context::create_depth_stencil()
+{
+    this->depth_format = this->choose_depth_format(this->physical_device);
+    
+    vk::ImageCreateInfo image_create_info = vk::ImageCreateInfo()
+        .setImageType(vk::ImageType::e2D)
+        .setFormat(this->depth_format)
+        .setExtent(
+            vk::Extent3D()
+                .setWidth(this->swap_chain_extent.width)
+                .setHeight(this->swap_chain_extent.height)
+                .setDepth(1)
+        )
+        .setMipLevels(1)
+        .setArrayLayers(1)
+        .setTiling(vk::ImageTiling::eOptimal)
+        .setSamples(vk::SampleCountFlagBits::e1)
+        .setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eTransferSrc);
+
+    if (this->logical_device.createImage(&image_create_info, nullptr, &this->depth_image) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create depth stencil image.");
+    }
+
+    vk::MemoryRequirements memory_requirements;
+    this->logical_device.getImageMemoryRequirements(this->depth_image, &memory_requirements);
+
+    vk::MemoryAllocateInfo allocation_info = vk::MemoryAllocateInfo()
+        .setAllocationSize(memory_requirements.size)
+        .setMemoryTypeIndex(
+            this->find_memory_type(
+                memory_requirements.memoryTypeBits,
+                vk::MemoryPropertyFlagBits::eDeviceLocal
+            )
+        );
+
+    if (this->logical_device.allocateMemory(&allocation_info, nullptr, &this->depth_memory) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't allocate depth stencil image memory.");
+    }
+    this->logical_device.bindImageMemory(this->depth_image, this->depth_memory, 0);
+
+    vk::ImageViewCreateInfo image_view_create_info = vk::ImageViewCreateInfo()
+        .setImage(this->depth_image)
+        .setViewType(vk::ImageViewType::e2D)
+        .setFormat(this->depth_format)
+        .setComponents(
+            vk::ComponentMapping(
+                vk::ComponentSwizzle::eR,
+                vk::ComponentSwizzle::eG,
+                vk::ComponentSwizzle::eB,
+                vk::ComponentSwizzle::eA
+            )
+        )
+        .setSubresourceRange(
+            vk::ImageSubresourceRange(
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil,
+                0,
+                1,
+                0,
+                1
+            )
+        );
+
+
+    if (this->logical_device.createImageView(&image_view_create_info, nullptr, &this->depth_view) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create depth stencil image view.");
+    }
+}
+
 void Context::create_render_pass()
 {
-    vk::AttachmentDescription colour_attachment = vk::AttachmentDescription()
+    this->multisample_target.sample_count = this->choose_sample_count(this->physical_device.getProperties());
+
+    std::array<vk::AttachmentDescription, 4> attachments = {};
+
+    attachments[0] = vk::AttachmentDescription()
+        .setFormat(this->swap_chain_image_format)
+        .setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal)
+        .setLoadOp(vk::AttachmentLoadOp::eClear)
+        .setSamples(this->multisample_target.sample_count);
+
+    attachments[1] = vk::AttachmentDescription()
         .setFormat(this->swap_chain_image_format)
         .setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
-        .setLoadOp(vk::AttachmentLoadOp::eClear);
-
+        .setLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStoreOp(vk::AttachmentStoreOp::eStore)
+        .setSamples(vk::SampleCountFlagBits::e1);
+        
+    attachments[2] = vk::AttachmentDescription()
+        .setFormat(this->depth_format)
+        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        .setLoadOp(vk::AttachmentLoadOp::eClear)
+        .setSamples(this->multisample_target.sample_count);
+        
+    attachments[3] = vk::AttachmentDescription()
+        .setFormat(this->depth_format)
+        .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        .setLoadOp(vk::AttachmentLoadOp::eDontCare)
+        .setStoreOp(vk::AttachmentStoreOp::eStore)
+        .setSamples(vk::SampleCountFlagBits::e1);
+        
     vk::AttachmentReference colour_attachment_reference = vk::AttachmentReference()
         .setAttachment(0)
+        .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+        
+    vk::AttachmentReference depth_attachment_reference = vk::AttachmentReference()
+        .setAttachment(2)
+        .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+        
+    vk::AttachmentReference resolve_attachment_reference = vk::AttachmentReference()
+        .setAttachment(1)
         .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
     vk::SubpassDescription subpass = vk::SubpassDescription()
         .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
         .setColorAttachmentCount(1)
-        .setPColorAttachments(&colour_attachment_reference);
+        .setPColorAttachments(&colour_attachment_reference)
+        .setPResolveAttachments(&resolve_attachment_reference)
+        .setPDepthStencilAttachment(&depth_attachment_reference);
 
-    vk::SubpassDependency subpass_dependency = vk::SubpassDependency()
+    std::array<vk::SubpassDependency, 2> dependencies;
+    
+    dependencies[0] = vk::SubpassDependency()
         .setSrcSubpass(VK_SUBPASS_EXTERNAL)
-        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .setDstSubpass(0)
+        .setSrcStageMask(vk::PipelineStageFlagBits::eBottomOfPipe)
         .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
-        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite);
+        .setSrcAccessMask(vk::AccessFlagBits::eMemoryRead)
+        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
+        .setDependencyFlags(vk::DependencyFlagBits::eByRegion);
+        
+    dependencies[1] = vk::SubpassDependency()
+        .setSrcSubpass(VK_SUBPASS_EXTERNAL)
+        .setDstSubpass(0)
+        .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+        .setDstStageMask(vk::PipelineStageFlagBits::eBottomOfPipe)
+        .setSrcAccessMask(vk::AccessFlagBits::eMemoryRead)
+        .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
+        .setDependencyFlags(vk::DependencyFlagBits::eByRegion);
 
     vk::RenderPassCreateInfo render_pass_create_info = vk::RenderPassCreateInfo()
-        .setAttachmentCount(1)
-        .setPAttachments(&colour_attachment)
+        .setAttachmentCount(attachments.size())
+        .setPAttachments(attachments.data())
         .setSubpassCount(1)
         .setPSubpasses(&subpass)
-        .setDependencyCount(1)
-        .setPDependencies(&subpass_dependency);
+        .setDependencyCount(2)
+        .setPDependencies(dependencies.data());
 
     if (this->logical_device.createRenderPass(&render_pass_create_info, nullptr, &this->render_pass) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create render pass.");
@@ -659,18 +821,124 @@ void Context::run_one_time_commands(std::function<void(vk::CommandBuffer)> func)
     this->logical_device.freeCommandBuffers(this->command_pool, 1, &command_buffer);
 }
 
+void Context::create_multisample_target()
+{
+    vk::ImageCreateInfo image_create_info = vk::ImageCreateInfo()
+        .setImageType(vk::ImageType::e2D)
+        .setFormat(this->swap_chain_image_format)
+        .setExtent(
+            vk::Extent3D()
+                .setWidth(this->swap_chain_extent.width)
+                .setHeight(this->swap_chain_extent.height)
+                .setDepth(1)
+        )
+        .setMipLevels(1)
+        .setArrayLayers(1)
+        .setSharingMode(vk::SharingMode::eExclusive)
+        .setTiling(vk::ImageTiling::eOptimal)
+        .setSamples(this->multisample_target.sample_count)
+        .setUsage(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment)
+        .setInitialLayout(vk::ImageLayout::eUndefined);
+
+    if (this->logical_device.createImage(&image_create_info, nullptr, &this->multisample_target.colour.image) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create colour attachment image.");
+    }
+
+    vk::MemoryRequirements memory_requirements;
+    this->logical_device.getImageMemoryRequirements(this->multisample_target.colour.image, &memory_requirements);
+    vk::MemoryAllocateInfo allocation_info = vk::MemoryAllocateInfo()
+        .setAllocationSize(memory_requirements.size)
+        .setMemoryTypeIndex(
+            this->find_memory_type(
+                memory_requirements.memoryTypeBits,
+                vk::MemoryPropertyFlagBits::eDeviceLocal
+            )
+        );
+
+    if (this->logical_device.allocateMemory(&allocation_info, nullptr, &this->multisample_target.colour.memory) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't allocate colour attachment image memory.");
+    }
+    this->logical_device.bindImageMemory(this->multisample_target.colour.image, this->multisample_target.colour.memory, 0);
+
+    vk::ImageViewCreateInfo image_view_create_info = vk::ImageViewCreateInfo()
+        .setImage(this->multisample_target.colour.image)
+        .setViewType(vk::ImageViewType::e2D)
+        .setFormat(this->swap_chain_image_format)
+        .setComponents(
+            vk::ComponentMapping(
+                vk::ComponentSwizzle::eR,
+                vk::ComponentSwizzle::eG,
+                vk::ComponentSwizzle::eB,
+                vk::ComponentSwizzle::eA
+            )
+        )
+        .setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+
+    if (this->logical_device.createImageView(&image_view_create_info, nullptr, &this->multisample_target.colour.view) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create colour attachment image view.");
+    }
+
+    image_create_info
+        .setFormat(this->depth_format)
+        .setUsage(vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eDepthStencilAttachment);
+
+    if (this->logical_device.createImage(&image_create_info, nullptr, &this->multisample_target.depth.image) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't create depth attachment image.");
+    }
+
+    this->logical_device.getImageMemoryRequirements(this->multisample_target.depth.image, &memory_requirements);
+    allocation_info = vk::MemoryAllocateInfo()
+        .setAllocationSize(memory_requirements.size)
+        .setMemoryTypeIndex(
+            this->find_memory_type(
+                memory_requirements.memoryTypeBits,
+                vk::MemoryPropertyFlagBits::eDeviceLocal
+            )
+        );
+        
+    if (this->logical_device.allocateMemory(&allocation_info, nullptr, &this->multisample_target.depth.memory) != vk::Result::eSuccess) {
+        throw std::runtime_error("Couldn't allocate depth attachment image memory.");
+    }
+    this->logical_device.bindImageMemory(this->multisample_target.depth.image, this->multisample_target.depth.memory, 0);
+
+    image_view_create_info
+        .setFormat(this->depth_format)
+        .setImage(this->multisample_target.depth.image)
+        .setSubresourceRange(
+            vk::ImageSubresourceRange(
+                vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil,
+                0,
+                1,
+                0,
+                1
+            )
+        );
+
+        if (this->logical_device.createImageView(&image_view_create_info, nullptr, &this->multisample_target.depth.view) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create depth attachment image view.");
+        }
+}
+
 void Context::create_framebuffers()
 {
     this->swap_chain_framebuffers.resize(this->swap_chain_image_views.size());
 
+    std::array<vk::ImageView, 4> attachments;
+
+    attachments[0] = this->multisample_target.colour.view;
+    attachments[2] = this->multisample_target.depth.view;
+    attachments[3] = this->depth_view;
+
+    vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
+        .setRenderPass(this->render_pass)
+        .setAttachmentCount(4)
+        .setPAttachments(attachments.data())
+        .setWidth(this->swap_chain_extent.width)
+        .setHeight(this->swap_chain_extent.height)
+        .setLayers(1);
+
     for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
-        vk::FramebufferCreateInfo framebuffer_create_info = vk::FramebufferCreateInfo()
-            .setRenderPass(this->render_pass)
-            .setAttachmentCount(1)
-            .setPAttachments(&this->swap_chain_image_views[i])
-            .setWidth(this->swap_chain_extent.width)
-            .setHeight(this->swap_chain_extent.height)
-            .setLayers(1);
+        attachments[1] = this->swap_chain_image_views[i];
 
         if (this->logical_device.createFramebuffer(&framebuffer_create_info, nullptr, &this->swap_chain_framebuffers[i]) != vk::Result::eSuccess) {
             throw std::runtime_error("Couldn't create framebuffer.");
@@ -1034,6 +1302,44 @@ vk::Extent2D Context::choose_swap_extent(vk::SurfaceCapabilitiesKHR const & capa
 
         return actual_extent;
     }
+}
+
+vk::SampleCountFlagBits Context::choose_sample_count(VkPhysicalDeviceProperties properties)
+{
+    vk::SampleCountFlags counts = vk::SampleCountFlagBits(std::min(
+        properties.limits.framebufferColorSampleCounts,
+        properties.limits.framebufferDepthSampleCounts
+    ));
+
+    if (counts & vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
+    if (counts & vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
+    if (counts & vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
+    if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+    if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+    if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+    return vk::SampleCountFlagBits::e1;
+}
+
+vk::Format Context::choose_depth_format(vk::PhysicalDevice physical_device)
+{
+    std::vector<vk::Format> depth_formats = {
+        vk::Format::eD32SfloatS8Uint,
+        vk::Format::eD32Sfloat,
+        vk::Format::eD24UnormS8Uint,
+        vk::Format::eD16UnormS8Uint,
+        vk::Format::eD16Unorm
+    };
+
+    for (const auto& format : depth_formats) {
+        vk::FormatProperties properties;
+        physical_device.getFormatProperties(format, &properties);
+
+        if (properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment) {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("No suitable depth stencil attachment format available.");
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Context::debug_callback(

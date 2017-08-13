@@ -112,10 +112,26 @@ void Pipeline::create_pipeline()
 
     vk::PipelineRasterizationStateCreateInfo rasteriser_info = vk::PipelineRasterizationStateCreateInfo()
         .setLineWidth(1.0f)
-        .setCullMode(vk::CullModeFlagBits::eNone)
+        .setCullMode(vk::CullModeFlagBits::eBack)
         .setFrontFace(vk::FrontFace::eClockwise);
+    
+    vk::PipelineDepthStencilStateCreateInfo depth_Stencil_info = vk::PipelineDepthStencilStateCreateInfo()
+        .setDepthTestEnable(VK_TRUE)
+        .setDepthWriteEnable(VK_TRUE)
+        .setDepthCompareOp(vk::CompareOp::eLessOrEqual)
+        .setFront(
+            vk::StencilOpState()
+                .setCompareOp(vk::CompareOp::eAlways)
+        )
+        .setBack(
+            vk::StencilOpState()
+                .setCompareOp(vk::CompareOp::eAlways)
+        );
 
-    vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo();
+    vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo()
+        .setRasterizationSamples(context->multisample_target.sample_count)
+        .setSampleShadingEnable(VK_TRUE)
+        .setMinSampleShading(0.25f);
 
     vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
         .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
@@ -145,6 +161,7 @@ void Pipeline::create_pipeline()
         .setPMultisampleState(&multisampling_state_info)
         .setPColorBlendState(&colour_blend_info)
         .setPDynamicState(&dynamic_state_info)
+        .setPDepthStencilState(&depth_Stencil_info)
         .setLayout(context->pipeline_layout)
         .setRenderPass(context->render_pass)
         .setSubpass(0)

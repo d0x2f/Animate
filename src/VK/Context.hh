@@ -52,25 +52,53 @@ namespace Animate
                 ~Context();
                 
                 vk::Instance instance;
+
                 VkDebugReportCallbackEXT debug_callback_obj;
+
                 vk::PhysicalDevice physical_device;
                 vk::Device logical_device;
                 vk::Queue   graphics_queue,
                             present_queue;
+
+                vk::Format depth_format;
+                vk::Image depth_image;
+                vk::DeviceMemory depth_memory;
+                vk::ImageView depth_view;
+
                 vk::SwapchainKHR swap_chain;
                 std::vector<vk::Image> swap_chain_images;
                 vk::Format swap_chain_image_format;
                 vk::Extent2D swap_chain_extent;
                 std::vector<vk::ImageView> swap_chain_image_views;
-                vk::RenderPass render_pass;
                 std::vector<vk::Framebuffer> swap_chain_framebuffers;
+
+                vk::RenderPass render_pass;
+
                 vk::CommandPool command_pool;
                 std::vector<vk::CommandBuffer> command_buffers;
+
                 vk::Semaphore image_available_semaphore,
                               render_finished_semaphore;
+
                 vk::DescriptorSetLayout descriptor_set_layout;
                 vk::PipelineLayout pipeline_layout;
                 vk::DescriptorPool descriptor_pool;
+
+
+                //Multisamling targets
+                struct {
+                    vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1;
+                    struct {
+                        vk::Image image;
+                        vk::ImageView view;
+                        vk::DeviceMemory memory;
+                    } colour;
+                    struct {
+                        vk::Image image;
+                        vk::ImageView view;
+                        vk::DeviceMemory memory;
+                    } depth;
+                } multisample_target;
 
                 void fill_command_buffer(int i);
 
@@ -118,7 +146,9 @@ namespace Animate
                 void create_surface();
                 void create_swap_chain();
                 void create_image_views();
+                void create_depth_stencil();
                 void create_render_pass();
+                void create_multisample_target();
                 void create_framebuffers();
                 void create_command_pool();
                 void create_command_buffers();
@@ -149,6 +179,8 @@ namespace Animate
                 vk::SurfaceFormatKHR choose_swap_surface_format(std::vector<vk::SurfaceFormatKHR> const & available_formats) const;
                 vk::PresentModeKHR choose_swap_present_mode(std::vector<vk::PresentModeKHR> const & available_present_modes) const;
                 vk::Extent2D choose_swap_extent(vk::SurfaceCapabilitiesKHR const & capabilities) const;
+                vk::SampleCountFlagBits choose_sample_count(VkPhysicalDeviceProperties properties);
+                vk::Format choose_depth_format(vk::PhysicalDevice physical_device);
 
                 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
                     VkDebugReportFlagsEXT flags,
