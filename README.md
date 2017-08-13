@@ -24,10 +24,11 @@ Writting computer graphics binds two of my favourite subjects, programming and m
   * Using this pre-organisation the pipeline can store all drawable buffers into a single indexed buffer.
   * Calls to drawable's set\_model\_matrix, set\_color, etc. can trigger an update of only the relevant sections of the buffer.
 
-## Requirements
+## Build Requirements
 
-* Vulkan library and vulkan compatible hardware
-* GTK3, GTKMM3
+* Autotools
+* Python 3
+* Vulkan SDK and vulkan compatible hardware
 * [libtaquinsolve](https://github.com/d0x2f/libtaquinsolve)
 
 ## Resources
