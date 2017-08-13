@@ -18,3 +18,4 @@ configure
 *.spv
 Makefile
 m4/
+.vscode/
