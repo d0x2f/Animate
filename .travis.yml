@@ -1,10 +1,13 @@
 language: cpp
 
-sudo: enabled
+sudo: false
 dist: trusty
 
 compiler:
   - gcc
+
+python:
+  - 3.6
 
 script:
   - ./build.sh
@@ -24,12 +27,11 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-6
+            - vulkan
+            - python3
       env:
         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
 
 before_install:
     - eval "${MATRIX_EVAL}"
     - pip install --user cpp-coveralls
-    - sudo apt-get -qq update
-    - sudo apt-get install -y libvulkan-dev
-    - sudo apt-get install python3
