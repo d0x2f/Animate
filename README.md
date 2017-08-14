@@ -18,7 +18,6 @@ I'm making this collection of Vulkan/OpenGL animations as a way to grow and show
 Writting computer graphics binds two of my favourite subjects, programming and mathematics. In particlar modern C++ and differential geometry.
 
 ## TODO
-* Multisampling.
 * Implement instanced draws, the modulo animation involved 1001 draws per frame, 2 would be nicer.
   * Drawables within a pipeline are already organised into primitive types (Quad/Line/Circle).
   * Using this pre-organisation the pipeline can store all drawable buffers into a single indexed buffer.
