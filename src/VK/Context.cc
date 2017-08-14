@@ -486,7 +486,8 @@ void Context::create_logical_device()
     }
 
     vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures()
-        .setSamplerAnisotropy(VK_TRUE);
+        .setSamplerAnisotropy(VK_TRUE)
+        .setSampleRateShading(VK_TRUE);
 
     std::vector<const char*> layers = this->get_required_instance_layers();
     std::vector<const char*> extensions = this->get_required_device_extensions();
@@ -1261,7 +1262,6 @@ bool Context::check_device_extensions(vk::PhysicalDevice const & device)
 {
     std::vector<vk::ExtensionProperties> available_extensions = this->get_available_device_extensions(device);
     std::vector<const char *> required_extensions_cstr = this->get_required_device_extensions();
-
     std::set<std::string> required_extensions(required_extensions_cstr.begin(), required_extensions_cstr.end());
 
     for (const auto& extension : available_extensions) {

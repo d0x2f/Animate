@@ -6,6 +6,7 @@ depcomp
 install-sh
 missing
 compile
+test-driver
 config.sub
 config.guess
 ltmain.sh
