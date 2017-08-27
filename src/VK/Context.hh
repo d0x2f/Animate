@@ -84,6 +84,8 @@ namespace Animate
                 vk::PipelineLayout pipeline_layout;
                 vk::DescriptorPool descriptor_pool;
 
+                std::vector<vk::Fence> render_fences;
+
 
                 //Multisamling targets
                 struct {
@@ -156,6 +158,7 @@ namespace Animate
                 void create_pipeline_layout();
                 void create_uniform_buffer();
                 void create_descriptor_pool();
+                void create_fences();
 
                 void recreate_pipelines();
 

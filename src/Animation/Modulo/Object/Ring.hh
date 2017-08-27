@@ -30,7 +30,7 @@ namespace Animate::Animation::Modulo::Object
             void on_tick(uint64_t time_delta) override;
 
         private:
-            uint32_t modulo = 1000;
+            uint32_t modulo = 500;
             float factor = 1;
             std::vector<std::shared_ptr<Line> > lines;
     };

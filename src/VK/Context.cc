@@ -30,6 +30,7 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
     this->create_descriptor_pool();
     this->create_command_buffers();
     this->create_semaphores();
+    this->create_fences();
 }
 
 Context::~Context()
@@ -65,6 +66,12 @@ Context::~Context()
 
     if (this->command_pool) {
         this->logical_device.destroyCommandPool(this->command_pool);
+    }
+
+    for (size_t i = 0; i < this->render_fences.size(); i++) {
+        if (this->render_fences[i]) {
+            this->logical_device.destroyFence(this->render_fences[i], nullptr);
+        }
     }
 
     if (this->logical_device) {
@@ -149,7 +156,7 @@ void Context::cleanup_swap_chain_dependancies()
     }
 
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
-        if (this->logical_device) {
+        if (this->swap_chain_framebuffers[i]) {
             this->logical_device.destroyFramebuffer(this->swap_chain_framebuffers[i], nullptr);
         }
     }
@@ -222,11 +229,9 @@ void Context::fill_command_buffer(int i)
     for(auto const& pipeline: this->pipelines) {
         first_pipeline_draw = true;
 
-        std::vector< std::weak_ptr<Drawable> > drawables = pipeline->get_scene();
+        std::vector< std::shared_ptr<Drawable> > drawables = pipeline->get_scene();
 
-        for (auto const& _drawable : drawables) {
-            std::shared_ptr<Drawable> drawable = _drawable.lock();
-
+        for (auto const& drawable : drawables) {
             if (!drawable) {
                 continue;
             }
@@ -298,7 +303,6 @@ void Context::commit_scenes()
 
 void Context::render_scene()
 {
-
     uint32_t image_index;
     vk::Result result = this->logical_device.acquireNextImageKHR(
         this->swap_chain,
@@ -326,6 +330,26 @@ void Context::render_scene()
 
     std::lock_guard<std::mutex> command_guard(this->command_mutex);
 
+    vk::Result fence_result = this->logical_device.waitForFences(
+        1,
+        &this->render_fences[image_index],
+        VK_TRUE,
+        1000000000
+    );
+
+    switch (fence_result) {
+        case vk::Result::eTimeout:
+            std::cout << "Fence timeout." << std::endl;
+            this->logical_device.waitIdle();
+            break;
+        case vk::Result::eSuccess:
+            break;
+        default:
+            throw std::runtime_error("Error waiting for fence: " + vk::to_string(fence_result));
+    }
+
+    this->logical_device.resetFences(1, &this->render_fences[image_index]);
+
     this->fill_command_buffer(image_index);
 
     vk::PipelineStageFlags wait_stages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
@@ -348,12 +372,10 @@ void Context::render_scene()
 
     std::lock_guard<std::mutex> resource_guard(this->vulkan_resource_mutex);
 
-    if (this->graphics_queue.submit(1, &submit_info, nullptr) != vk::Result::eSuccess) {
+    if (this->graphics_queue.submit(1, &submit_info, this->render_fences[image_index]) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to graphics queue.");
     }
-
-    this->present_queue.waitIdle();
-
+    
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
     }
@@ -450,8 +472,11 @@ void Context::pick_physical_device()
     std::vector<vk::PhysicalDevice> devices(device_count);
     this->instance.enumeratePhysicalDevices(&device_count, devices.data());
 
+    vk::PhysicalDeviceProperties properties;
+
     //Just pick the first device for now
     for (auto const& device : devices) {
+        properties = device.getProperties();
         if (this->is_device_suitable(device)) {
             this->physical_device = device;
             break;
@@ -461,6 +486,8 @@ void Context::pick_physical_device()
     if (!this->physical_device) {
         throw std::runtime_error("failed to find a suitable GPU!");
     }
+
+    std::cout << "Using device: " << properties.deviceName << std::endl;
 
     this->multisample_target.sample_count = this->choose_sample_count(this->physical_device.getProperties());
 }
@@ -487,7 +514,8 @@ void Context::create_logical_device()
 
     vk::PhysicalDeviceFeatures features = vk::PhysicalDeviceFeatures()
         .setSamplerAnisotropy(VK_TRUE)
-        .setSampleRateShading(VK_TRUE);
+        .setSampleRateShading(VK_TRUE)
+        .setAlphaToOne(VK_TRUE);
 
     std::vector<const char*> layers = this->get_required_instance_layers();
     std::vector<const char*> extensions = this->get_required_device_extensions();
@@ -1003,6 +1031,21 @@ void Context::create_semaphores()
     }
 }
 
+void Context::create_fences()
+{
+    this->render_fences.resize(this->swap_chain_framebuffers.size());
+
+    vk::FenceCreateInfo create_info = vk::FenceCreateInfo()
+        .setFlags(vk::FenceCreateFlagBits::eSignaled);
+
+
+    for (size_t i = 0; i < this->swap_chain_image_views.size(); i++) {
+        if (this->logical_device.createFence(&create_info, nullptr, &this->render_fences[i]) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't create fence.");
+        }
+    }
+}
+
 void Context::create_pipeline_layout()
 {
     vk::DescriptorSetLayoutBinding uniform_layout_binding = vk::DescriptorSetLayoutBinding()
@@ -1075,7 +1118,6 @@ bool Context::is_device_suitable(vk::PhysicalDevice const & device)
         swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
     }
 
-    //vk::PhysicalDeviceProperties properties = device.getProperties();
     vk::PhysicalDeviceFeatures features = device.getFeatures();
 
     return

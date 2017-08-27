@@ -47,11 +47,11 @@ namespace Animate::VK
 
             void set_uniform_float(float value);
 
-            uint64_t add_drawable(std::weak_ptr<Drawable> drawable);
-            std::vector< std::weak_ptr<Drawable> > get_drawables();
+            uint64_t add_drawable(std::shared_ptr<Drawable> drawable);
+            std::vector< std::shared_ptr<Drawable> > get_drawables();
 
             void commit_scene();
-            std::vector< std::weak_ptr<Drawable> > get_scene();
+            std::vector< std::shared_ptr<Drawable> > get_scene();
 
         private:
             std::weak_ptr<Context> context;
@@ -69,8 +69,8 @@ namespace Animate::VK
             vk::Pipeline pipeline;
             Matrix pv;
 
-            std::vector<std::weak_ptr<Drawable> > staging_drawables;
-            std::vector<std::weak_ptr<Drawable> > scene;
+            std::vector<std::shared_ptr<Drawable> > staging_drawables;
+            std::vector<std::shared_ptr<Drawable> > scene;
 
             std::vector<vk::ShaderModule> shader_modules;
             std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;

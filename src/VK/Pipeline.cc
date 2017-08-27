@@ -131,7 +131,9 @@ void Pipeline::create_pipeline()
     vk::PipelineMultisampleStateCreateInfo multisampling_state_info = vk::PipelineMultisampleStateCreateInfo()
         .setRasterizationSamples(context->multisample_target.sample_count)
         .setSampleShadingEnable(VK_TRUE)
-        .setMinSampleShading(0.25f);
+        .setMinSampleShading(.25f)
+        .setAlphaToOneEnable(VK_TRUE)
+        .setAlphaToCoverageEnable(VK_TRUE);
 
     vk::PipelineColorBlendAttachmentState colour_blend_attachment_info = vk::PipelineColorBlendAttachmentState()
         .setColorWriteMask(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA)
@@ -282,21 +284,21 @@ Matrix Pipeline::get_matrix()
     return this->pv;
 }
 
-uint64_t Pipeline::add_drawable(std::weak_ptr<Drawable> drawable)
+uint64_t Pipeline::add_drawable(std::shared_ptr<Drawable> drawable)
 {
     std::lock_guard<std::mutex> guard(this->drawable_mutex);
 
     this->staging_drawables.push_back(drawable);
 }
 
-std::vector< std::weak_ptr<Drawable> > Pipeline::get_drawables()
+std::vector< std::shared_ptr<Drawable> > Pipeline::get_drawables()
 {
     std::lock_guard<std::mutex> guard(this->drawable_mutex);
 
     return this->staging_drawables;
 }
 
-std::vector< std::weak_ptr<Drawable> > Pipeline::get_scene()
+std::vector< std::shared_ptr<Drawable> > Pipeline::get_scene()
 {
     std::lock_guard<std::mutex> guard(this->drawable_mutex);
     return this->scene;
