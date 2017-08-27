@@ -248,18 +248,15 @@ void Context::fill_command_buffer(int i)
 
                     vk::DescriptorSet descriptor_set = pipeline->get_descriptor_set();
 
-                    if (this->currently_bound_descriptor_set != descriptor_set) {
-                        this->command_buffers[i].bindDescriptorSets(
-                            vk::PipelineBindPoint::eGraphics,
-                            this->pipeline_layout,
-                            0,
-                            1,
-                            &descriptor_set,
-                            0,
-                            nullptr
-                        );
-                        this->currently_bound_descriptor_set = descriptor_set;
-                    }
+                    this->command_buffers[i].bindDescriptorSets(
+                        vk::PipelineBindPoint::eGraphics,
+                        this->pipeline_layout,
+                        0,
+                        1,
+                        &descriptor_set,
+                        0,
+                        nullptr
+                    );
 
                     first_pipeline_draw = false;
                 }
@@ -439,7 +436,13 @@ void Context::bind_debug_callback()
 {
     //Set the debug callback
     vk::DebugReportCallbackCreateInfoEXT debug_create_info = vk::DebugReportCallbackCreateInfoEXT()
-    .setFlags(vk::DebugReportFlagBitsEXT::eInformation | vk::DebugReportFlagBitsEXT::eWarning | vk::DebugReportFlagBitsEXT::ePerformanceWarning | vk::DebugReportFlagBitsEXT::eError | vk::DebugReportFlagBitsEXT::eDebug)
+    .setFlags(
+        //vk::DebugReportFlagBitsEXT::eInformation | 
+        vk::DebugReportFlagBitsEXT::eWarning | 
+        vk::DebugReportFlagBitsEXT::ePerformanceWarning | 
+        vk::DebugReportFlagBitsEXT::eError | 
+        vk::DebugReportFlagBitsEXT::eDebug
+    )
     .setPfnCallback((PFN_vkDebugReportCallbackEXT)debug_callback);
 
     auto CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)this->instance.getProcAddr("vkCreateDebugReportCallbackEXT");
