@@ -47,7 +47,7 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
         stbi_image_free(layer.pixels);
     }
     staging_buffer.unmap();
-    
+
     this->create_image(width, height, layers.size());
     this->copy_buffer_to_image(staging_buffer, layers, width, height);
     this->create_image_view(layers.size());
@@ -179,8 +179,8 @@ void Texture::transition_image_layout(vk::ImageLayout old_layout, vk::ImageLayou
 
     this->context.lock()->run_one_time_commands([&barrier](vk::CommandBuffer command_buffer){
         command_buffer.pipelineBarrier(
-            vk::PipelineStageFlagBits::eTopOfPipe,
-            vk::PipelineStageFlagBits::eTopOfPipe,
+            vk::PipelineStageFlagBits::eTransfer | vk::PipelineStageFlagBits::eHost,
+            vk::PipelineStageFlagBits::eTransfer | vk::PipelineStageFlagBits::eFragmentShader,
             vk::DependencyFlags(),
             0, nullptr,
             0, nullptr,

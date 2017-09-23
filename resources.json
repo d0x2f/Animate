@@ -16,6 +16,9 @@
     "data/Noise/shader.vert.spv",
     "data/Noise/shader.frag.spv",
 
+    "data/Casspir/shader.vert.spv",
+    "data/Casspir/shader.frag.spv",
+
     "data/Default/shader.vert.spv",
     "data/Default/shader.frag.spv"
 ]

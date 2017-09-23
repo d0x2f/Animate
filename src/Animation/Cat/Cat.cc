@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
-#include <iostream>
 
 #include "Cat.hh"
 #include "../../Utilities.hh"

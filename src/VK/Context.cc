@@ -134,7 +134,7 @@ void Context::cleanup_swap_chain_dependancies()
     if (this->multisample_target.colour.image) {
         this->logical_device.destroyImage(this->multisample_target.colour.image);
     }
-    
+
     if (this->multisample_target.colour.view) {
         this->logical_device.destroyImageView(this->multisample_target.colour.view);
     }
@@ -146,7 +146,7 @@ void Context::cleanup_swap_chain_dependancies()
     if (this->multisample_target.depth.image) {
         this->logical_device.destroyImage(this->multisample_target.depth.image);
     }
-    
+
     if (this->multisample_target.depth.view) {
         this->logical_device.destroyImageView(this->multisample_target.depth.view);
     }
@@ -372,7 +372,7 @@ void Context::render_scene()
     if (this->graphics_queue.submit(1, &submit_info, this->render_fences[image_index]) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to graphics queue.");
     }
-    
+
     if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to present queue.");
     }
@@ -437,10 +437,10 @@ void Context::bind_debug_callback()
     //Set the debug callback
     vk::DebugReportCallbackCreateInfoEXT debug_create_info = vk::DebugReportCallbackCreateInfoEXT()
     .setFlags(
-        //vk::DebugReportFlagBitsEXT::eInformation | 
-        vk::DebugReportFlagBitsEXT::eWarning | 
-        vk::DebugReportFlagBitsEXT::ePerformanceWarning | 
-        vk::DebugReportFlagBitsEXT::eError | 
+        //vk::DebugReportFlagBitsEXT::eInformation |
+        vk::DebugReportFlagBitsEXT::eWarning |
+        vk::DebugReportFlagBitsEXT::ePerformanceWarning |
+        vk::DebugReportFlagBitsEXT::eError |
         vk::DebugReportFlagBitsEXT::eDebug
     )
     .setPfnCallback((PFN_vkDebugReportCallbackEXT)debug_callback);
@@ -609,7 +609,7 @@ void Context::create_image_views()
 void Context::create_depth_stencil()
 {
     this->depth_format = this->choose_depth_format(this->physical_device);
-    
+
     vk::ImageCreateInfo image_create_info = vk::ImageCreateInfo()
         .setImageType(vk::ImageType::e2D)
         .setFormat(this->depth_format)
@@ -697,7 +697,7 @@ void Context::create_render_pass()
         .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
-        
+
     attachments[2] = vk::AttachmentDescription()
         .setFormat(this->depth_format)
         .setSamples(this->multisample_target.sample_count)
@@ -707,7 +707,7 @@ void Context::create_render_pass()
         .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-        
+
     attachments[3] = vk::AttachmentDescription()
         .setFormat(this->depth_format)
         .setSamples(vk::SampleCountFlagBits::e1)
@@ -717,15 +717,15 @@ void Context::create_render_pass()
         .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-        
+
     vk::AttachmentReference colour_attachment_reference = vk::AttachmentReference()
         .setAttachment(0)
         .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
-        
+
     vk::AttachmentReference depth_attachment_reference = vk::AttachmentReference()
         .setAttachment(2)
         .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-        
+
     vk::AttachmentReference resolve_attachment_reference = vk::AttachmentReference()
         .setAttachment(1)
         .setLayout(vk::ImageLayout::eColorAttachmentOptimal);
@@ -738,7 +738,7 @@ void Context::create_render_pass()
         .setPDepthStencilAttachment(&depth_attachment_reference);
 
     std::array<vk::SubpassDependency, 2> dependencies;
-    
+
     dependencies[0] = vk::SubpassDependency()
         .setSrcSubpass(VK_SUBPASS_EXTERNAL)
         .setDstSubpass(0)
@@ -747,7 +747,7 @@ void Context::create_render_pass()
         .setSrcAccessMask(vk::AccessFlagBits::eMemoryRead)
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite)
         .setDependencyFlags(vk::DependencyFlagBits::eByRegion);
-        
+
     dependencies[1] = vk::SubpassDependency()
         .setSrcSubpass(VK_SUBPASS_EXTERNAL)
         .setDstSubpass(0)
@@ -765,7 +765,11 @@ void Context::create_render_pass()
         .setDependencyCount(2)
         .setPDependencies(dependencies.data());
 
-    if (this->logical_device.createRenderPass(&render_pass_create_info, nullptr, &this->render_pass) != vk::Result::eSuccess) {
+    if (this->logical_device.createRenderPass(
+            &render_pass_create_info,
+            nullptr,
+            &this->render_pass
+        ) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create render pass.");
     }
 }
@@ -941,7 +945,7 @@ void Context::create_multisample_target()
                 vk::MemoryPropertyFlagBits::eDeviceLocal
             )
         );
-        
+
     if (this->logical_device.allocateMemory(&allocation_info, nullptr, &this->multisample_target.depth.memory) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't allocate depth attachment image memory.");
     }
@@ -1094,16 +1098,16 @@ void Context::create_descriptor_pool()
     std::array<vk::DescriptorPoolSize, 2> pool_sizes = {
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(3),
+            .setDescriptorCount(4),
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eCombinedImageSampler)
-            .setDescriptorCount(3)
+            .setDescriptorCount(4)
     };
 
     vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
         .setPoolSizeCount(pool_sizes.size())
         .setPPoolSizes(pool_sizes.data())
-        .setMaxSets(3);
+        .setMaxSets(4);
 
     if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create descriptor pool.");

@@ -18,18 +18,12 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for c++17 support
-AX_CHECK_COMPILE_FLAG([-std=gnu++1z],
+AX_CHECK_COMPILE_FLAG([-std=c++17],
     [# action-if-success
-    AX_APPEND_FLAG([-std=gnu++1z], [CXX])
+    AX_APPEND_FLAG([-std=c++17], [CXX])
     ],
     [# action-if-fail
-    AX_CHECK_COMPILE_FLAG([-std=c++1z],
-        [# action-if-success
-        AX_APPEND_FLAG([-std=c++1z], [CXX])
-        ],
-        [# action-if-fail
-        AC_MSG_ERROR([c++1z support required.])
-        ])
+    AC_MSG_ERROR([c++17 support required.])
 ])
 
 # Checks for libraries.

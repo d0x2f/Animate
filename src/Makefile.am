@@ -25,6 +25,7 @@ animate_SOURCES =   VK/Context.cc \
                     Animation/Modulo/Modulo.cc \
                     Animation/Modulo/Object/Ring.cc \
                     Animation/Noise/Noise.cc \
+                    Animation/Casspir/Casspir.cc \
                     \
                     Gui.cc \
                     AppContext.cc \
@@ -59,6 +60,7 @@ animate_HEADERS =   VK/Context.hh \
                     Animation/Modulo/Modulo.hh \
                     Animation/Modulo/Object/Ring.hh \
                     Animation/Noise/Noise.hh \
+                    Animation/Casspir/Casspir.hh \
                     \
                     Gui.hh \
                     AppContext.hh \

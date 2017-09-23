@@ -3,6 +3,7 @@
 #include "Animation/Cat/Cat.hh"
 #include "Animation/Modulo/Modulo.hh"
 #include "Animation/Noise/Noise.hh"
+#include "Animation/Casspir/Casspir.hh"
 
 using namespace Animate;
 
@@ -88,6 +89,11 @@ void AppContext::setup_animations() {
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+
+    /*animation = new Animation::Casspir::Casspir(self);
+    animation->initialise();
+
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));*/
 
     this->current_animation = this->animations.begin();
     this->next_animation();
