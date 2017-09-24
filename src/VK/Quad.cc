@@ -31,6 +31,8 @@ void Quad::set_texture_position(Vector3 texture_position, Vector3 texture_size)
 {
     this->texture_position = texture_position;
     this->texture_size = texture_size;
+
+    this->create_vertex_buffer();
 }
 
 /**
@@ -44,11 +46,6 @@ void Quad::initialise_buffers()
 
 void Quad::create_vertex_buffer()
 {
-    //Check if the buffer is already initialised
-    if (!this->vertex_buffer.expired()) {
-        return;
-    }
-
     Vector3 t = this->texture_position;
     Vector3 u = this->texture_position + this->texture_size;
 
@@ -75,12 +72,15 @@ void Quad::create_vertex_buffer()
     void *data = staging_buffer->map();
     memcpy(data, vertices, (size_t) size);
     staging_buffer->unmap();
-    
-    this->vertex_buffer = context->create_buffer(
-        size,
-        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-        vk::MemoryPropertyFlagBits::eDeviceLocal
-    );
+
+    //Check if the buffer is already initialised
+    if (this->vertex_buffer.expired()) {
+        this->vertex_buffer = context->create_buffer(
+            size,
+            vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::MemoryPropertyFlagBits::eDeviceLocal
+        );
+    }
 
     this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
 
@@ -101,7 +101,7 @@ void Quad::create_index_buffer()
     vk::DeviceSize size = 4 * sizeof(uint16_t);
 
     std::shared_ptr<Context> context = this->context.lock();
-    
+
     std::weak_ptr<VK::Buffer> _staging_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferSrc,
@@ -112,7 +112,7 @@ void Quad::create_index_buffer()
     void *data = staging_buffer->map();
     memcpy(data, indices, (size_t) size);
     staging_buffer->unmap();
-    
+
     this->index_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
@@ -120,7 +120,7 @@ void Quad::create_index_buffer()
     );
 
     this->index_buffer.lock()->copy_buffer_data(staging_buffer);
-    
+
     context->release_buffer(staging_buffer);
 }
 

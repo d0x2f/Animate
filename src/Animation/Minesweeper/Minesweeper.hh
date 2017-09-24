@@ -1,5 +1,7 @@
 #pragma once
 
+#include <queue>
+
 #include <casspir/casspir.hh>
 
 #include "../Animation.hh"
@@ -24,5 +26,11 @@ namespace Animate::Animation::Minesweeper
         protected:
             std::weak_ptr<VK::Pipeline> shader;
             int grid_size = 10;
+            std::queue<Casspir::Operation> move_sequence;
+            std::shared_ptr<Casspir::Map> map;
+            uint64_t time_since_move = 0;
+
+            void reset_puzzle();
+            void redraw_tiles();
     };
 }

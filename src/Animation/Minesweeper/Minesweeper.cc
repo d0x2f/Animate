@@ -1,5 +1,7 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "Minesweeper.hh"
 #include "../../Utilities.hh"
@@ -13,6 +15,7 @@ using namespace Animate::Animation::Minesweeper::Object;
  */
 Minesweeper::Minesweeper(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
+    srand(time(NULL));
 }
 
 /**
@@ -67,7 +70,7 @@ void Minesweeper::on_load()
         tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
         tile->initialise(
             pipeline,
-            pipeline->get_textures().lock()->get_layer("data/Minesweeper/unflipped.jpg"),
+            0,
             i, //position
             this->grid_size  //Grid size
         );
@@ -90,4 +93,68 @@ void Minesweeper::on_tick(uint64_t time_delta)
         object.second->set_model_matrix(Matrix::identity());
     }
 
+    this->time_since_move += time_delta;
+
+    if (this->time_since_move > 500000) {
+        if (this->move_sequence.empty()) {
+            this->reset_puzzle();
+        } else {
+            Casspir::Operation operation = this->move_sequence.front();
+            this->move_sequence.pop();
+
+            switch (operation.type) {
+                case Casspir::OperationType::FLIP:
+                    this->map->flip(operation.position);
+                    break;
+                case Casspir::OperationType::FLAG:
+                    this->map->flag(operation.position);
+                    break;
+            }
+
+            this->redraw_tiles();
+
+        }
+        this->time_since_move = 0;
+    }
+}
+
+/**
+ * Recreate the appropriate tiles in their new positions, ready to be solved.
+ */
+void Minesweeper::reset_puzzle()
+{
+    //Generate new puzzle
+    Casspir::Point first_flip = Casspir::Point(5,5);
+    this->map = std::make_shared<Casspir::Map>(
+        casspir_generate_map(
+            this->grid_size,
+            this->grid_size,
+            100,
+            first_flip
+        )
+    );
+    this->move_sequence = casspir_solve(*this->map);
+    this->map->reset();
+    this->map->flip(first_flip);
+
+    this->redraw_tiles();
+
+}
+
+void Minesweeper::redraw_tiles()
+{
+    std::shared_ptr<Pipeline> pipeline = this->shader.lock();
+    for (int i = 0; i < this->grid_size * this->grid_size; i++) {
+        std::weak_ptr<Tile> tile = std::static_pointer_cast<Tile>(this->get_object("tile"+std::to_string(i)).lock());
+        Casspir::TileState tile_state = this->map->get_tile(i);
+
+        std::string texture_name = "data/Minesweeper/unflipped.jpg";
+        if (tile_state.flipped) {
+            texture_name = "data/Minesweeper/flipped-" + std::to_string(tile_state.value) + ".jpg";
+        } else if (tile_state.flagged) {
+            texture_name = "data/Minesweeper/flagged.jpg";
+        }
+
+        tile.lock()->set_layer(pipeline->get_textures().lock()->get_layer(texture_name));
+    }
 }

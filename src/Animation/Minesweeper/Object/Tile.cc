@@ -1,5 +1,4 @@
 #include "Tile.hh"
-#include "../../../VK/Quad.hh"
 #include "../../../VK/Pipeline.hh"
 #include "../../../VK/Texture.hh"
 #include "../../../Geometry/Definitions.hh"
@@ -50,6 +49,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, uint32_t texture_layer, ui
     quad->set_texture_position(texture_position, texture_size);
     quad->initialise(shader);
     this->add_component(quad);
+    this->quad = quad;
 
     this->initialised = true;
 }
@@ -60,4 +60,18 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, uint32_t texture_layer, ui
  */
 void Tile::on_tick(uint64_t time_delta)
 {
+}
+
+void Tile::set_layer(uint32_t layer)
+{
+    Vector3 texture_position = Vector3(
+        0,
+        0,
+        layer
+    );
+    Vector3 texture_size = Vector3(
+        1,
+        1
+    );
+    this->quad->set_texture_position(texture_position, texture_size);
 }
