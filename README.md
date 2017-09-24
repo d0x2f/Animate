@@ -8,6 +8,8 @@ Just a collection of animations, press space to "change the channel".
   * Taquin/15 puzzle solving ([video](https://www.youtube.com/watch?v=F2GyDwdp1KU)).
   * Multiplication modulo drawn on a circle ([video](https://www.youtube.com/watch?v=pxVHWqUBAmg)).
   * Full random noise.
+* In Progress
+  * Minesweeper
 * Ideas
   * Mandlebrot drawing.
 
@@ -29,6 +31,7 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 * Python 3
 * Vulkan SDK and vulkan compatible hardware
 * [libtaquinsolve](https://github.com/d0x2f/libtaquinsolve)
+* [Casspir](https://github.com/d0x2f/Casspir)
 
 ## Resources
 
