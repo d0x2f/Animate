@@ -25,8 +25,8 @@ animate_SOURCES =   VK/Context.cc \
                     Animation/Modulo/Modulo.cc \
                     Animation/Modulo/Object/Ring.cc \
                     Animation/Noise/Noise.cc \
-                    Animation/Casspir/Casspir.cc \
-                    Animation/Casspir/Object/Tile.cc \
+                    Animation/Minesweeper/Minesweeper.cc \
+                    Animation/Minesweeper/Object/Tile.cc \
                     \
                     Gui.cc \
                     AppContext.cc \
@@ -61,8 +61,8 @@ animate_HEADERS =   VK/Context.hh \
                     Animation/Modulo/Modulo.hh \
                     Animation/Modulo/Object/Ring.hh \
                     Animation/Noise/Noise.hh \
-                    Animation/Casspir/Casspir.hh \
-                    Animation/Casspir/Object/Tile.hh \
+                    Animation/Minesweeper/Minesweeper.hh \
+                    Animation/Minesweeper/Object/Tile.hh \
                     \
                     Gui.hh \
                     AppContext.hh \
@@ -70,11 +70,6 @@ animate_HEADERS =   VK/Context.hh \
                     Resources.hh \
                     \
                     libs/stb_image.h
-
-SUBDIRS =   Animation \
-            VK \
-            Geometry \
-            Object
 
 AM_CXXFLAGS = -g3 -O2
 ACLOCAL_AMFLAGS = -I m4

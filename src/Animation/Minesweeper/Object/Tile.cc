@@ -4,7 +4,7 @@
 #include "../../../VK/Texture.hh"
 #include "../../../Geometry/Definitions.hh"
 
-using namespace Animate::Animation::Casspir::Object;
+using namespace Animate::Animation::Minesweeper::Object;
 using namespace Animate::Geometry;
 
 Tile::Tile(std::weak_ptr<VK::Context> context, Point position, Scale size)

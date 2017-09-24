@@ -1,44 +1,44 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
-#include "Casspir.hh"
+#include "Minesweeper.hh"
 #include "../../Utilities.hh"
 #include "../../Geometry/Matrix.hh"
 
-using namespace Animate::Animation::Casspir;
-using namespace Animate::Animation::Casspir::Object;
+using namespace Animate::Animation::Minesweeper;
+using namespace Animate::Animation::Minesweeper::Object;
 
 /**
  * Constructor.
  */
-Casspir::Casspir(std::weak_ptr<AppContext> context) : Animation::Animation(context)
+Minesweeper::Minesweeper(std::weak_ptr<AppContext> context) : Animation::Animation(context)
 {
 }
 
 /**
  * Perform initialisations.
  */
-void Casspir::initialise()
+void Minesweeper::initialise()
 {
     //Set shaders
     this->shader = this->context.lock()->get_graphics_context().lock()->create_pipeline(
-        "data/Casspir/shader.frag.spv",
-        "data/Casspir/shader.vert.spv",
+        "data/Minesweeper/shader.frag.spv",
+        "data/Minesweeper/shader.vert.spv",
         {
-            "data/Casspir/unflipped.jpg",
-            "data/Casspir/flipped-0.jpg",
-            "data/Casspir/flipped-1.jpg",
-            "data/Casspir/flipped-2.jpg",
-            "data/Casspir/flipped-3.jpg",
-            "data/Casspir/flipped-4.jpg",
-            "data/Casspir/flipped-5.jpg",
-            "data/Casspir/flipped-6.jpg",
-            "data/Casspir/flipped-7.jpg",
-            "data/Casspir/flipped-8.jpg",
-            "data/Casspir/flagged.jpg",
-            "data/Casspir/mine-false.jpg",
-            "data/Casspir/mine-exploded.jpg",
-            "data/Casspir/mine-reveal.jpg"
+            "data/Minesweeper/unflipped.jpg",
+            "data/Minesweeper/flipped-0.jpg",
+            "data/Minesweeper/flipped-1.jpg",
+            "data/Minesweeper/flipped-2.jpg",
+            "data/Minesweeper/flipped-3.jpg",
+            "data/Minesweeper/flipped-4.jpg",
+            "data/Minesweeper/flipped-5.jpg",
+            "data/Minesweeper/flipped-6.jpg",
+            "data/Minesweeper/flipped-7.jpg",
+            "data/Minesweeper/flipped-8.jpg",
+            "data/Minesweeper/flagged.jpg",
+            "data/Minesweeper/mine-false.jpg",
+            "data/Minesweeper/mine-exploded.jpg",
+            "data/Minesweeper/mine-reveal.jpg"
         }
     );
 
@@ -58,7 +58,7 @@ void Casspir::initialise()
 /**
  * Perform functions that should occur before we call ourselves "loaded".
  */
-void Casspir::on_load()
+void Minesweeper::on_load()
 {
     Tile *tile;
     std::shared_ptr<Pipeline> pipeline = this->shader.lock();
@@ -67,7 +67,7 @@ void Casspir::on_load()
         tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
         tile->initialise(
             pipeline,
-            pipeline->get_textures().lock()->get_layer("data/Casspir/unflipped.jpg"),
+            pipeline->get_textures().lock()->get_layer("data/Minesweeper/unflipped.jpg"),
             i, //position
             this->grid_size  //Grid size
         );
@@ -81,7 +81,7 @@ void Casspir::on_load()
 /**
  * Compute a tick
  */
-void Casspir::on_tick(uint64_t time_delta)
+void Minesweeper::on_tick(uint64_t time_delta)
 {
     Animation::on_tick(time_delta);
 

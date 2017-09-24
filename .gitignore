@@ -1,6 +1,7 @@
 *.o
 *.in
 *~
+*.Po
 aclocal.m4
 depcomp
 install-sh

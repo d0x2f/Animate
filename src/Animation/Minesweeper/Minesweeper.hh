@@ -1,5 +1,7 @@
 #pragma once
 
+#include <casspir/casspir.hh>
+
 #include "../Animation.hh"
 #include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
@@ -8,12 +10,12 @@
 using namespace Animate::Object;
 using namespace Animate::Geometry;
 
-namespace Animate::Animation::Casspir
+namespace Animate::Animation::Minesweeper
 {
-    class Casspir : public Animation
+    class Minesweeper : public Animation
     {
         public:
-            Casspir(std::weak_ptr<AppContext> context);
+            Minesweeper(std::weak_ptr<AppContext> context);
 
             void initialise() override;
             void on_load() override;

@@ -5,7 +5,7 @@
 using namespace Animate::Object;
 using namespace Animate::VK;
 
-namespace Animate::Animation::Casspir::Object
+namespace Animate::Animation::Minesweeper::Object
 {
     class Tile : public Animate::Object::Object
     {
