@@ -74,13 +74,13 @@ void Cat::reset_puzzle()
 
     //Initialise cat tiles
     Tile *tile;
+    std::shared_ptr<Pipeline> pipeline = this->shader.lock();
     for (int i = 0; i < this->grid_size * this->grid_size; i++) {
         if (this->initial_position[i] == 0) {
             this->zero_position = i;
             continue;
         }
         tile = new Tile(graphics_context, Point(), Scale(1., 1., 1.));
-        std::shared_ptr<Pipeline> pipeline = this->shader.lock();
         tile->initialise(
             pipeline,
             pipeline->get_textures().lock()->get_layer(texture_name),

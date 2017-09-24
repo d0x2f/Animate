@@ -90,10 +90,10 @@ void AppContext::setup_animations() {
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
-    /*animation = new Animation::Casspir::Casspir(self);
+    animation = new Animation::Casspir::Casspir(self);
     animation->initialise();
 
-    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));*/
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
     this->current_animation = this->animations.begin();
     this->next_animation();

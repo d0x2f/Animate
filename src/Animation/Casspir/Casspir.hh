@@ -3,6 +3,7 @@
 #include "../Animation.hh"
 #include "../../VK/Pipeline.hh"
 #include "../../Geometry/Definitions.hh"
+#include "Object/Tile.hh"
 
 using namespace Animate::Object;
 using namespace Animate::Geometry;
@@ -20,5 +21,6 @@ namespace Animate::Animation::Casspir
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;
+            int grid_size = 10;
     };
 }
