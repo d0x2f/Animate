@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "Minesweeper.hh"
 #include "../../Utilities.hh"
@@ -95,7 +96,7 @@ void Minesweeper::on_tick(uint64_t time_delta)
 
     this->time_since_move += time_delta;
 
-    if (this->time_since_move > 500000) {
+    if (this->time_since_move > 50000) {
         if (this->move_sequence.empty()) {
             this->reset_puzzle();
         } else {
@@ -123,8 +124,16 @@ void Minesweeper::on_tick(uint64_t time_delta)
  */
 void Minesweeper::reset_puzzle()
 {
+    //Show the completed puzzle for a bit before resetting.
+    if (this->map && this->map->get_status() == Casspir::MapStatus::COMPLETE) {
+        usleep(1000000);
+    }
+
     //Generate new puzzle
-    Casspir::Point first_flip = Casspir::Point(5,5);
+    Casspir::Point first_flip = Casspir::Point(
+        rand() % this->grid_size,
+        rand() % this->grid_size
+    );
     this->map = std::make_shared<Casspir::Map>(
         casspir_generate_map(
             this->grid_size,
