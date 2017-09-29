@@ -38,5 +38,7 @@ namespace Animate::VK
 
             void create_vertex_buffer();
             void create_index_buffer();
+            void update_buffer();
+            const std::Vector<Vertex> get_data();
     };
 }

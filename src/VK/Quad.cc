@@ -32,7 +32,7 @@ void Quad::set_texture_position(Vector3 texture_position, Vector3 texture_size)
     this->texture_position = texture_position;
     this->texture_size = texture_size;
 
-    this->create_vertex_buffer();
+    this->update_buffer();
 }
 
 /**
@@ -46,17 +46,18 @@ void Quad::initialise_buffers()
 
 void Quad::create_vertex_buffer()
 {
-    Vector3 t = this->texture_position;
-    Vector3 u = this->texture_position + this->texture_size;
+    //Check if the buffer is already initialised
+    if (this->vertex_buffer.expired()) {
+        return;
+    }
 
-    //Vertex & colour Data:
-    const Vertex vertices[] = {
-    //  Point                       Texture                 Normal               Colour
-        Vertex(Vector3(0., 0., 0.), Vector3(t.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 0., 0.), Vector3(u.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(0., 1., 0.), Vector3(t.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 1., 0.), Vector3(u.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
-    };
+    this->vertex_buffer = context->create_buffer(
+        size,
+        vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::MemoryPropertyFlagBits::eDeviceLocal
+    );
+
+    const std::vector<Vertex> vertices = this->get_data();
 
     vk::DeviceSize size = 4 * sizeof(Vertex);
 
@@ -70,17 +71,8 @@ void Quad::create_vertex_buffer()
     std::shared_ptr<VK::Buffer> staging_buffer = _staging_buffer.lock();
 
     void *data = staging_buffer->map();
-    memcpy(data, vertices, (size_t) size);
+    memcpy(data, vertices.data(), (size_t) size);
     staging_buffer->unmap();
-
-    //Check if the buffer is already initialised
-    if (this->vertex_buffer.expired()) {
-        this->vertex_buffer = context->create_buffer(
-            size,
-            vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::MemoryPropertyFlagBits::eDeviceLocal
-        );
-    }
 
     this->vertex_buffer.lock()->copy_buffer_data(staging_buffer);
 
@@ -122,6 +114,40 @@ void Quad::create_index_buffer()
     this->index_buffer.lock()->copy_buffer_data(staging_buffer);
 
     context->release_buffer(staging_buffer);
+}
+
+void Quad::update_buffer()
+{
+    const std::vector<Vertex> vertices = this->get_data();
+
+    vk::DeviceSize size = 4 * sizeof(Vertex);
+
+    this->context.lock()->run_one_time_commands([&](vk::CommandBuffer command_buffer){
+        command_buffer.updateBuffer(
+            (vk::Buffer)this->vertex_buffer,
+            0
+            size,
+            vertices.data()
+        );
+    });
+    
+}
+
+const std::vector<Vertex> Quad::get_data()
+{
+    Vector3 t = this->texture_position;
+    Vector3 u = this->texture_position + this->texture_size;
+
+    //Vertex & colour Data:
+    const std::vector<Vertex> vertices = {
+    //  Point                       Texture                 Normal               Colour
+        Vertex(Vector3(0., 0., 0.), Vector3(t.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(1., 0., 0.), Vector3(u.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(0., 1., 0.), Vector3(t.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(Vector3(1., 1., 0.), Vector3(u.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
+    };
+
+    return vertices;
 }
 
 vk::Buffer const Quad::get_vertex_buffer()
