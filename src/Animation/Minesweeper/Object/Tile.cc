@@ -52,6 +52,7 @@ void Tile::initialise(std::weak_ptr<Pipeline> shader, uint32_t texture_layer, ui
     this->quad = quad;
 
     this->initialised = true;
+    this->layer = texture_layer;
 }
 
 /**
@@ -64,6 +65,10 @@ void Tile::on_tick(uint64_t time_delta)
 
 void Tile::set_layer(uint32_t layer)
 {
+    if (layer == this->layer) {
+        return;
+    }
+
     Vector3 texture_position = Vector3(
         0,
         0,
@@ -74,4 +79,5 @@ void Tile::set_layer(uint32_t layer)
         1
     );
     this->quad->set_texture_position(texture_position, texture_size);
+    this->layer = layer;
 }

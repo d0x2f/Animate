@@ -26,5 +26,6 @@ namespace Animate::Animation::Minesweeper::Object
 
         protected:
             std::shared_ptr<Quad> quad;
+            uint32_t layer = 0;
     };
 }

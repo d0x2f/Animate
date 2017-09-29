@@ -96,7 +96,7 @@ void Minesweeper::on_tick(uint64_t time_delta)
 
     this->time_since_move += time_delta;
 
-    if (this->time_since_move > 50000) {
+    if (this->time_since_move > 100000) {
         if (this->move_sequence.empty()) {
             this->reset_puzzle();
         } else {
