@@ -51,6 +51,8 @@ namespace Animate
                 Context(std::weak_ptr<Animate::AppContext> context);
                 ~Context();
                 
+                std::mutex vulkan_resource_mutex;
+                
                 vk::Instance instance;
 
                 VkDebugReportCallbackEXT debug_callback_obj;
@@ -131,7 +133,6 @@ namespace Animate
             private:
                 std::weak_ptr<Animate::AppContext> context;
 
-                std::mutex vulkan_resource_mutex;
                 std::mutex command_mutex;
 
                 std::vector< std::shared_ptr<Pipeline> > pipelines;
