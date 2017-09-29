@@ -2,9 +2,11 @@
 
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
+#include <vector>
 
 #include "../Geometry/Definitions.hh"
 #include "../Geometry/Matrix.hh"
+#include "../Geometry/Vertex.hh"
 #include "../Object/Property/Drawable.hh"
 #include "../Object/Property/Movable.hh"
 #include "../Object/Property/Scalable.hh"
@@ -21,7 +23,7 @@ namespace Animate::VK
             ~Quad();
 
             void initialise_buffers() override;
-            
+
             void set_texture_position(Vector3 texture_position, Vector3 texture_size = Vector3(1., 1., 0.));
 
             vk::Buffer const get_vertex_buffer() override;
@@ -39,6 +41,6 @@ namespace Animate::VK
             void create_vertex_buffer();
             void create_index_buffer();
             void update_buffer();
-            const std::Vector<Vertex> get_data();
+            const std::vector<Vertex> get_data();
     };
 }

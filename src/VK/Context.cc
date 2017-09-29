@@ -363,8 +363,8 @@ void Context::render_scene()
         .setPSwapchains(&this->swap_chain)
         .setPImageIndices(&image_index);
 
-    std::lock_guard<std::mutex> command_guard(this->command_mutex);
     std::lock_guard<std::mutex> resource_guard(this->vulkan_resource_mutex);
+    std::lock_guard<std::mutex> command_guard(this->command_mutex);
     this->fill_command_buffer(image_index);
     if (this->graphics_queue.submit(1, &submit_info, this->render_fences[image_index]) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't submit to graphics queue.");

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 #include "Quad.hh"
-#include "../Geometry/Vertex.hh"
 #include "Context.hh"
 #include "Buffer.hh"
 
@@ -47,21 +46,21 @@ void Quad::initialise_buffers()
 void Quad::create_vertex_buffer()
 {
     //Check if the buffer is already initialised
-    if (this->vertex_buffer.expired()) {
+    if (!this->vertex_buffer.expired()) {
         return;
     }
+
+    std::shared_ptr<Context> context = this->context.lock();
+
+    const std::vector<Vertex> vertices = this->get_data();
+
+    vk::DeviceSize size = 4 * sizeof(Vertex);
 
     this->vertex_buffer = context->create_buffer(
         size,
         vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
         vk::MemoryPropertyFlagBits::eDeviceLocal
     );
-
-    const std::vector<Vertex> vertices = this->get_data();
-
-    vk::DeviceSize size = 4 * sizeof(Vertex);
-
-    std::shared_ptr<Context> context = this->context.lock();
 
     std::weak_ptr<VK::Buffer> _staging_buffer = context->create_buffer(
         size,
@@ -118,19 +117,24 @@ void Quad::create_index_buffer()
 
 void Quad::update_buffer()
 {
+    //Check if the buffer is initialised
+    if (this->index_buffer.expired()) {
+        return;
+    }
+
     const std::vector<Vertex> vertices = this->get_data();
 
     vk::DeviceSize size = 4 * sizeof(Vertex);
 
     this->context.lock()->run_one_time_commands([&](vk::CommandBuffer command_buffer){
         command_buffer.updateBuffer(
-            (vk::Buffer)this->vertex_buffer,
-            0
+            this->get_vertex_buffer(),
+            0,
             size,
             vertices.data()
         );
     });
-    
+
 }
 
 const std::vector<Vertex> Quad::get_data()

@@ -153,7 +153,7 @@ void Minesweeper::reset_puzzle()
 void Minesweeper::redraw_tiles()
 {
     //Lock resources so that no frames are drawn while we're updating.
-    std::lock_guard<std::mutex> guard(this->context.lock()->vulkan_resource_mutex);
+    std::lock_guard<std::mutex> guard(this->context.lock()->get_graphics_context().lock()->vulkan_resource_mutex);
 
     std::shared_ptr<Pipeline> pipeline = this->shader.lock();
     for (int i = 0; i < this->grid_size * this->grid_size; i++) {
