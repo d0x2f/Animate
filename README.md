@@ -8,8 +8,7 @@ Just a collection of animations, press space to "change the channel".
   * Taquin/15 puzzle solving ([video](https://www.youtube.com/watch?v=F2GyDwdp1KU)).
   * Multiplication modulo drawn on a circle ([video](https://www.youtube.com/watch?v=pxVHWqUBAmg)).
   * Full random noise.
-* In Progress
-  * Minesweeper
+  * Minesweeper ([video](https://youtu.be/qlBwNXP5lfM)).
 * Ideas
   * Mandlebrot drawing.
 
