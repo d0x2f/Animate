@@ -96,7 +96,7 @@ void Minesweeper::on_tick(uint64_t time_delta)
 
     this->time_since_move += time_delta;
 
-    if (this->time_since_move > 100000) {
+    if (this->time_since_move > 50000) {
         if (this->move_sequence.empty()) {
             this->reset_puzzle();
         } else {
@@ -125,7 +125,7 @@ void Minesweeper::on_tick(uint64_t time_delta)
 void Minesweeper::reset_puzzle()
 {
     //Show the completed puzzle for a bit before resetting.
-    if (this->map && this->map->get_status() == Casspir::MapStatus::COMPLETE) {
+    if (this->map && this->map->get_status() != Casspir::MapStatus::IN_PROGRESS) {
         usleep(1000000);
     }
 
@@ -138,7 +138,7 @@ void Minesweeper::reset_puzzle()
         casspir_generate_map(
             this->grid_size,
             this->grid_size,
-            100,
+            70,
             first_flip
         )
     );
@@ -161,10 +161,29 @@ void Minesweeper::redraw_tiles()
         Casspir::TileState tile_state = this->map->get_tile(i);
 
         std::string texture_name = "data/Minesweeper/unflipped.jpg";
-        if (tile_state.flipped) {
-            texture_name = "data/Minesweeper/flipped-" + std::to_string(tile_state.value) + ".jpg";
-        } else if (tile_state.flagged) {
-            texture_name = "data/Minesweeper/flagged.jpg";
+        if (this->map->get_status() == Casspir::MapStatus::FAILED) {
+            if (tile_state.mine) {
+                if (tile_state.flagged) {
+                    texture_name = "data/Minesweeper/flagged.jpg";
+                } else if (tile_state.flipped) {
+                    texture_name = "data/Minesweeper/mine-exploded.jpg";
+                } else {
+                    texture_name = "data/Minesweeper/mine-reveal.jpg";
+                }
+            } else {
+                if (tile_state.flagged) {
+                    texture_name = "data/Minesweeper/mine-false.jpg";
+                } else  if (tile_state.flipped) {
+                    texture_name = "data/Minesweeper/flipped-" + std::to_string(tile_state.value) + ".jpg";
+                }
+            }
+        } else {
+            if (tile_state.flipped) {
+                texture_name = "data/Minesweeper/flipped-" + std::to_string(tile_state.value) + ".jpg";
+            } else if (tile_state.flagged) {
+                texture_name = "data/Minesweeper/flagged.jpg";
+            }
+
         }
 
         tile.lock()->set_layer(pipeline->get_textures().lock()->get_layer(texture_name));
