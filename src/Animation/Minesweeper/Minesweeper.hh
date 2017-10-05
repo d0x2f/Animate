@@ -25,7 +25,7 @@ namespace Animate::Animation::Minesweeper
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;
-            int grid_size = 30;
+            int grid_size = 10;
             std::queue<Casspir::Operation> move_sequence;
             std::shared_ptr<Casspir::Map> map;
             uint64_t time_since_move = 0;

@@ -96,7 +96,7 @@ void Minesweeper::on_tick(uint64_t time_delta)
 
     this->time_since_move += time_delta;
 
-    if (this->time_since_move > 50000) {
+    if (this->time_since_move > 5000) {
         if (this->move_sequence.empty()) {
             this->reset_puzzle();
         } else {
@@ -126,7 +126,7 @@ void Minesweeper::reset_puzzle()
 {
     //Show the completed puzzle for a bit before resetting.
     if (this->map && this->map->get_status() != Casspir::MapStatus::IN_PROGRESS) {
-        usleep(1000000);
+        usleep(100000);
     }
 
     //Generate new puzzle
