@@ -4,6 +4,7 @@
 #include "Animation/Modulo/Modulo.hh"
 #include "Animation/Noise/Noise.hh"
 #include "Animation/Minesweeper/Minesweeper.hh"
+#include "Animation/Fractal/Fractal.hh"
 
 using namespace Animate;
 
@@ -91,6 +92,11 @@ void AppContext::setup_animations() {
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
 
     animation = new Animation::Minesweeper::Minesweeper(self);
+    animation->initialise();
+
+    this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));
+
+    animation = new Animation::Fractal::Fractal(self);
     animation->initialise();
 
     this->animations.push_back(std::shared_ptr<Animation::Animation>(animation));

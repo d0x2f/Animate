@@ -25,6 +25,8 @@ namespace Animate::VK
             void initialise_buffers() override;
 
             void set_texture_position(Vector3 texture_position, Vector3 texture_size = Vector3(1., 1., 0.));
+            void set_texture_layer(uint32_t layer);
+            void set_buffer_transform(Matrix transform);
 
             vk::Buffer const get_vertex_buffer() override;
             vk::Buffer const get_index_buffer() override;
@@ -34,6 +36,7 @@ namespace Animate::VK
         protected:
             Vector3 texture_position;
             Vector3 texture_size = Vector3(1., 1., 0.);
+            Matrix buffer_transform = Matrix::identity();
 
             std::weak_ptr<Buffer> vertex_buffer,
                                   index_buffer;

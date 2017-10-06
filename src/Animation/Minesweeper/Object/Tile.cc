@@ -69,15 +69,6 @@ void Tile::set_layer(uint32_t layer)
         return;
     }
 
-    Vector3 texture_position = Vector3(
-        0,
-        0,
-        layer
-    );
-    Vector3 texture_size = Vector3(
-        1,
-        1
-    );
-    this->quad->set_texture_position(texture_position, texture_size);
+    this->quad->set_texture_layer(layer);
     this->layer = layer;
 }

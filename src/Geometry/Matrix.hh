@@ -26,6 +26,8 @@ namespace Animate::Geometry
             Matrix operator*(Matrix b);
             Matrix operator-(Matrix b);
 
+            Vector4 operator*(Vector4 v);
+
             void print();
 
             static Matrix identity();

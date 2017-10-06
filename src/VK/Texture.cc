@@ -37,7 +37,11 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
     size_t offset = 0;
     void *data = staging_buffer.map();
     for(auto const& layer : layers) {
-        memcpy(data + offset, layer.pixels, layer.size);
+        memcpy(
+            (reinterpret_cast<unsigned char *>(data) + offset),
+            layer.pixels,
+            layer.size
+        );
         offset += layer.size;
 
         width = std::max(width, layer.width);

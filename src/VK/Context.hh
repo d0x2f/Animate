@@ -44,15 +44,15 @@ namespace Animate
             std::vector<vk::SurfaceFormatKHR> formats;
             std::vector<vk::PresentModeKHR> present_modes;
         };
-        
+
         class Context : public std::enable_shared_from_this<Context>
         {
             public:
                 Context(std::weak_ptr<Animate::AppContext> context);
                 ~Context();
-                
+
                 std::mutex vulkan_resource_mutex;
-                
+
                 vk::Instance instance;
 
                 VkDebugReportCallbackEXT debug_callback_obj;
@@ -117,7 +117,7 @@ namespace Animate
                     vk::BufferUsageFlags usage,
                     vk::MemoryPropertyFlags properties
                 );
-                
+
                 std::weak_ptr<Buffer> get_buffer(uint64_t id);
                 void release_buffer(std::weak_ptr<Buffer> buffer);
 
@@ -132,6 +132,7 @@ namespace Animate
 
             private:
                 std::weak_ptr<Animate::AppContext> context;
+                std::vector<std::thread> deferred_functions;
 
                 std::mutex command_mutex;
 

@@ -28,6 +28,7 @@ namespace Animate::Animation
 
             void add_object(std::string name, Object::Object *object);
             std::weak_ptr<Object::Object> get_object(std::string name);
+            bool object_exists(std::string name);
             void clear_objects();
 
             virtual void on_load();

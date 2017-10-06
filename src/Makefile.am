@@ -27,6 +27,7 @@ animate_SOURCES =   VK/Context.cc \
                     Animation/Noise/Noise.cc \
                     Animation/Minesweeper/Minesweeper.cc \
                     Animation/Minesweeper/Object/Tile.cc \
+                    Animation/Fractal/Fractal.cc \
                     \
                     Gui.cc \
                     AppContext.cc \
@@ -63,6 +64,7 @@ animate_HEADERS =   VK/Context.hh \
                     Animation/Noise/Noise.hh \
                     Animation/Minesweeper/Minesweeper.hh \
                     Animation/Minesweeper/Object/Tile.hh \
+                    Animation/Fractal/Fractal.hh \
                     \
                     Gui.hh \
                     AppContext.hh \

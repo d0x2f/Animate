@@ -134,6 +134,19 @@ Matrix Matrix::operator-(Matrix b)
 }
 
 /**
+* Matrix multiplication with vector.
+**/
+Vector4 Matrix::operator*(Vector4 v)
+{
+    return Vector4(
+        v.dot(r1),
+        v.dot(r2),
+        v.dot(r3),
+        v.dot(r4)
+    );
+}
+
+/**
  * Print this matrix to cout.
  */
 void Matrix::print()

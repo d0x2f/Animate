@@ -34,6 +34,20 @@ void Quad::set_texture_position(Vector3 texture_position, Vector3 texture_size)
     this->update_buffer();
 }
 
+void Quad::set_texture_layer(uint32_t layer)
+{
+    this->texture_position.z = layer;
+
+    this->update_buffer();
+}
+
+void Quad::set_buffer_transform(Matrix transform)
+{
+    this->buffer_transform = transform;
+
+    this->update_buffer();
+}
+
 /**
  * Initialise the quads ibo and vbo
  */
@@ -142,13 +156,20 @@ const std::vector<Vertex> Quad::get_data()
     Vector3 t = this->texture_position;
     Vector3 u = this->texture_position + this->texture_size;
 
+    Matrix bt = this->buffer_transform;
+
+    Vector3 p1 = (bt*Vector4(0., 0., 0., 1.)).xyz();
+    Vector3 p3 = (bt*Vector4(0., 1., 0., 1.)).xyz();
+    Vector3 p2 = (bt*Vector4(1., 0., 0., 1.)).xyz();
+    Vector3 p4 = (bt*Vector4(1., 1., 0., 1.)).xyz();
+
     //Vertex & colour Data:
     const std::vector<Vertex> vertices = {
-    //  Point                       Texture                 Normal               Colour
-        Vertex(Vector3(0., 0., 0.), Vector3(t.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 0., 0.), Vector3(u.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(0., 1., 0.), Vector3(t.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
-        Vertex(Vector3(1., 1., 0.), Vector3(u.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
+    //  Point      Texture                 Normal               Colour
+        Vertex(p1, Vector3(t.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(p2, Vector3(u.x, u.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(p3, Vector3(t.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.)),
+        Vertex(p4, Vector3(u.x, t.y, t.z), Vector3(0., 0., 1.), Vector4(1., 1., 1., 1.))
     };
 
     return vertices;

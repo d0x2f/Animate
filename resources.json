@@ -34,6 +34,9 @@
     "data/Minesweeper/shader.vert.spv",
     "data/Minesweeper/shader.frag.spv",
 
+    "data/Fractal/shader.vert.spv",
+    "data/Fractal/shader.frag.spv",
+
     "data/Default/shader.vert.spv",
     "data/Default/shader.frag.spv"
 ]

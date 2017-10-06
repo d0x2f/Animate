@@ -88,6 +88,18 @@ void Animation::add_object(std::string name, Object::Object *object)
 }
 
 /**
+ * Checks if an object with the given name exists.
+ *
+ * @param name The name of the object.
+ *
+ * @return If the object is present.
+ */
+bool Animation::object_exists(std::string name)
+{
+    return this->objects.count(name) > 0;
+}
+
+/**
  * Remove all object references.
  */
 void Animation::clear_objects()

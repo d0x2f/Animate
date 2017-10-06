@@ -312,13 +312,13 @@ void Context::render_scene()
     switch (result) {
         //Success
         case vk::Result::eSuccess:
-        case vk::Result::eSuboptimalKHR:
             break;
 
         //Invalid swapchain
+        case vk::Result::eSuboptimalKHR:
         case vk::Result::eErrorOutOfDateKHR:
             this->recreate_swap_chain();
-            break;
+            return;
 
         //Other unhandled error
         default:
@@ -329,12 +329,11 @@ void Context::render_scene()
         1,
         &this->render_fences[image_index],
         VK_TRUE,
-        1000000000
+        10000000
     );
 
     switch (fence_result) {
         case vk::Result::eTimeout:
-            std::cout << "Fence timeout." << std::endl;
             this->logical_device.waitIdle();
             break;
         case vk::Result::eSuccess:
@@ -363,18 +362,19 @@ void Context::render_scene()
         .setPSwapchains(&this->swap_chain)
         .setPImageIndices(&image_index);
 
-    std::lock_guard<std::mutex> resource_guard(this->vulkan_resource_mutex);
-    std::lock_guard<std::mutex> command_guard(this->command_mutex);
-    this->fill_command_buffer(image_index);
-    if (this->graphics_queue.submit(1, &submit_info, this->render_fences[image_index]) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't submit to graphics queue.");
-    }
+    {
+        std::lock_guard<std::mutex> resource_guard(this->vulkan_resource_mutex);
+        std::lock_guard<std::mutex> command_guard(this->command_mutex);
+        this->fill_command_buffer(image_index);
+        if (this->graphics_queue.submit(1, &submit_info, this->render_fences[image_index]) != vk::Result::eSuccess) {
+            throw std::runtime_error("Couldn't submit to graphics queue.");
+        }
 
-    if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
-        throw std::runtime_error("Couldn't submit to present queue.");
+        if (this->present_queue.presentKHR(&present_info) != vk::Result::eSuccess) {
+            //throw std::runtime_error("Couldn't submit to present queue.");
+        }
     }
 }
-
 uint32_t Context::find_memory_type(uint32_t type_filter, vk::MemoryPropertyFlags properties)
 {
     vk::PhysicalDeviceMemoryProperties memory_properties;
@@ -825,9 +825,9 @@ std::weak_ptr<Buffer> Context::get_buffer(uint64_t id)
 
 void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 {
+    uint64_t id = buffer.lock()->get_id();
     std::lock_guard<std::mutex> guard(this->vulkan_resource_mutex);
 
-    uint64_t id = buffer.lock()->get_id();
     std::map< uint64_t, std::shared_ptr<Buffer> >::const_iterator it;
     it = this->buffers.find(id);
     if (it != this->buffers.end()) {
@@ -1095,16 +1095,16 @@ void Context::create_descriptor_pool()
     std::array<vk::DescriptorPoolSize, 2> pool_sizes = {
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eUniformBuffer)
-            .setDescriptorCount(4),
+            .setDescriptorCount(5),
         vk::DescriptorPoolSize()
             .setType(vk::DescriptorType::eCombinedImageSampler)
-            .setDescriptorCount(4)
+            .setDescriptorCount(5)
     };
 
     vk::DescriptorPoolCreateInfo pool_create_info = vk::DescriptorPoolCreateInfo()
         .setPoolSizeCount(pool_sizes.size())
         .setPPoolSizes(pool_sizes.data())
-        .setMaxSets(4);
+        .setMaxSets(5);
 
     if (this->logical_device.createDescriptorPool(&pool_create_info, nullptr, &this->descriptor_pool) != vk::Result::eSuccess) {
         throw std::runtime_error("Couldn't create descriptor pool.");
