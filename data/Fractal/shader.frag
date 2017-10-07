@@ -13,7 +13,7 @@ void main() {
 	vec3 color=vec3(0.0,0.0,0.0);
 
 	//Max number of iterations will arbitrarily be defined as 100. Finer detail with more computation will be found for larger values.
-	for(int i=0;i<1000;i++){
+	for(int i=0;i<512;i++){
 		//Perform complex number arithmetic
 		p= vec2(p.x*p.x-p.y*p.y,2.0*p.x*p.y)+c;
 

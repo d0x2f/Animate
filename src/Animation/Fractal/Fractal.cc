@@ -42,7 +42,7 @@ void Fractal::initialise()
     );
 
     //Ortho
-    Matrix projection_matrix = Matrix::orthographic(0, 1, 0, 1, 0, 1);
+    Matrix projection_matrix = Matrix::orthographic(-2., 1., -1.5, 1.5, 0, 1);
 
     this->shader.lock()->set_matrices(view_matrix, projection_matrix);
 
@@ -59,6 +59,13 @@ void Fractal::initialise()
     );
     object->add_component(quad);
     this->add_object("quad", object);
+
+    this->zoom_points = {
+        Point(0.42884,-0.231345),
+        Point(-1.62917,-0.0203968),
+        Point(-0.761574,-0.0847596),
+        Point(-0.170337,-1.06506)
+    };
 }
 
 /**
@@ -67,19 +74,26 @@ void Fractal::initialise()
 void Fractal::on_tick(uint64_t time_delta)
 {
     this->timer += time_delta;
-    float zoom_factor = (static_cast<float>(this->timer / 10000) / 100.) - 4;
-    auto object = this->get_object("quad");
+    float zoom_factor = static_cast<float>(this->timer / 10000) / 100.;
+    if (zoom_factor > 16.) {
+        zoom_factor = 0;
+        this->timer = 0;
 
-    float theta = zoom_factor;
-    float x = 0.25;
-    float y = 0.;
+        //Pick a new zoom point
+        this->current_zoom_point = (this->current_zoom_point+1)%4;
+    } else if (zoom_factor > 8.) {
+        zoom_factor = 16. - zoom_factor;
+    }
+
+    auto object = this->get_object("quad");
 
     object.lock()->set_model_matrix(
         Matrix::identity()
-            .translate(Vector3(-x-0.015, -y-0.003))
+            .translate(Vector3()-this->zoom_points[this->current_zoom_point])
             .scale(Vector2(exp(zoom_factor), exp(zoom_factor)))
             .rotate(Vector3(0.,0.,zoom_factor))
-            .translate(Vector3(x+0.5, y + 0.5))
+            .translate(this->zoom_points[this->current_zoom_point])
+            .translate(Vector3(zoom_factor/32., zoom_factor/32.))
     );
 
     Animation::on_tick(time_delta);

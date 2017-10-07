@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include "AppContext.hh"
 #include "Animation/Animation.hh"
 #include "Animation/Cat/Cat.hh"

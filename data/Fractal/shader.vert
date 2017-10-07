@@ -1,5 +1,6 @@
 #version 450
 
+precision highp float;
 layout (location = 0) in vec3 vertex;
 layout (location = 0) out vec3 out_vertex;
 

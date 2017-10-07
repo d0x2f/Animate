@@ -19,6 +19,8 @@ namespace Animate::Animation::Fractal
 
         protected:
             std::weak_ptr<VK::Pipeline> shader;
+            std::vector<Point> zoom_points;
+            uint8_t current_zoom_point = 0;
             uint64_t timer = 0;
     };
 }
