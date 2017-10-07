@@ -9,8 +9,7 @@ Just a collection of animations, press space to "change the channel".
   * Multiplication modulo drawn on a circle ([video](https://www.youtube.com/watch?v=pxVHWqUBAmg)).
   * Full random noise.
   * Minesweeper ([video](https://youtu.be/qlBwNXP5lfM)).
-* Ideas
-  * Mandlebrot drawing.
+  * Mandlebrot Set ([video](https://youtu.be/o_jfFCumiGU)).
 
 ## Intention
 
@@ -42,3 +41,5 @@ Writting computer graphics binds two of my favourite subjects, programming and m
 * https://developer.nvidia.com/open-source-vulkan-c-api
 * https://www.khronos.org/registry/vulkan/specs/1.0/apispec.html
 * https://vulkan-tutorial.com
+* http://paulbourke.net/fractals/mandelbrot/
+* https://www.toptal.com/opengl/opengl-tutorial-for-android-building-a-mandelbrot-set-generator
