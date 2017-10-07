@@ -194,7 +194,7 @@ void Context::fill_command_buffer(int i)
 
     vk::ClearValue clear_values[3];
     clear_values[0] = vk::ClearValue()
-        .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
+        .setColor(vk::ClearColorValue().setFloat32({0.141176471f, 0.141176471f, 0.141176471f, 1.0f}));
     clear_values[1] = vk::ClearValue()
         .setColor(vk::ClearColorValue().setFloat32({0.0f, 0.0f, 0.0f, 1.0f}));
     clear_values[2] = vk::ClearValue()
