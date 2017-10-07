@@ -826,8 +826,6 @@ std::weak_ptr<Buffer> Context::get_buffer(uint64_t id)
 void Context::release_buffer(std::weak_ptr<Buffer> buffer)
 {
     uint64_t id = buffer.lock()->get_id();
-    std::lock_guard<std::mutex> guard(this->vulkan_resource_mutex);
-
     std::map< uint64_t, std::shared_ptr<Buffer> >::const_iterator it;
     it = this->buffers.find(id);
     if (it != this->buffers.end()) {
