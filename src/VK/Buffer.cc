@@ -48,11 +48,11 @@ Buffer::~Buffer()
 {
     this->logical_device.waitIdle();
     if (this->ident) {
-        this->logical_device.destroyBuffer(this->ident);
+        this->logical_device.destroyBuffer(this->ident, nullptr);
     }
 
     if (this->memory) {
-        this->logical_device.freeMemory(this->memory);
+        this->logical_device.freeMemory(this->memory, nullptr);
     }
 }
 
@@ -64,13 +64,13 @@ uint64_t Buffer::get_id()
 void Buffer::copy_buffer_data(std::shared_ptr<Buffer> source)
 {
     std::lock_guard<std::mutex> guard(this->data_mutex);
-    
+
     std::shared_ptr<Context> context = this->context.lock();
 
     if (source->get_size() > this->size) {
         throw std::runtime_error("Not enough space to copy buffer.");
     }
-    
+
     context->run_one_time_commands([&](vk::CommandBuffer command_buffer){
         vk::BufferCopy copy_details = vk::BufferCopy()
             .setSrcOffset(0)

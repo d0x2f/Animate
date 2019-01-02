@@ -1,5 +1,6 @@
 #pragma once
 
+#define VULKAN_HPP_DISABLE_ENHANCED_MODE 1
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
@@ -34,7 +35,7 @@ namespace Animate::VK
             {
                 return this->pipeline;
             }
-            
+
             void recreate_pipeline();
 
             vk::DescriptorSet get_descriptor_set();
@@ -47,7 +48,7 @@ namespace Animate::VK
 
             void set_uniform_float(float value);
 
-            uint64_t add_drawable(std::shared_ptr<Drawable> drawable);
+            void add_drawable(std::shared_ptr<Drawable> drawable);
             std::vector< std::shared_ptr<Drawable> > get_drawables();
 
             void commit_scene();

@@ -36,15 +36,15 @@ Context::Context(std::weak_ptr<Animate::AppContext> context) : context(context)
 Context::~Context()
 {
     if (this->descriptor_set_layout) {
-        this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout);
+        this->logical_device.destroyDescriptorSetLayout(this->descriptor_set_layout, nullptr);
     }
 
     if (this->descriptor_pool) {
-        this->logical_device.destroyDescriptorPool(this->descriptor_pool);
+        this->logical_device.destroyDescriptorPool(this->descriptor_pool, nullptr);
     }
 
     if (this->pipeline_layout) {
-        this->logical_device.destroyPipelineLayout(this->pipeline_layout);
+        this->logical_device.destroyPipelineLayout(this->pipeline_layout, nullptr);
     }
     this->pipelines.clear();
 
@@ -53,19 +53,19 @@ Context::~Context()
     this->buffers.clear();
 
     if (this->swap_chain) {
-        this->logical_device.destroySwapchainKHR(this->swap_chain);
+        this->logical_device.destroySwapchainKHR(this->swap_chain, nullptr);
     }
 
     if (this->image_available_semaphore) {
-        this->logical_device.destroySemaphore(this->image_available_semaphore);
+        this->logical_device.destroySemaphore(this->image_available_semaphore, nullptr);
     }
 
     if (this->render_finished_semaphore) {
-        this->logical_device.destroySemaphore(this->render_finished_semaphore);
+        this->logical_device.destroySemaphore(this->render_finished_semaphore, nullptr);
     }
 
     if (this->command_pool) {
-        this->logical_device.destroyCommandPool(this->command_pool);
+        this->logical_device.destroyCommandPool(this->command_pool, nullptr);
     }
 
     for (size_t i = 0; i < this->render_fences.size(); i++) {
@@ -75,7 +75,7 @@ Context::~Context()
     }
 
     if (this->logical_device) {
-        this->logical_device.destroy();
+        this->logical_device.destroy(nullptr);
     }
 
     if (this->debug_callback_obj) {
@@ -88,7 +88,7 @@ Context::~Context()
     }
 
     if (this->instance) {
-        this->instance.destroy();
+        this->instance.destroy(nullptr);
     }
 }
 
@@ -120,39 +120,39 @@ void Context::recreate_swap_chain()
 void Context::cleanup_swap_chain_dependancies()
 {
     if (this->depth_image) {
-        this->logical_device.destroyImage(this->depth_image);
+        this->logical_device.destroyImage(this->depth_image, nullptr);
     }
 
     if (this->depth_view) {
-        this->logical_device.destroyImageView(this->depth_view);
+        this->logical_device.destroyImageView(this->depth_view, nullptr);
     }
 
     if (this->depth_memory) {
-        this->logical_device.freeMemory(this->depth_memory);
+        this->logical_device.freeMemory(this->depth_memory, nullptr);
     }
 
     if (this->multisample_target.colour.image) {
-        this->logical_device.destroyImage(this->multisample_target.colour.image);
+        this->logical_device.destroyImage(this->multisample_target.colour.image, nullptr);
     }
 
     if (this->multisample_target.colour.view) {
-        this->logical_device.destroyImageView(this->multisample_target.colour.view);
+        this->logical_device.destroyImageView(this->multisample_target.colour.view, nullptr);
     }
 
     if (this->multisample_target.colour.memory) {
-        this->logical_device.freeMemory(this->multisample_target.colour.memory);
+        this->logical_device.freeMemory(this->multisample_target.colour.memory, nullptr);
     }
 
     if (this->multisample_target.depth.image) {
-        this->logical_device.destroyImage(this->multisample_target.depth.image);
+        this->logical_device.destroyImage(this->multisample_target.depth.image, nullptr);
     }
 
     if (this->multisample_target.depth.view) {
-        this->logical_device.destroyImageView(this->multisample_target.depth.view);
+        this->logical_device.destroyImageView(this->multisample_target.depth.view, nullptr);
     }
 
     if (this->multisample_target.depth.memory) {
-        this->logical_device.freeMemory(this->multisample_target.depth.memory);
+        this->logical_device.freeMemory(this->multisample_target.depth.memory, nullptr);
     }
 
     for (size_t i = 0; i < this->swap_chain_framebuffers.size(); i++) {
@@ -476,7 +476,7 @@ void Context::pick_physical_device()
 
     //Just pick the first device for now
     for (auto const& device : devices) {
-        properties = device.getProperties();
+        device.getProperties(&properties);
         if (this->is_device_suitable(device)) {
             this->physical_device = device;
             break;
@@ -489,7 +489,7 @@ void Context::pick_physical_device()
 
     std::cout << "Using device: " << properties.deviceName << std::endl;
 
-    this->multisample_target.sample_count = this->choose_sample_count(this->physical_device.getProperties());
+    this->multisample_target.sample_count = this->choose_sample_count(properties);
 }
 
 void Context::create_logical_device()
@@ -531,8 +531,8 @@ void Context::create_logical_device()
 
     this->physical_device.createDevice(&device_create_info, nullptr, &this->logical_device);
 
-    this->graphics_queue = this->logical_device.getQueue(indices.graphics_family, 0);
-    this->present_queue = this->logical_device.getQueue(indices.present_family, 0);
+    this->logical_device.getQueue(indices.graphics_family, 0, &this->graphics_queue);
+    this->logical_device.getQueue(indices.present_family, 0, &this->present_queue);
 }
 
 void Context::create_swap_chain()
@@ -1120,7 +1120,8 @@ bool Context::is_device_suitable(vk::PhysicalDevice const & device)
         swap_chain_adequate = !swap_chain_support.formats.empty() && !swap_chain_support.present_modes.empty();
     }
 
-    vk::PhysicalDeviceFeatures features = device.getFeatures();
+    vk::PhysicalDeviceFeatures features;
+    device.getFeatures(&features);
 
     return
         features.samplerAnisotropy &&

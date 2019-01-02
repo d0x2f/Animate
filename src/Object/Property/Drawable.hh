@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <atomic>
 #include <mutex>
 
@@ -58,7 +59,7 @@ namespace Animate
                 Matrix model_matrix;
 
                 bool initialised = false;
-            
+
             private:
                 PrimitiveType type;
                 uint32_t indices;

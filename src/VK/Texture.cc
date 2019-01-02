@@ -60,10 +60,10 @@ Texture::Texture(std::weak_ptr<Context> context, std::vector<std::string> resour
 
 Texture::~Texture()
 {
-    this->logical_device.destroySampler(this->sampler);
-    this->logical_device.destroyImageView(this->image_view);
-    this->logical_device.destroyImage(this->image);
-    this->logical_device.freeMemory(this->memory);
+    this->logical_device.destroySampler(this->sampler, nullptr);
+    this->logical_device.destroyImageView(this->image_view, nullptr);
+    this->logical_device.destroyImage(this->image, nullptr);
+    this->logical_device.freeMemory(this->memory, nullptr);
 }
 
 std::vector<LayerData> Texture::load_resources_as_layers(std::vector<std::string> resources)

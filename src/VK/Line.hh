@@ -1,5 +1,6 @@
 #pragma once
 
+#define VULKAN_HPP_DISABLE_ENHANCED_MODE 1
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 
@@ -23,7 +24,7 @@ namespace Animate::VK
             ~Line();
 
             void initialise_buffers() override;
-            
+
             vk::Buffer const get_vertex_buffer() override;
             vk::Buffer const get_index_buffer() override;
 

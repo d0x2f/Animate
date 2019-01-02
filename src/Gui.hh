@@ -1,5 +1,6 @@
 #pragma once
 
+#define VULKAN_HPP_DISABLE_ENHANCED_MODE 1
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <vector>

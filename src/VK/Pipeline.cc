@@ -114,7 +114,7 @@ void Pipeline::create_pipeline()
         .setLineWidth(1.0f)
         .setCullMode(vk::CullModeFlagBits::eBack)
         .setFrontFace(vk::FrontFace::eClockwise);
-    
+
     vk::PipelineDepthStencilStateCreateInfo depth_Stencil_info = vk::PipelineDepthStencilStateCreateInfo()
         .setDepthTestEnable(VK_TRUE)
         .setDepthWriteEnable(VK_TRUE)
@@ -284,7 +284,7 @@ Matrix Pipeline::get_matrix()
     return this->pv;
 }
 
-uint64_t Pipeline::add_drawable(std::shared_ptr<Drawable> drawable)
+void Pipeline::add_drawable(std::shared_ptr<Drawable> drawable)
 {
     std::lock_guard<std::mutex> guard(this->drawable_mutex);
 
